@@ -18,11 +18,14 @@ pub fn read_note(path: String) -> Result<String, String> {
 }
 
 /// Writes atomically: a sibling temp file is flushed, then renamed over the target,
-/// so a crash mid-write can never truncate an existing note.
+/// so a crash mid-write can never truncate an existing note. Missing folders are
+/// created, which is what lets sync land a note at a path that is new locally.
 #[tauri::command]
 pub fn write_note(path: String, content: String) -> Result<(), String> {
     let target = PathBuf::from(&path);
     let parent = target.parent().ok_or("path has no parent directory")?;
+    fs::create_dir_all(parent).map_err(|e| e.to_string())?;
+
     let temp = parent.join(format!(
         ".{}.nib-tmp",
         target.file_name().and_then(|n| n.to_str()).unwrap_or("note")
@@ -30,6 +33,35 @@ pub fn write_note(path: String, content: String) -> Result<(), String> {
 
     fs::write(&temp, content).map_err(|e| e.to_string())?;
     fs::rename(&temp, &target).map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+pub fn delete_note(path: String) -> Result<(), String> {
+    fs::remove_file(&path).map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+pub fn rename_note(from: String, to: String) -> Result<(), String> {
+    let target = PathBuf::from(&to);
+    if target.exists() {
+        return Err("something already lives there".into());
+    }
+
+    if let Some(parent) = target.parent() {
+        fs::create_dir_all(parent).map_err(|e| e.to_string())?;
+    }
+    fs::rename(&from, &to).map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+pub fn create_folder(path: String) -> Result<(), String> {
+    fs::create_dir_all(&path).map_err(|e| e.to_string())
+}
+
+/// Removes a folder and everything under it.
+#[tauri::command]
+pub fn delete_folder(path: String) -> Result<(), String> {
+    fs::remove_dir_all(&path).map_err(|e| e.to_string())
 }
 
 #[tauri::command]
