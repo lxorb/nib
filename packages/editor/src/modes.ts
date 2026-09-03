@@ -18,7 +18,7 @@ const punctuation = new Compartment()
 const language = new Compartment()
 const equations = new Compartment()
 
-/** Strict mode drops GFM and the Typora extensions, leaving plain CommonMark —
+/** Strict mode drops GFM and the Typora extensions, leaving plain CommonMark -
  *  useful when a document has to render the same everywhere. */
 function markdownFor(strict: boolean) {
   return markdown({
@@ -66,7 +66,7 @@ const focusPlugin = ViewPlugin.fromClass(
   { decorations: (plugin) => plugin.decorations },
 )
 
-/** The paragraph, list or fence the caret sits in — Typora dims by block, not line. */
+/** The paragraph, list or fence the caret sits in - Typora dims by block, not line. */
 function enclosingBlock(state: EditorView['state'], pos: number) {
   let node = syntaxTree(state).resolveInner(pos, -1)
 
@@ -129,7 +129,7 @@ export function setTypewriterMode(view: EditorView, on: boolean) {
   view.dom.classList.toggle('nib-typewriter-mode', on)
 }
 
-/** Curly quotes, en and em dashes, ellipsis — on by default, like Typora. */
+/** Curly quotes, en and em dashes, ellipsis - on by default, like Typora. */
 export function setSmartPunctuation(view: EditorView, on: boolean) {
   view.dispatch({ effects: punctuation.reconfigure(on ? smartPunctuation() : []) })
 }

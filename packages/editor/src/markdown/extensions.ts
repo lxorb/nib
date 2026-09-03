@@ -235,7 +235,7 @@ export const DefinitionList: MarkdownConfig = {
   ],
 }
 
-/** `*[HTML]: HyperText Markup Language` — a definition, never shown as prose. */
+/** `*[HTML]: HyperText Markup Language` - a definition, never shown as prose. */
 export const Abbreviation: MarkdownConfig = {
   defineNodes: [
     { name: 'AbbrevDef', block: true },

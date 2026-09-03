@@ -197,7 +197,7 @@ class Workspace {
     return found
   })
 
-  /** Every note in the space, flattened — the Articles panel and quick open. */
+  /** Every note in the space, flattened - the Articles panel and quick open. */
   readonly notes = $derived.by((): Entry[] => {
     const out: Entry[] = []
     const walk = (entry: Entry) => {
@@ -529,7 +529,7 @@ class Workspace {
   }
 
   /** Notes holding work that is not on disk. Whitespace-only scratch does not
-   *  count — nobody wants to be asked about an empty note. */
+   *  count - nobody wants to be asked about an empty note. */
   get unsaved(): Tab[] {
     return this.tabs.filter((tab) => tab.dirty && tab.doc.trim().length > 0)
   }

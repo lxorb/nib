@@ -203,7 +203,7 @@
       {:else if settings.section === 'llm'}
         <div class="pane" in:fly={{ y: 8, duration: 180, easing: cubicOut }}>
           {#if !account.signedIn}
-            <p class="note">{t('Sign in first — the connector reaches the notes in your account.')}</p>
+            <p class="note">{t('Sign in first - the connector reaches the notes in your account.')}</p>
           {:else}
             <label class="switch">
               <input

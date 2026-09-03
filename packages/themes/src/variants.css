@@ -1,4 +1,4 @@
-/* Extra built-in themes. Each one only restates tokens — proof that a theme
+/* Extra built-in themes. Each one only restates tokens - proof that a theme
    never needs to know about the app's markup. */
 
 [data-theme='slate'] {

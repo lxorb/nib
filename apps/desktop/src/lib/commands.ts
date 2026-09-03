@@ -11,7 +11,7 @@ import { invoke, isDesktop } from './tauri'
 import { theme } from './theme.svelte'
 import { workspace } from './workspace.svelte'
 
-/** Opens `custom.css` in the editor itself — it is a text file like any other. */
+/** Opens `custom.css` in the editor itself - it is a text file like any other. */
 async function openCustomCss() {
   if (!isDesktop) return
 

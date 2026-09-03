@@ -185,7 +185,7 @@ class Decorator {
     const language = info ? this.state.doc.sliceString(info.from, info.to).trim() : ''
 
     // Rendered diagrams are block replacements, which only a state field may
-    // provide — see blocks.ts. Skip the subtree so nothing double-decorates it.
+    // provide - see blocks.ts. Skip the subtree so nothing double-decorates it.
     if (DIAGRAM_LANGUAGES.has(language) && !overlaps(this.state, node.from, node.to)) return false
 
     this.markLines(node, 'nib-code')
@@ -391,7 +391,7 @@ export const livePreviewDecorations = ViewPlugin.fromClass(
       const released = update.startState.field(dragging, false) && !held
 
       // Selection decides what is revealed, so it rebuilds as often as edits do
-      // — except mid-drag, when reflowing the line would move the text out from
+      // - except mid-drag, when reflowing the line would move the text out from
       // under the pointer.
       const settled = update.selectionSet && !held
       if (update.docChanged || update.viewportChanged || settled || released) {

@@ -1,5 +1,5 @@
 /* Nib design tokens.
-   Direction: ink on glass. Cool, optical, instrument-like — not warm paper.
+   Direction: ink on glass. Cool, optical, instrument-like - not warm paper.
    Typora theme variables are aliased at the bottom so Typora themes drop in. */
 
 :root {
@@ -32,7 +32,7 @@
   --titlebar-height: 38px;
   --measure: 42rem;
 
-  /* Motion. Everything that can move, moves — but on a shared vocabulary
+  /* Motion. Everything that can move, moves - but on a shared vocabulary
      so the whole app feels like one object rather than many effects. */
   --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
   --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);

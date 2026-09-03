@@ -90,11 +90,11 @@ auth.post('/verify', async (context) => {
     .first<{ code_hash: string; salt: string; expires_at: number; attempts: number }>()
 
   if (!pending || pending.expires_at < now()) {
-    return context.json({ error: 'that code has expired — ask for a new one' }, 400)
+    return context.json({ error: 'that code has expired - ask for a new one' }, 400)
   }
 
   if (pending.attempts >= MAX_ATTEMPTS) {
-    return context.json({ error: 'too many tries — ask for a new code' }, 429)
+    return context.json({ error: 'too many tries - ask for a new code' }, 429)
   }
 
   if (!equals(await sha256(pending.salt + entered), pending.code_hash)) {

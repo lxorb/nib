@@ -1,5 +1,5 @@
 /** The desktop app's command surface, served from the browser's own storage.
- *  Same names, same shapes — so every call site works on both. */
+ *  Same names, same shapes - so every call site works on both. */
 
 import { basename, isMarkdown, join, normalise, parent, safeName, spaceOf, within } from './paths'
 import { assets, files, KEEP, meta, snapshots } from './store'

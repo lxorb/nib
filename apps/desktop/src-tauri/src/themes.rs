@@ -11,7 +11,7 @@ pub struct ThemeFile {
 }
 
 /// Themes live next to the app's config, so dropping a `.css` file in there is
-/// all it takes to install one — the same contract Typora uses.
+/// all it takes to install one - the same contract Typora uses.
 fn themes_root(app: &AppHandle) -> Result<PathBuf, String> {
     let dir = app
         .path()

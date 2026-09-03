@@ -13,7 +13,7 @@ export const de: Dictionary = {
   Space: 'Bereich',
   'Name the space': 'Bereich benennen',
   'Choose an icon': 'Symbol wählen',
-  'Search icons — work, journal, money…': 'Symbole suchen — Arbeit, Tagebuch, Geld…',
+  'Search icons - work, journal, money…': 'Symbole suchen - Arbeit, Tagebuch, Geld…',
   'Use the first letter instead': 'Stattdessen den ersten Buchstaben verwenden',
   'Loading…': 'Wird geladen…',
   'Rename the space': 'Bereich umbenennen',
@@ -158,8 +158,8 @@ export const de: Dictionary = {
   'Send a new code': 'Neuen Code senden',
   'Code sent to': 'Code gesendet an',
   'You already have notes on this computer.': 'Du hast bereits Notizen auf diesem Computer.',
-  'Keep them and they join your account. Erase them and only what your account already holds remains — this cannot be undone.':
-    'Behalte sie und sie kommen in dein Konto. Lösche sie und es bleibt nur, was dein Konto bereits enthält — das lässt sich nicht rückgängig machen.',
+  'Keep them and they join your account. Erase them and only what your account already holds remains - this cannot be undone.':
+    'Behalte sie und sie kommen in dein Konto. Lösche sie und es bleibt nur, was dein Konto bereits enthält - das lässt sich nicht rückgängig machen.',
   'Keep them': 'Behalten',
   'Erase them': 'Löschen',
   'Digit {number}': 'Ziffer {number}',
@@ -190,8 +190,8 @@ export const de: Dictionary = {
 
   // LLM
     'Connect an LLM to your notes': 'Ein LLM mit deinen Notizen verbinden',
-  'Sign in first — the connector reaches the notes in your account.':
-    'Melde dich zuerst an — der Connector greift auf die Notizen in deinem Konto zu.',
+  'Sign in first - the connector reaches the notes in your account.':
+    'Melde dich zuerst an - der Connector greift auf die Notizen in deinem Konto zu.',
   'Let it write to my notes, not only read them':
     'Es darf meine Notizen schreiben, nicht nur lesen',
   "Paste this into your LLM client's MCP settings. It is shown only once.":

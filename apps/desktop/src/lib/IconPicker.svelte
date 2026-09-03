@@ -37,7 +37,7 @@
     <input
       bind:this={field}
       bind:value={query}
-      placeholder={t('Search icons — work, journal, money…')}
+      placeholder={t('Search icons - work, journal, money…')}
       spellcheck="false"
       onkeydown={(event) => event.key === 'Escape' && (open = false)}
     />

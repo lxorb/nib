@@ -2,7 +2,7 @@
  *
  *  That library has been unmaintained for years and its npm package is no
  *  longer safe to depend on, so the diagram is translated into Mermaid's
- *  `sequenceDiagram` instead — the same picture, drawn by a renderer that is
+ *  `sequenceDiagram` instead - the same picture, drawn by a renderer that is
  *  still looked after. */
 export function sequenceToMermaid(source: string): string {
   const out = ['sequenceDiagram']

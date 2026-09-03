@@ -82,7 +82,7 @@ export function renderMarkdown(source: string, options: RenderOptions = {}): str
   )
 }
 
-/** Wraps each defined abbreviation in `<abbr>`, in text only — never inside a
+/** Wraps each defined abbreviation in `<abbr>`, in text only - never inside a
  *  tag, an attribute, or a code element. */
 function markAbbreviations(html: string, terms: Map<string, string>): string {
   if (!terms.size) return html

@@ -228,7 +228,7 @@ export const abbreviations: MarkedExtension = {
 }
 
 /** Collects the abbreviations a document defines, so the rendered HTML can be
- *  marked up afterwards — the definition may come after its first use. */
+ *  marked up afterwards - the definition may come after its first use. */
 export function collectAbbreviations(source: string): Map<string, string> {
   const found = new Map<string, string>()
 

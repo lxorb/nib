@@ -1,5 +1,8 @@
 import { englishLabel, LABEL_KEYS, type LabelKey, setLabels } from '@nib/editor'
 import { de } from '../locales/de'
+import { fr } from '../locales/fr'
+import { gsw } from '../locales/gsw'
+import { ja } from '../locales/ja'
 
 /** The English string is its own key. A language that has not translated
  *  something falls back to it, so nothing can ever come out blank. */
@@ -9,9 +12,12 @@ export const LANGUAGES = [
   { id: 'system', name: 'Match the system' },
   { id: 'en', name: 'English' },
   { id: 'de', name: 'Deutsch' },
+  { id: 'gsw', name: 'Schwiizerdütsch' },
+  { id: 'fr', name: 'Français' },
+  { id: 'ja', name: '日本語' },
 ] as const
 
-const DICTIONARIES: Record<string, Dictionary> = { de }
+const DICTIONARIES: Record<string, Dictionary> = { de, gsw, fr, ja }
 
 const STORAGE_KEY = 'nib:language'
 

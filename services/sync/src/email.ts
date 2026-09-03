@@ -4,11 +4,11 @@ export interface Mailer {
   send(to: string, subject: string, body: { text: string; html: string }): Promise<void>
 }
 
-/** Without the binding — local dev and tests — codes go to the log. */
+/** Without the binding - local dev and tests - codes go to the log. */
 function logging(): Mailer {
   return {
     async send(to, subject, body) {
-      console.log(`[mail] ${to} — ${subject}\n${body.text}`)
+      console.log(`[mail] ${to} - ${subject}\n${body.text}`)
     },
   }
 }

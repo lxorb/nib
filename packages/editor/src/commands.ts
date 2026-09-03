@@ -1,6 +1,6 @@
 import { type ChangeSpec, EditorSelection, type StateCommand } from '@codemirror/state'
 
-/** Wraps the selection, or unwraps it when the markers are already there —
+/** Wraps the selection, or unwraps it when the markers are already there -
  *  so the same shortcut turns emphasis on and off. */
 export function toggleWrap(before: string, after = before): StateCommand {
   return ({ state, dispatch }) => {
@@ -185,7 +185,7 @@ export function insertTable(rows = 2, columns = 2): StateCommand {
 
 const INLINE_MARKERS = /(\*\*|__|\*|_|~~|==|`)/g
 
-/** Strips inline markers from the selection — Typora's Clear Format. */
+/** Strips inline markers from the selection - Typora's Clear Format. */
 export const clearFormatting: StateCommand = ({ state, dispatch }) => {
   const update = state.changeByRange((range) => {
     if (range.empty) return { range }

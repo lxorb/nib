@@ -121,7 +121,7 @@ describe('Typora extensions', () => {
 })
 
 describe('raw HTML', () => {
-  // Typora passes inline HTML through, and so does this — embeds are a feature
+  // Typora passes inline HTML through, and so does this - embeds are a feature
   // of a local document.
   test('is preserved for local use', () => {
     expect(renderMarkdown('<u>underlined</u>')).toContain('<u>underlined</u>')

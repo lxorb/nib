@@ -34,7 +34,7 @@ const CAPTURED_EVENTS = [
 
 /** The table currently holding an uncommitted cell edit. Rewriting the source
  *  on every keystroke would rebuild the widget and throw the caret out, so
- *  edits land in the document when the cell is left — or when this is flushed. */
+ *  edits land in the document when the cell is left - or when this is flushed. */
 let active: { flush(): void } | null = null
 
 /** Where the caret sat before an idle commit rebuilt the widget's DOM. */
@@ -42,7 +42,7 @@ let pendingFocus: { row: number; column: number; offset: number } | null = null
 
 /** How long a cell may sit untouched before its edit is written out anyway.
  *  Blur is the primary trigger; this is the safety net for when focus never
- *  leaves the cell — the caret is put back afterwards so typing continues. */
+ *  leaves the cell - the caret is put back afterwards so typing continues. */
 const IDLE_COMMIT = 700
 
 /** Writes any in-progress cell edit into the document. Call before saving. */
@@ -161,7 +161,7 @@ export class TableWidget extends WidgetType {
 
       // CodeMirror cancels mousedown before it reaches us, taking the browser's
       // default focus and caret placement with it. A timeout, not an animation
-      // frame — rAF is paused in background windows.
+      // frame - rAF is paused in background windows.
       element.addEventListener('mousedown', (event) => {
         window.setTimeout(() => {
           if (document.activeElement === element) return
@@ -284,7 +284,7 @@ export class TableWidget extends WidgetType {
 
     if (pendingFocus) {
       // toDOM runs before CodeMirror attaches the node, and focus() on a
-      // detached element does nothing — so wait for it to be in the document.
+      // detached element does nothing - so wait for it to be in the document.
       const target = pendingFocus
       pendingFocus = null
       window.setTimeout(() => restoreFocus(table, target), 0)

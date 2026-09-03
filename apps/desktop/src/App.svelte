@@ -51,10 +51,10 @@
       : '',
   )
 
-  // The header shows no title, so the note's name goes to the window itself —
+  // The header shows no title, so the note's name goes to the window itself -
   // which is what the taskbar and the window switcher read.
   $effect(() => {
-    const next = title ? `${title} — Nib` : 'Nib'
+    const next = title ? `${title} - Nib` : 'Nib'
     document.title = next
     if (isDesktop) void currentWindow().then((window) => window.setTitle(next))
   })

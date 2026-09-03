@@ -152,7 +152,7 @@ spaces.delete('/:id/blog', async (context) => {
   return context.json({ ok: true })
 })
 
-/** Whether a subdomain is free — drives the live check while typing. */
+/** Whether a subdomain is free - drives the live check while typing. */
 spaces.get('/available/:subdomain', async (context) => {
   const subdomain = context.req.param('subdomain').toLowerCase()
 

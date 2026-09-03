@@ -113,7 +113,7 @@ class Sync {
       roots.add(space.root)
       if (this.mirrors[space.root]) continue
 
-      // A remote space of the same name is the same space — that is what makes
+      // A remote space of the same name is the same space - that is what makes
       // a second machine adopt what the first one already uploaded.
       const remote =
         remoteByName.get(space.name) ?? (await api.createSpace(token, space.name)).space

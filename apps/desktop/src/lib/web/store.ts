@@ -97,6 +97,6 @@ export const snapshots = {
     run<SnapshotRow[]>('snapshots', 'readonly', (s) => s.index('notePath').getAll(notePath)),
 }
 
-/** Folders have no rows of their own — a folder exists because something is in
+/** Folders have no rows of their own - a folder exists because something is in
  *  it. This is the marker that keeps an empty one alive. */
 export const KEEP = '.keep'

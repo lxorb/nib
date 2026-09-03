@@ -71,7 +71,7 @@ describe('lengths', () => {
 
 describe('running text', () => {
   test('fills in the placeholders', () => {
-    expect(fill('${title} — ${date}', 'Notes', '2026-09-03')).toBe('Notes — 2026-09-03')
+    expect(fill('${title} - ${date}', 'Notes', '2026-09-03')).toBe('Notes - 2026-09-03')
     expect(fill('© ${year}', 'Notes', '2026-09-03')).toBe('© 2026')
   })
 

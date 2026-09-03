@@ -51,7 +51,7 @@ for (const { key, match } of PLATFORMS) {
 }
 
 if (!Object.keys(platforms).length) {
-  console.error('no signed bundles found — is TAURI_SIGNING_PRIVATE_KEY set?')
+  console.error('no signed bundles found - is TAURI_SIGNING_PRIVATE_KEY set?')
   process.exit(1)
 }
 

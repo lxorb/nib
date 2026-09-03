@@ -103,7 +103,7 @@ class Prompt {
     return this.show().then((answer) => answer !== null)
   }
 
-  /** More than two ways to answer — resolves the chosen id, or null if the
+  /** More than two ways to answer - resolves the chosen id, or null if the
    *  question was dismissed, which always means "do nothing". */
   choose(options: Choose): Promise<string | null> {
     this.mode = 'choose'

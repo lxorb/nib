@@ -6,9 +6,9 @@ export default defineConfig({
   plugins: [svelte()],
   test: {
     // Vitest skips CSS by default, which makes the `?raw` imports the export
-    // bakes into a document come back empty — the very thing under test.
+    // bakes into a document come back empty - the very thing under test.
     css: true,
-    include: ['src/**/*.test.ts'],
+    include: ['src/**/*.test.ts', 'test/**/*.test.ts'],
     environment: 'node',
   },
 })

@@ -76,7 +76,7 @@ Legend: `[x]` done · `[~]` partial · `[ ]` todo · `[-]` deliberately skipped
 
 ## 5. Diagrams
 
-- [x] ` ```mermaid ` — every Mermaid type, lazily loaded
+- [x] ` ```mermaid ` - every Mermaid type, lazily loaded
 - [x] ` ```flow ` (flowchart.js legacy)
 - [x] ` ```sequence ` (js-sequence legacy syntax, drawn by Mermaid)
 - [x] Diagram export in HTML/PDF
@@ -113,7 +113,7 @@ Legend: `[x]` done · `[~]` partial · `[ ]` todo · `[-]` deliberately skipped
 - [x] `typora-root-url` front matter
 - [x] Resize handles, written back as `style="zoom:N%"`
 - [x] Zoom / preview on click
-- [-] Custom image uploader integration — a hook for third-party upload CLIs
+- [-] Custom image uploader integration - a hook for third-party upload CLIs
       (PicGo, uPic). Sync already carries images; a second upload path would be
       a second place for them to live.
 
@@ -217,12 +217,12 @@ Legend: `[x]` done · `[~]` partial · `[ ]` todo · `[-]` deliberately skipped
 - [x] Multiple windows
 - [x] Open from shell / CLI with arguments
 - [x] File association for `.md`
-- [x] Taskbar Jump List — opened notes go to the shell's own recent documents
+- [x] Taskbar Jump List - opened notes go to the shell's own recent documents
 - [x] Application logs
 - [x] UI translations (English, German; falls back to English)
-- [x] "New Markdown" in Explorer's New menu — a per-user registry entry, added
+- [x] "New Markdown" in Explorer's New menu - a per-user registry entry, added
       and removed from Appearance settings
-- [~] Auto-update — checks GitHub daily and offers the release. Signed
+- [~] Auto-update - checks GitHub daily and offers the release. Signed
       background install needs a Tauri updater keypair; the private half is a
       release secret, so generating it is the maintainer's call.
 

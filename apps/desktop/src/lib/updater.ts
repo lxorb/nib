@@ -37,7 +37,7 @@ export async function installStaged() {
     await staged.install()
   } catch {
     // A failed install leaves the working version alone, which is the right
-    // outcome — it will be offered again next time.
+    // outcome - it will be offered again next time.
   } finally {
     staged = null
   }

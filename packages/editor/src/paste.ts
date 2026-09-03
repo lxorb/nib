@@ -111,7 +111,7 @@ export function richPaste(): Extension {
   })
 }
 
-/** `Ctrl+Shift+V` — take the clipboard exactly as it is. */
+/** `Ctrl+Shift+V` - take the clipboard exactly as it is. */
 export const pastePlain: KeyBinding = {
   key: 'Mod-Shift-v',
   preventDefault: true,
@@ -123,7 +123,7 @@ export const pastePlain: KeyBinding = {
   },
 }
 
-/** `Ctrl+Shift+C` — the document is markdown, so this is the selection as-is. */
+/** `Ctrl+Shift+C` - the document is markdown, so this is the selection as-is. */
 export const copyMarkdown: KeyBinding = {
   key: 'Mod-Shift-c',
   preventDefault: true,

@@ -107,7 +107,7 @@ export interface Match {
 }
 
 /** Ranks icons for a query. Exact names first, then whole words, then the
- *  loose matches — so "book" leads with `Book`, not `BookmarkMinus`. */
+ *  loose matches - so "book" leads with `Book`, not `BookmarkMinus`. */
 export function search(names: string[], query: string, limit = 120): string[] {
   const needle = query.trim().toLowerCase()
   if (!needle) return names.slice(0, limit)

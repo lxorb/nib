@@ -81,7 +81,7 @@
     const answer = await prompt.choose({
       title: t('You already have notes on this computer.'),
       detail: t(
-        'Keep them and they join your account. Erase them and only what your account already holds remains — this cannot be undone.',
+        'Keep them and they join your account. Erase them and only what your account already holds remains - this cannot be undone.',
       ),
       options: [
         { id: 'keep', label: 'Keep them', primary: true },

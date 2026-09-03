@@ -2,7 +2,7 @@ import type { EditorState } from '@codemirror/state'
 import type { SyntaxNode } from '@lezer/common'
 
 /** Typora reveals a construct's syntax characters when the caret is inside that
- *  construct — not the whole paragraph. So the reveal region for a syntax mark
+ *  construct - not the whole paragraph. So the reveal region for a syntax mark
  *  is its parent element: the `**` of one bold word stays hidden while you edit
  *  a different bold word on the same line. */
 export function revealed(state: EditorState, node: SyntaxNode): boolean {

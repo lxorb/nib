@@ -21,7 +21,7 @@ export function randomToken(): string {
   return [...randomBytes(32)].map((byte) => byte.toString(16).padStart(2, '0')).join('')
 }
 
-/** Six digits, uniformly distributed — rejection sampling avoids modulo bias. */
+/** Six digits, uniformly distributed - rejection sampling avoids modulo bias. */
 export function randomCode(): string {
   const limit = 1_000_000
   const ceiling = Math.floor(0xffffffff / limit) * limit
