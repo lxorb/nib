@@ -1,14 +1,30 @@
 <script lang="ts">
+  import { untrack } from 'svelte'
   import { createEditor, type EditorView } from '@nib/editor'
 
   let { doc = '', onchange }: { doc?: string; onchange?: (value: string) => void } = $props()
 
   let host: HTMLDivElement
-  let view: EditorView | undefined
+  let view = $state<EditorView | undefined>()
 
+  // Built once. Reading `doc` reactively here would tear the editor down and
+  // rebuild it on every keystroke, losing the caret each time.
   $effect(() => {
-    view = createEditor({ parent: host, doc, onChange: onchange })
-    return () => view?.destroy()
+    const created = createEditor({ parent: host, doc: untrack(() => doc), onChange: onchange })
+    view = created
+    if (import.meta.env.DEV) Object.assign(window, { nib: created })
+    return () => created.destroy()
+  })
+
+  // Pushes externally loaded documents in without recreating the view.
+  $effect(() => {
+    const incoming = doc
+    if (!view) return
+
+    const current = view.state.doc.toString()
+    if (incoming === current) return
+
+    view.dispatch({ changes: { from: 0, to: current.length, insert: incoming } })
   })
 </script>
 
