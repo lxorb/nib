@@ -53,6 +53,18 @@ function revealedMeta(doc: string, cursor: number): string[] {
   return out
 }
 
+/** Ranges carrying a given decoration class. */
+function marked(doc: string, className: string, cursor?: number): string[] {
+  const full = cursor === undefined ? doc + PARK : doc
+  const pos = cursor ?? full.length
+
+  const out: string[] = []
+  buildDecorations(state(full, pos)).decorations.between(0, full.length, (from, to, value) => {
+    if (value.spec.class === className) out.push(full.slice(from, to))
+  })
+  return out
+}
+
 describe('headings', () => {
   test('hides the hash and its trailing space when the caret is elsewhere', () => {
     expect(concealed('# Title')).toEqual(['# '])
@@ -288,5 +300,19 @@ describe('definition lists and abbreviations', () => {
 
   test('leaves a bare colon in prose alone', () => {
     expect(concealed('Note: prose')).not.toContain(':')
+  })
+})
+
+describe('inline code', () => {
+  test('frames the span so it reads apart from prose', () => {
+    expect(marked('run `npm test` now', 'nib-inline-code')).toEqual(['`npm test`'])
+  })
+
+  test('leaves a fenced block to the block styling', () => {
+    expect(marked('```\nnpm test\n```', 'nib-inline-code')).toEqual([])
+  })
+
+  test('still hides its backticks when the caret is away', () => {
+    expect(concealed('a `code` b')).toEqual(['`', '`'])
   })
 })

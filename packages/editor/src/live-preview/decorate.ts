@@ -132,6 +132,13 @@ class Decorator {
         return this.conceal(node.from, node.to, revealed(this.state, node))
       case 'TableDelimiter':
         return this.tableDelimiter(node)
+      case 'InlineCode':
+        // The mono face alone is a weak signal at this size, so inline code
+        // gets the same box the exported HTML gives it. Pushed before the walk
+        // reaches the backticks inside, which conceal themselves as usual.
+        return void this.marks.push(
+          Decoration.mark({ class: 'nib-inline-code' }).range(node.from, node.to),
+        )
       case 'Subscript':
         return void this.marks.push(Decoration.mark({ class: 'nib-sub' }).range(node.from, node.to))
       case 'Superscript':

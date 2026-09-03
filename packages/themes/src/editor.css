@@ -65,6 +65,18 @@
 
 /* ── Code ────────────────────────────────────────────────────────── */
 
+/* The same box the exported HTML gives inline code, so `a` is never mistaken
+   for a. Cloned across a line break rather than one long box with the ends
+   dangling. */
+.nib-inline-code {
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  padding: 0.12em 0.34em;
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+}
+
 .cm-line.nib-code {
   font-family: var(--font-mono);
   font-size: 0.86em;
