@@ -1,4 +1,4 @@
-import type { EditorView } from '@nib/editor'
+import { type EditorView, reformatDocument, type Transaction } from '@nib/editor'
 import { account } from './account.svelte'
 import { PANDOC_FORMATS } from './export'
 import { modes } from './modes.svelte'
@@ -130,6 +130,18 @@ export function appCommands(view?: EditorView): Command[] {
     account.signedIn
       ? { id: 'signout', label: `Sign out ${account.user?.email ?? ''}`.trim(), run: () => void account.signOut() }
       : { id: 'signin', label: 'Sign in', run: () => (account.open = true) },
+
+    {
+      id: 'reformat',
+      label: 'Tidy up this note',
+      disabled: !view,
+      run: () =>
+        view &&
+        reformatDocument({
+          state: view.state,
+          dispatch: (transaction: Transaction) => view.dispatch(transaction),
+        }),
+    },
 
     {
       id: 'source',

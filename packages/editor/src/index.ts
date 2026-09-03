@@ -13,6 +13,7 @@ export {
   toggleQuote,
   toggleWrap,
 } from './commands'
+export { reformat, reformatDocument } from './reformat'
 export { nibHighlightStyle, nibTheme } from './theme'
 export { livePreview } from './live-preview'
 export { imageResolver, type ImageSink } from './images'
