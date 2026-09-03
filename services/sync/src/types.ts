@@ -6,6 +6,9 @@ export interface Env {
   BLOG_ROOT: string
   APP_ORIGIN: string
 
+  /** The built web app. Absent in tests, which never ask for it. */
+  ASSETS?: { fetch(request: Request): Promise<Response> }
+
   /** Cloudflare Email Sending. Absent in tests, where codes are logged. */
   EMAIL?: EmailSender
   MAIL_FROM?: string

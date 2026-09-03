@@ -46,13 +46,20 @@ app.route('/v1', notes)
 
 app.get('/health', (context) => context.json({ ok: true }))
 
-/** Anything that is not the API is a published space, looked up by hostname. */
+/** Anything that is not the API is either a published space, looked up by
+ *  hostname, or the app itself. */
 app.all('*', async (context) => {
   const url = new URL(context.req.url)
   const space = await spaceForHost(context.env, url.host)
 
-  if (!space) return context.text('Not found', 404)
-  return serveBlog(context.env, space, url)
+  if (space) return serveBlog(context.env, space, url)
+
+  // The web build of the editor. It stores notes in the browser until someone
+  // signs in, so it is served to anyone who asks.
+  const assets = context.env.ASSETS
+  if (assets) return assets.fetch(context.req.raw)
+
+  return context.text('Not found', 404)
 })
 
 export default app
