@@ -79,7 +79,7 @@ export function exportCommands(): Command[] {
   for (const format of PANDOC_FORMATS) {
     commands.push({
       id: `export-${format.id}`,
-      label: t('Export as {format}', { format: format.label }),
+      label: t('Export as {format}', { format: t(format.label) }),
       run: () => void import('./export').then((m) => m.exportPandoc(source(), name(), format.id)),
     })
   }

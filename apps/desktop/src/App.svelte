@@ -121,9 +121,9 @@
           count: workspace.unsaved.length,
         }),
         options: [
-          { id: 'save', label: 'Save', primary: true },
-          { id: 'discard', label: 'Discard', danger: true },
-          { id: 'cancel', label: 'Cancel' },
+          { id: 'save', label: t('Save'), primary: true },
+          { id: 'discard', label: t('Discard'), danger: true },
+          { id: 'cancel', label: t('Cancel') },
         ],
       })
 

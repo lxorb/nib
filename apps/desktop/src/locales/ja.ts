@@ -49,6 +49,8 @@ export const ja: Dictionary = {
   'Undo deleting {name}': '{name} を復元',
 
   // Panels and navigation
+  'Outline': 'アウトライン',
+  'No headings in this note': 'このノートに見出しはありません',
   Files: 'ファイル',
   Search: '検索',
   'Search this space': 'このスペースを検索',
@@ -238,4 +240,26 @@ export const ja: Dictionary = {
   'No earlier versions yet. One is kept each time you save.':
     'まだ以前のバージョンがありません。保存するたびに 1 つ保管されます。',
   'Restore this version': 'このバージョンに戻す',
+
+  // Messages the server sends, shown as they arrive.
+  'a note already lives there': 'そこにはすでにノートがあります',
+  'enter a valid email address': '有効なメールアドレスを入力してください',
+  'give the space a name': 'スペースに名前を付けてください',
+  'no such note in this space': 'このスペースにそのノートはありません',
+  'no such note': 'そのノートはありません',
+  'no such space': 'そのスペースはありません',
+  'sign in first': 'まずサインインしてください',
+  'that code has expired - ask for a new one': 'コードの有効期限が切れました - 新しいコードを取得してください',
+  'that code is not right': 'コードが違います',
+  'that does not look like a domain': 'ドメインの形式ではありません',
+  'that name is taken': 'その名前は使われています',
+  'that note is too large': 'そのノートは大きすぎます',
+  'that path is not usable': 'そのパスは使えません',
+  'this note changed elsewhere': 'このノートは別の場所で変更されました',
+  'too many tries - ask for a new code': '試行回数が多すぎます - 新しいコードを取得してください',
+  'use 2–32 letters, numbers or hyphens': '2〜32 文字の英数字かハイフンを使ってください',
+  'sync failed': '同期に失敗しました',
+  'could not publish': '公開できませんでした',
+  'could not create a token': 'トークンを作成できませんでした',
+  'that did not work': 'うまくいきませんでした',
 }

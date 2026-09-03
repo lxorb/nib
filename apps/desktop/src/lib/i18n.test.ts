@@ -80,6 +80,15 @@ describe('the dictionaries between them', () => {
       expect(swiss, english).not.toContain('ß')
     }
   })
+
+  test('Swiss German is the Zurich dialect, not the Bernese one', () => {
+    // `nid` and `verlah` are Bernese; Zurich says `nöd` and `verlaa`. Whole
+    // words only, so an innocent word containing them is left alone.
+    for (const [english, swiss] of Object.entries(gsw)) {
+      expect(swiss, english).not.toMatch(/\bnid\b/)
+      expect(swiss, english).not.toMatch(/\bverlah\b/)
+    }
+  })
 })
 
 describe('filling in placeholders', () => {

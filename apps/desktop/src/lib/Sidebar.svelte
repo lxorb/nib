@@ -8,9 +8,9 @@
 
   let { ongoto }: { ongoto?: (line: number) => void } = $props()
 
-  /** Files is the whole sidebar; search is the one thing that replaces it. */
   const PANELS: { id: Panel; label: string; path: string }[] = [
     { id: 'tree', label: t('Files'), path: 'M1 3.5h4l1 1.5h6v6.5H1z' },
+    { id: 'outline', label: t('Outline'), path: 'M2 2.5h9M4 6.5h7M6 10.5h5' },
     { id: 'search', label: t('Search'), path: 'M5.5 1.5a4 4 0 1 0 0 8 4 4 0 0 0 0-8zM8.6 8.6l3 3' },
   ]
 
@@ -157,6 +157,25 @@
       {:else}
         <button class="empty" onclick={() => newSpace()}>{t('Create a space')}</button>
       {/if}
+    {:else if workspace.panel === 'outline'}
+      {#if workspace.headings.length}
+        <ul>
+          {#each workspace.headings as heading, index (index)}
+            <li>
+              <button
+                class="row heading"
+                style:padding-left="{(heading.level - 1) * 11 + 8}px"
+                style:opacity={1 - (heading.level - 1) * 0.09}
+                onclick={() => ongoto?.(heading.line)}
+              >
+                {heading.text}
+              </button>
+            </li>
+          {/each}
+        </ul>
+      {:else}
+        <p class="empty-text">{t('No headings in this note')}</p>
+      {/if}
     {:else if workspace.panel === 'search'}
       <!-- svelte-ignore a11y_autofocus -->
       <input
@@ -291,6 +310,10 @@
   .row:hover {
     background: var(--item-hover-bg-color);
     color: var(--item-hover-text-color);
+  }
+
+  .row.heading:hover {
+    transform: translateX(2px);
   }
 
   .row.active {

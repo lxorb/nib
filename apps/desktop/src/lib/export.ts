@@ -1,11 +1,14 @@
 import { DIAGRAM_LANGUAGES, diagramSvg } from '@nib/editor'
+import { key } from './i18n.svelte'
 import { documentTitle, renderMarkdown } from '@nib/markdown'
 import { katexCss, themeCss } from '@nib/themes/raw'
 import { DEFAULT_PAGE_SETUP, type PageSetup, pageCss, pageSetupFor, runningMarkup } from './page-setup'
 import { invoke, isDesktop } from './tauri'
 import { theme } from './theme.svelte'
 
-/** Formats pandoc can produce, in the order Typora lists them. */
+/** Formats pandoc can produce, in the order Typora lists them. The labels
+ *  are product names and stay as they are; only `Presentation` is a plain
+ *  noun, and it is translated where it is shown. */
 export const PANDOC_FORMATS = [
   { id: 'docx', label: 'Word', extension: 'docx' },
   { id: 'odt', label: 'OpenOffice', extension: 'odt' },
@@ -16,7 +19,7 @@ export const PANDOC_FORMATS = [
   { id: 'rst', label: 'reStructuredText', extension: 'rst' },
   { id: 'textile', label: 'Textile', extension: 'textile' },
   { id: 'opml', label: 'OPML', extension: 'opml' },
-  { id: 'revealjs', label: 'Presentation', extension: 'html' },
+  { id: 'revealjs', label: key('Presentation'), extension: 'html' },
 ] as const
 
 export type PandocFormat = (typeof PANDOC_FORMATS)[number]['id']

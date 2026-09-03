@@ -68,5 +68,18 @@ class I18n {
 
 export const i18n = new I18n()
 
+/** Whatever was thrown, as a translated sentence. Server messages arrive in
+ *  English, so they are looked up like any other string and fall back to
+ *  themselves when a dictionary has nothing for them. */
+export function message(error: unknown, fallback: string): string {
+  const text = error instanceof Error ? error.message : ''
+  return t(text || fallback)
+}
+
+/** Marks a string that something further along will translate. It hands the
+ *  text back unchanged; the point is that the dictionaries and the check that
+ *  guards them can both see it. */
+export const key = (text: string) => text
+
 /** Shorthand, so a component reads `{t('Save')}` rather than `{i18n.t('Save')}`. */
 export const t = (text: string, values?: Record<string, string | number>) => i18n.t(text, values)

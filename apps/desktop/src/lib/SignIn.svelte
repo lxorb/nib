@@ -84,8 +84,8 @@
         'Keep them and they join your account. Erase them and only what your account already holds remains - this cannot be undone.',
       ),
       options: [
-        { id: 'keep', label: 'Keep them', primary: true },
-        { id: 'erase', label: 'Erase them', danger: true },
+        { id: 'keep', label: t('Keep them'), primary: true },
+        { id: 'erase', label: t('Erase them'), danger: true },
       ],
     })
 
@@ -161,7 +161,7 @@
     {/if}
 
     {#if account.error}
-      <p class="error" transition:fly={{ y: -6, duration: 160 }}>{account.error}</p>
+      <p class="error" transition:fly={{ y: -6, duration: 160 }}>{t(account.error)}</p>
     {/if}
   </div>
 {/if}

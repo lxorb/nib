@@ -50,6 +50,8 @@ export const fr: Dictionary = {
   'Undo deleting {name}': 'Restaurer {name}',
 
   // Panels and navigation
+  'Outline': 'Plan',
+  'No headings in this note': 'Aucun titre dans cette note',
   Files: 'Fichiers',
   Search: 'Rechercher',
   'Search this space': 'Rechercher dans cet espace',
@@ -241,4 +243,26 @@ export const fr: Dictionary = {
   'No earlier versions yet. One is kept each time you save.':
     'Aucune version antérieure. Une est conservée à chaque enregistrement.',
   'Restore this version': 'Restaurer cette version',
+
+  // Messages the server sends, shown as they arrive.
+  'a note already lives there': 'Une note se trouve déjà là',
+  'enter a valid email address': 'Entrez une adresse e-mail valide',
+  'give the space a name': "Donnez un nom à l'espace",
+  'no such note in this space': "Cette note n'existe pas dans cet espace",
+  'no such note': "Cette note n'existe pas",
+  'no such space': "Cet espace n'existe pas",
+  'sign in first': "Connectez-vous d'abord",
+  'that code has expired - ask for a new one': 'Ce code a expiré - demandez-en un nouveau',
+  'that code is not right': "Ce code n'est pas le bon",
+  'that does not look like a domain': 'Cela ne ressemble pas à un domaine',
+  'that name is taken': 'Ce nom est déjà pris',
+  'that note is too large': 'Cette note est trop grande',
+  'that path is not usable': "Ce chemin n'est pas utilisable",
+  'this note changed elsewhere': 'Cette note a changé ailleurs',
+  'too many tries - ask for a new code': 'Trop de tentatives - demandez un nouveau code',
+  'use 2–32 letters, numbers or hyphens': 'Utilisez 2 à 32 lettres, chiffres ou tirets',
+  'sync failed': 'La synchronisation a échoué',
+  'could not publish': 'La publication a échoué',
+  'could not create a token': 'La création du jeton a échoué',
+  'that did not work': "Cela n'a pas fonctionné",
 }

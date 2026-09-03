@@ -1,5 +1,6 @@
 import { api, ApiError } from './api'
 import { account } from './account.svelte'
+import { t } from './i18n.svelte'
 import { invoke } from './tauri'
 import { type Entry, workspace } from './workspace.svelte'
 
@@ -131,7 +132,7 @@ class Sync {
       this.status = Object.keys(this.mirrors).length ? 'idle' : 'off'
     } catch (error) {
       this.status = 'error'
-      this.lastError = error instanceof Error ? error.message : 'sync failed'
+      this.lastError = error instanceof Error ? error.message : t('sync failed')
     } finally {
       this.running = false
     }

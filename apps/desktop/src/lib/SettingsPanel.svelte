@@ -169,7 +169,7 @@
                 {:else if settings.availability.available === true}
                   <span class="hint ok">{t('available')}</span>
                 {:else if settings.availability.available === false}
-                  <span class="hint bad">{settings.availability.reason}</span>
+                  <span class="hint bad">{t(settings.availability.reason ?? "")}</span>
                 {/if}
               </label>
 
@@ -390,7 +390,7 @@
       {/if}
 
       {#if settings.error}
-        <p class="hint bad" transition:slide={{ duration: 160 }}>{settings.error}</p>
+        <p class="hint bad" transition:slide={{ duration: 160 }}>{t(settings.error)}</p>
       {/if}
     </div>
   </div>

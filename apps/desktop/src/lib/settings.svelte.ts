@@ -1,6 +1,7 @@
 import { setSnippets } from '@nib/editor'
 import { api, type DnsRecord, type RemoteSpace } from './api'
 import { account } from './account.svelte'
+import { message } from './i18n.svelte'
 import { DEFAULT_PAGE_SETUP, type PageSetup } from './page-setup'
 import { invoke, isDesktop } from './tauri'
 import { sync } from './sync.svelte'
@@ -93,7 +94,7 @@ class Settings {
       await invoke('set_new_menu', { enabled })
       this.newMenu = enabled
     } catch (error) {
-      this.error = error instanceof Error ? error.message : String(error)
+      this.error = message(error, 'that did not work')
     }
   }
 
@@ -152,7 +153,7 @@ class Settings {
       localStorage.setItem(STORAGE_KEY, JSON.stringify({ readOnly }))
       await this.loadConnector()
     } catch (error) {
-      this.error = error instanceof Error ? error.message : 'could not create a token'
+      this.error = message(error, 'could not create a token')
     } finally {
       this.busy = false
     }
@@ -203,7 +204,7 @@ class Settings {
       this.dns = result.dns
       await account.loadSpaces()
     } catch (error) {
-      this.error = error instanceof Error ? error.message : 'could not publish'
+      this.error = message(error, 'could not publish')
     } finally {
       this.busy = false
     }

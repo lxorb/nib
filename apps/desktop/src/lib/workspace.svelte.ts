@@ -1,5 +1,5 @@
 import { flushTableEdits } from '@nib/editor'
-import { t } from './i18n.svelte'
+import { key, t } from './i18n.svelte'
 import { nameFromContent } from './note-name'
 import { folderOf, invoke, isDesktop, joinPath } from './tauri'
 
@@ -35,7 +35,7 @@ export interface Tab {
   dirty: boolean
 }
 
-export type Panel = 'tree' | 'search'
+export type Panel = 'tree' | 'outline' | 'search'
 
 /** A file operation that can be put back. */
 export type FileAction =
@@ -140,7 +140,7 @@ async function pickSavePath(
     title: t('Name the note'),
     value: nameFromContent(doc) ?? UNTITLED,
     placeholder: t('Untitled'),
-    confirmLabel: 'Save',
+    confirmLabel: key('Save'),
     spaces: spaces.map((space) => ({ id: space.id, name: space.name })),
     space: activeId,
   })

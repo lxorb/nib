@@ -50,6 +50,8 @@ export const de: Dictionary = {
   'Undo deleting {name}': '{name} wiederherstellen',
 
   // Panels and navigation
+  'Outline': 'Gliederung',
+  'No headings in this note': 'Keine Überschriften in dieser Notiz',
   Files: 'Dateien',
   Search: 'Suche',
   'Search this space': 'In diesem Bereich suchen',
@@ -240,4 +242,26 @@ export const de: Dictionary = {
   'No earlier versions yet. One is kept each time you save.':
     'Noch keine früheren Versionen. Bei jedem Speichern wird eine behalten.',
   'Restore this version': 'Diese Version wiederherstellen',
+
+  // Messages the server sends, shown as they arrive.
+  'a note already lives there': 'Dort liegt schon eine Notiz',
+  'enter a valid email address': 'Gib eine gültige E-Mail-Adresse ein',
+  'give the space a name': 'Gib dem Bereich einen Namen',
+  'no such note in this space': 'Diese Notiz gibt es in dem Bereich nicht',
+  'no such note': 'Diese Notiz gibt es nicht',
+  'no such space': 'Diesen Bereich gibt es nicht',
+  'sign in first': 'Melde dich zuerst an',
+  'that code has expired - ask for a new one': 'Der Code ist abgelaufen - fordere einen neuen an',
+  'that code is not right': 'Der Code stimmt nicht',
+  'that does not look like a domain': 'Das sieht nicht nach einer Domain aus',
+  'that name is taken': 'Der Name ist vergeben',
+  'that note is too large': 'Die Notiz ist zu gross',
+  'that path is not usable': 'Dieser Pfad geht nicht',
+  'this note changed elsewhere': 'Die Notiz wurde anderswo geändert',
+  'too many tries - ask for a new code': 'Zu viele Versuche - fordere einen neuen Code an',
+  'use 2–32 letters, numbers or hyphens': 'Nimm 2 bis 32 Buchstaben, Ziffern oder Bindestriche',
+  'sync failed': 'Synchronisierung fehlgeschlagen',
+  'could not publish': 'Veröffentlichen ging nicht',
+  'could not create a token': 'Token erstellen ging nicht',
+  'that did not work': 'Das hat nicht geklappt',
 }
