@@ -1,6 +1,7 @@
 mod export;
 mod history;
 mod launch;
+mod logs;
 mod mcp;
 mod notes;
 mod themes;
@@ -56,6 +57,9 @@ pub fn run() {
             history::snapshot_note,
             history::list_snapshots,
             history::read_snapshot,
+            logs::log_dir,
+            logs::write_log,
+            logs::read_log,
         ])
         .setup(|app| {
             let files = markdown_paths(std::env::args());

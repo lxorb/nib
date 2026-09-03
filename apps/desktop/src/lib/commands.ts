@@ -84,6 +84,15 @@ function exportCommands(): Command[] {
   return commands
 }
 
+/** Shows the log file in the file manager, for when something has gone wrong. */
+async function openLog() {
+  if (!isDesktop) return
+
+  const path = await invoke<string>('log_dir')
+  const { revealItemInDir } = await import('@tauri-apps/plugin-opener')
+  await revealItemInDir(path)
+}
+
 /** Reveals the folder a `.css` theme should be dropped into. */
 async function openThemesFolder() {
   if (!isDesktop) return
@@ -236,6 +245,7 @@ export function appCommands(view?: EditorView): Command[] {
     { id: 'themes-folder', label: 'Open themes folder', run: () => void openThemesFolder() },
     { id: 'custom-css', label: 'Edit custom CSS', run: () => void openCustomCss() },
     { id: 'snippets', label: 'Edit snippets', run: () => void openSnippets() },
+    { id: 'logs', label: 'Open the log file', run: () => void openLog() },
     {
       id: 'sidebar',
       label: workspace.panel ? 'Hide sidebar' : 'Show sidebar',

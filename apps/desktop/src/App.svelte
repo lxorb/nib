@@ -32,6 +32,7 @@
   import Titlebar from './lib/Titlebar.svelte'
   import { modes } from './lib/modes.svelte'
   import { imageUrl } from './lib/images'
+  import { collectErrors } from './lib/log'
   import { currentWindow, invoke, isDesktop } from './lib/tauri'
   import { theme } from './lib/theme.svelte'
   import { workspace } from './lib/workspace.svelte'
@@ -46,6 +47,7 @@
       : '',
   )
 
+  collectErrors()
   theme.init()
   modes.restore()
   settings.restore()
