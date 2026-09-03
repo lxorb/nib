@@ -278,9 +278,20 @@ class Workspace {
 
     // Ids are kept across a reload so the selected space survives one.
     const byRoot = new Map(this.spaces.map((space) => [space.root, space]))
-    this.spaces = found.map(
-      (entry) => byRoot.get(entry.path) ?? { id: identifier(), name: entry.name, root: entry.path },
-    )
+
+    // The folder decides which spaces exist; the rail decides the order they
+    // appear in. Without this, a listing that comes back alphabetical would
+    // undo every drag on the next reload.
+    const rank = new Map(this.spaces.map((space, index) => [space.root, index]))
+    const at = (root: string) => rank.get(root) ?? Number.MAX_SAFE_INTEGER
+
+    this.spaces = found
+      .map((entry, index) => ({ entry, index }))
+      .sort((a, b) => at(a.entry.path) - at(b.entry.path) || a.index - b.index)
+      .map(
+        ({ entry }) =>
+          byRoot.get(entry.path) ?? { id: identifier(), name: entry.name, root: entry.path },
+      )
 
     if (!this.spaces.some((space) => space.id === this.activeSpaceId)) {
       this.activeSpaceId = this.spaces[0]?.id ?? null
@@ -322,10 +333,49 @@ class Workspace {
       }
     }
 
+    // The icon is keyed by folder, so it has to follow the folder.
+    this.moveIcon(space.root, renamed.path)
+
     space.name = renamed.name
     space.root = renamed.path
     if (this.activeSpaceId === id) await this.loadTree()
     this.persist()
+  }
+
+  /** Drops the dragged space in front of `beforeId`, or at the end for null.
+   *  Returns whether anything actually moved, so a drag onto itself is quiet. */
+  moveSpace(id: string, beforeId: string | null): boolean {
+    const from = this.spaces.findIndex((space) => space.id === id)
+    if (from < 0 || id === beforeId) return false
+
+    const rest = this.spaces.filter((space) => space.id !== id)
+    const at = beforeId ? rest.findIndex((space) => space.id === beforeId) : rest.length
+    if (at < 0) return false
+
+    const next = [...rest.slice(0, at), this.spaces[from], ...rest.slice(at)]
+    if (next.every((space, index) => space.id === this.spaces[index].id)) return false
+
+    this.spaces = next
+    this.persist()
+    return true
+  }
+
+  /** Takes the account's order, which is the one the other machines see.
+   *  A space this machine has but the account does not keeps its place. */
+  applySpaceOrder(names: string[]): boolean {
+    const rank = new Map(names.map((name, index) => [name, index]))
+    const at = (name: string) => rank.get(name) ?? Number.MAX_SAFE_INTEGER
+
+    const next = this.spaces
+      .map((space, index) => ({ space, index }))
+      .sort((a, b) => at(a.space.name) - at(b.space.name) || a.index - b.index)
+      .map((entry) => entry.space)
+
+    if (next.every((space, index) => space.id === this.spaces[index].id)) return false
+
+    this.spaces = next
+    this.persist()
+    return true
   }
 
   async selectSpace(id: string) {
@@ -607,6 +657,20 @@ class Workspace {
     localStorage.setItem(ICONS_KEY, JSON.stringify(next))
   }
 
+  /** Carries a chosen icon over to a renamed folder. Without this a rename
+   *  looks like a space that never had an icon, and it falls back to a letter. */
+  private moveIcon(from: string, to: string) {
+    const icon = this.icons[from]
+    if (!icon || from === to) return
+
+    const next = { ...this.icons }
+    delete next[from]
+    next[to] = icon
+
+    this.icons = next
+    localStorage.setItem(ICONS_KEY, JSON.stringify(next))
+  }
+
   isPinned(path: string): boolean {
     return this.pinned.includes(path)
   }
@@ -652,14 +716,44 @@ class Workspace {
     await invoke('write_note', { path, content: `# ${name.replace(MARKDOWN, '')}\n\n` })
     await this.loadTree()
     await this.open(path)
+    this.startRenaming(path)
   }
 
   async createFolder(parent?: string) {
     const dir = parent ?? this.activeSpace?.root
     if (!dir) return
 
-    await invoke('create_folder', { path: joinPath(dir, 'New folder') })
+    // Stepped like a note's, so a second folder does not collide with the first.
+    const taken = this.everyPath()
+    let name = 'New folder'
+    let counter = 2
+    while (taken.has(joinPath(dir, name))) name = `New folder ${counter++}`
+
+    const path = joinPath(dir, name)
+    await invoke('create_folder', { path })
     await this.loadTree()
+    this.startRenaming(path)
+  }
+
+  /** Every path in the open space. `notes` holds only files; this counts the
+   *  folders between them too. */
+  private everyPath(): Set<string> {
+    const out = new Set<string>()
+    const walk = (entry: Entry) => {
+      for (const child of entry.children) {
+        out.add(child.path)
+        if (child.is_dir) walk(child)
+      }
+    }
+
+    if (this.tree) walk(this.tree)
+    return out
+  }
+
+  /** Opens the name field on a row that has just been made, so naming it is
+   *  part of making it. Pointless while the tree is not the panel on show. */
+  private startRenaming(path: string) {
+    if (this.panel === 'tree') this.renaming = path
   }
 
   async rename(path: string, name: string) {
@@ -674,6 +768,14 @@ class Workspace {
 
     const tab = this.tabs.find((entry) => entry.path === path)
     if (tab) {
+      // A new note is written with its own name as the heading, so renaming it
+      // straight afterwards would otherwise leave `# Untitled` at the top. Only
+      // while the heading still is the old name; an edited one is the author's.
+      const was = `# ${basename(path).replace(MARKDOWN, '')}`
+      if (tab.doc === was || tab.doc.startsWith(was + '\n')) {
+        tab.doc = `# ${clean.replace(MARKDOWN, '')}${tab.doc.slice(was.length)}`
+      }
+
       tab.path = target
       tab.name = basename(target)
     }

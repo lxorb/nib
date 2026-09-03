@@ -2,7 +2,8 @@
   import { slide } from 'svelte/transition'
   import { cubicOut } from 'svelte/easing'
   import { t } from './i18n.svelte'
-  import { DIVIDER, menu, type MenuEntry, revealEntry } from './menu.svelte'
+  import { copyPathEntry, DIVIDER, menu, type MenuEntry, revealEntry } from './menu.svelte'
+  import { folderOf } from './tauri'
   import type { Entry } from './workspace.svelte'
   import { workspace } from './workspace.svelte'
   import Tree from './Tree.svelte'
@@ -43,7 +44,7 @@
       { label: t('Rename'), run: () => (workspace.renaming = entry.path) },
       { label: pinLabel(entry.path), run: () => workspace.togglePin(entry.path) },
       { label: t('Duplicate'), run: () => workspace.duplicate(entry.path) },
-      { label: t('Copy path'), run: () => navigator.clipboard.writeText(entry.path) },
+      ...copyPathEntry(entry.path),
       ...revealEntry(entry.path),
       DIVIDER,
       { label: t('Delete'), danger: true, run: () => workspace.remove(entry.path, false) },
@@ -75,6 +76,17 @@
 
     const from = event.dataTransfer?.getData('text/nib-path')
     if (from) void workspace.move(from, folder)
+  }
+
+  /** A note is a target too, standing for the folder it sits in. Without this
+   *  the only way out of a folder would be another folder to drop onto, and a
+   *  space with one folder in it would be a trap. */
+  function dropBeside(event: DragEvent, path: string) {
+    event.preventDefault()
+    dropTarget = null
+
+    const from = event.dataTransfer?.getData('text/nib-path')
+    if (from) void workspace.move(from, folderOf(path))
   }
 </script>
 
@@ -126,12 +138,16 @@
         <button
           class="row note"
           class:active={workspace.active?.path === entry.path}
+          class:dropping={dropTarget === entry.path}
           style:padding-left="{depth * 12 + 20}px"
           draggable="true"
           onclick={() => workspace.open(entry.path, { preview: true })}
           ondblclick={() => workspace.open(entry.path)}
           oncontextmenu={(event) => menu.show(event, noteMenu(entry))}
           ondragstart={(event) => startDrag(event, entry.path)}
+          ondragover={(event) => overFolder(event, entry.path)}
+          ondragleave={() => (dropTarget = null)}
+          ondrop={(event) => dropBeside(event, entry.path)}
         >
           <span class="label">{stripped(entry.name)}</span>
         </button>

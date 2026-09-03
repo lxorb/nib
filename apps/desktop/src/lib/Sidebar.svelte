@@ -8,6 +8,26 @@
 
   let { ongoto }: { ongoto?: (line: number) => void } = $props()
 
+  /** Lit while a note is held over the space below the tree. */
+  let rootDrop = $state(false)
+
+  function overRoot(event: DragEvent) {
+    if (!event.dataTransfer?.types.includes('text/nib-path')) return
+
+    event.preventDefault()
+    event.dataTransfer.dropEffect = 'move'
+    rootDrop = true
+  }
+
+  function dropOnRoot(event: DragEvent) {
+    event.preventDefault()
+    rootDrop = false
+
+    const from = event.dataTransfer?.getData('text/nib-path')
+    const root = workspace.activeSpace?.root
+    if (from && root) void workspace.move(from, root)
+  }
+
   const PANELS: { id: Panel; label: string; path: string }[] = [
     { id: 'tree', label: t('Files'), path: 'M1 3.5h4l1 1.5h6v6.5H1z' },
     { id: 'outline', label: t('Outline'), path: 'M2 2.5h9M4 6.5h7M6 10.5h5' },
@@ -146,13 +166,24 @@
 
         <Tree entries={workspace.tree.children} />
 
+        <!-- A space with nothing in it says what to do about it. Folders can
+             still be there, which is why this counts notes and not rows. -->
+        {#if !workspace.notes.length}
+          <button class="empty" onclick={() => workspace.createNote()}>{t('New note')}</button>
+        {/if}
+
         <!-- The space below the last row still belongs to the space, so it
-             takes the same menu instead of swallowing the click. -->
+             takes the same menu instead of swallowing the click, and accepts a
+             note dropped on it as "out of whatever folder it was in". -->
         <!-- svelte-ignore a11y_no_static_element_interactions, a11y_click_events_have_key_events -->
         <div
           class="rest"
+          class:dropping={rootDrop}
           oncontextmenu={(event) => menu.show(event, spaceMenu())}
           onclick={() => (workspace.renaming = null)}
+          ondragover={overRoot}
+          ondragleave={() => (rootDrop = false)}
+          ondrop={dropOnRoot}
         ></div>
       {:else}
         <button class="empty" onclick={() => newSpace()}>{t('Create a space')}</button>
@@ -429,6 +460,13 @@
     margin: var(--space-3) 0 0;
     font-size: var(--text-sm);
     color: var(--muted);
+  }
+
+  /* Says the drop will land, without pretending to be a row. */
+  .rest.dropping {
+    box-shadow: inset 0 0 0 1px var(--accent);
+    border-radius: var(--radius-sm);
+    background: var(--accent-soft);
   }
 
   .empty {
