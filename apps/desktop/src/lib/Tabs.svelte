@@ -2,7 +2,7 @@
   import { fly } from 'svelte/transition'
   import { cubicOut } from 'svelte/easing'
   import { t } from './i18n.svelte'
-  import { DIVIDER, menu, type MenuEntry } from './menu.svelte'
+  import { DIVIDER, menu, type MenuEntry, revealEntry } from './menu.svelte'
   import { workspace, type Tab } from './workspace.svelte'
 
   const stripped = (name: string) => name.replace(/\.(md|markdown|mdown|mkd)$/i, '')
@@ -25,11 +25,7 @@
         disabled: !tab.path,
         run: () => tab.path && navigator.clipboard.writeText(tab.path),
       },
-      {
-        label: t('Reveal in Explorer'),
-        disabled: !tab.path,
-        run: () => tab.path && workspace.reveal(tab.path),
-      },
+      ...revealEntry(tab.path),
     ]
   }
 </script>

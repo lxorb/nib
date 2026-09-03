@@ -1,3 +1,7 @@
+import { t } from './i18n.svelte'
+import { isDesktop } from './tauri'
+import { workspace } from './workspace.svelte'
+
 export interface MenuItem {
   label: string
   hint?: string
@@ -50,3 +54,11 @@ function trim(items: MenuEntry[]): MenuEntry[] {
 }
 
 export const menu = new ContextMenu()
+
+/** "Reveal in Explorer", but only where there is a file manager to reveal in.
+ *  Returns nothing in the browser, so the entry simply is not offered. */
+export function revealEntry(path: string | null | undefined): MenuEntry[] {
+  if (!isDesktop || !path) return []
+
+  return [{ label: t('Reveal in Explorer'), run: () => void workspace.reveal(path) }]
+}

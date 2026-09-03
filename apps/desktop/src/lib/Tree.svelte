@@ -2,7 +2,7 @@
   import { slide } from 'svelte/transition'
   import { cubicOut } from 'svelte/easing'
   import { t } from './i18n.svelte'
-  import { DIVIDER, menu, type MenuEntry } from './menu.svelte'
+  import { DIVIDER, menu, type MenuEntry, revealEntry } from './menu.svelte'
   import type { Entry } from './workspace.svelte'
   import { workspace } from './workspace.svelte'
   import Tree from './Tree.svelte'
@@ -21,7 +21,7 @@
       DIVIDER,
       { label: t('Rename'), run: () => (workspace.renaming = entry.path) },
       { label: pinLabel(entry.path), run: () => workspace.togglePin(entry.path) },
-      { label: t('Reveal in Explorer'), run: () => workspace.reveal(entry.path) },
+      ...revealEntry(entry.path),
       DIVIDER,
       { label: t('Delete'), danger: true, run: () => workspace.remove(entry.path, true) },
       ...undoEntry(),
@@ -44,7 +44,7 @@
       { label: pinLabel(entry.path), run: () => workspace.togglePin(entry.path) },
       { label: t('Duplicate'), run: () => workspace.duplicate(entry.path) },
       { label: t('Copy path'), run: () => navigator.clipboard.writeText(entry.path) },
-      { label: t('Reveal in Explorer'), run: () => workspace.reveal(entry.path) },
+      ...revealEntry(entry.path),
       DIVIDER,
       { label: t('Delete'), danger: true, run: () => workspace.remove(entry.path, false) },
       ...undoEntry(),

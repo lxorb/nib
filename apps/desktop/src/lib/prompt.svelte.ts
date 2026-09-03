@@ -27,7 +27,23 @@ interface Choose {
   options: Choice[]
 }
 
-type Pending = { resolve: (answer: string | null) => void } | null
+export interface SpaceOption {
+  id: string
+  name: string
+}
+
+interface AskName extends Ask {
+  /** Offered as a dropdown beside the name. Hidden when there is only one. */
+  spaces: SpaceOption[]
+  space: string | null
+}
+
+export interface NamedIn {
+  name: string
+  space: string | null
+}
+
+type Pending = { resolve: (answer: unknown) => void } | null
 
 /** One small modal for the two questions the app ever asks: name this, and are
  *  you sure. Both resolve a promise, so the caller reads top to bottom. */
@@ -41,6 +57,8 @@ class Prompt {
   placeholder = $state('')
   confirmLabel = $state('')
   danger = $state(false)
+  spaces = $state<SpaceOption[]>([])
+  space = $state<string | null>(null)
 
   private pending: Pending = null
 
@@ -53,8 +71,25 @@ class Prompt {
     this.placeholder = options.placeholder ?? ''
     this.confirmLabel = options.confirmLabel ?? 'Create'
     this.danger = false
+    this.spaces = []
+    this.space = null
 
-    return this.show()
+    return this.show() as Promise<string | null>
+  }
+
+  /** A name and the space to put it in. */
+  askName(options: AskName): Promise<NamedIn | null> {
+    this.mode = 'text'
+    this.title = options.title
+    this.detail = ''
+    this.value = options.value ?? ''
+    this.placeholder = options.placeholder ?? ''
+    this.confirmLabel = options.confirmLabel ?? 'Save'
+    this.danger = false
+    this.spaces = options.spaces
+    this.space = options.space ?? options.spaces[0]?.id ?? null
+
+    return this.show() as Promise<NamedIn | null>
   }
 
   confirm(options: Confirm): Promise<boolean> {
@@ -76,8 +111,9 @@ class Prompt {
     this.detail = options.detail ?? ''
     this.value = ''
     this.options = options.options
+    this.spaces = []
 
-    return this.show()
+    return this.show() as Promise<string | null>
   }
 
   /** Answers a `choose` with one of its options. */
@@ -87,7 +123,7 @@ class Prompt {
     this.pending = null
   }
 
-  private show(): Promise<string | null> {
+  private show(): Promise<unknown> {
     // A second question replaces the first rather than stacking on it.
     this.pending?.resolve(null)
     this.open = true
@@ -98,11 +134,14 @@ class Prompt {
   }
 
   submit() {
-    const answer = this.mode === 'confirm' ? '' : this.value.trim()
-    if (this.mode === 'text' && !answer) return
+    const typed = this.value.trim()
+    if (this.mode === 'text' && !typed) return
+
+    // A name asked for with spaces resolves both; everything else is a string.
+    const answer = this.spaces.length ? { name: typed, space: this.space } : typed
 
     this.open = false
-    this.pending?.resolve(answer)
+    this.pending?.resolve(this.mode === 'confirm' ? '' : answer)
     this.pending = null
   }
 

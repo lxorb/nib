@@ -35,6 +35,18 @@
           spellcheck="false"
           onkeydown={(event) => event.key === 'Escape' && prompt.dismiss()}
         />
+
+        <!-- Only worth asking when there is more than one answer. -->
+        {#if prompt.spaces.length > 1}
+          <label class="field">
+            <span class="label">{t('Space')}</span>
+            <select bind:value={prompt.space}>
+              {#each prompt.spaces as option (option.id)}
+                <option value={option.id}>{option.name}</option>
+              {/each}
+            </select>
+          </label>
+        {/if}
       {:else if prompt.detail}
         <p class="detail">{prompt.detail}</p>
       {/if}
@@ -137,6 +149,28 @@
     display: flex;
     justify-content: flex-end;
     gap: var(--space-2);
+  }
+
+  .field {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+  }
+
+  .label {
+    font-size: var(--text-sm);
+    color: var(--muted);
+  }
+
+  select {
+    padding: 9px 11px;
+    border: 1px solid var(--line-strong);
+    border-radius: var(--radius-md);
+    background: var(--bg);
+    color: var(--text-strong);
+    font-family: var(--font-ui);
+    font-size: var(--text-sm);
+    outline: none;
   }
 
   button {

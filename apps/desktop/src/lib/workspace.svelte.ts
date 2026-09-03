@@ -1,5 +1,6 @@
 import { flushTableEdits } from '@nib/editor'
 import { t } from './i18n.svelte'
+import { nameFromContent } from './note-name'
 import { folderOf, invoke, isDesktop, joinPath } from './tauri'
 
 export interface Entry {
@@ -116,28 +117,30 @@ function readTreeOptions(): TreeOptions {
 
 /** Where a note that has never been saved should go. The desktop asks the
  *  system; the browser has no file dialog, so it asks for a name and puts the
- *  note in the space that is open. */
-async function pickSavePath(space: string | null): Promise<string | null> {
-  if (!isDesktop) {
-    const { prompt } = await import('./prompt.svelte')
-    const name = await prompt.ask({
-      title: t('Name the note'),
-      placeholder: t('Untitled'),
-      confirmLabel: 'Save',
-    })
+ *  note in the space that is open. Either way the first line is the suggestion. */
+async function pickSavePath(
+  spaces: Space[],
+  activeId: string | null,
+  doc = '',
+): Promise<string | null> {
+  if (!spaces.length) return null
 
-    if (!name || !space) return null
-
-    const clean = name.replace(/[\\/]/g, ' ').trim()
-    return joinPath(space, MARKDOWN.test(clean) ? clean : `${clean}.md`)
-  }
-
-  const { save } = await import('@tauri-apps/plugin-dialog')
-  const picked = await save({
-    defaultPath: `${UNTITLED}.md`,
-    filters: [{ name: 'Markdown', extensions: ['md'] }],
+  const { prompt } = await import('./prompt.svelte')
+  const answer = await prompt.askName({
+    title: t('Name the note'),
+    value: nameFromContent(doc) ?? UNTITLED,
+    placeholder: t('Untitled'),
+    confirmLabel: 'Save',
+    spaces: spaces.map((space) => ({ id: space.id, name: space.name })),
+    space: activeId,
   })
-  return picked ?? null
+
+  if (!answer?.name) return null
+
+  const target = spaces.find((space) => space.id === answer.space) ?? spaces[0]
+  const clean = answer.name.replace(/[\\/]/g, ' ').trim()
+
+  return joinPath(target.root, MARKDOWN.test(clean) ? clean : `${clean}.md`)
 }
 
 class Workspace {
@@ -222,8 +225,8 @@ class Workspace {
     }
 
     this.spaces = state.spaces ?? []
-    // Every launch starts on the document, never on the file list.
-    this.panel = null
+    // The sidebar comes back the way it was left.
+    this.panel = state.panel ?? null
     this.activeSpaceId = state.activeSpace ?? this.spaces[0]?.id ?? null
 
     // The folder wins over what was remembered, so the two cannot drift apart.
@@ -479,7 +482,7 @@ class Workspace {
 
     let path = tab.path
     if (!path) {
-      const picked = await pickSavePath(this.activeSpace?.root ?? null)
+      const picked = await pickSavePath(this.spaces, this.activeSpaceId, tab.doc)
       if (!picked) return
       path = picked
     }
@@ -559,8 +562,10 @@ class Workspace {
     let counter = 2
     while (taken.has(joinPath(dir, name))) name = `Untitled ${counter++}.md`
 
+    // Opens with its own name as the title, so there is something to write
+    // under rather than an empty page.
     const path = joinPath(dir, name)
-    await invoke('write_note', { path, content: '' })
+    await invoke('write_note', { path, content: `# ${name.replace(MARKDOWN, '')}\n\n` })
     await this.loadTree()
     await this.open(path)
   }

@@ -1,7 +1,7 @@
 <script lang="ts">
   import { t } from './i18n.svelte'
   import { newSpace } from './space-actions'
-  import { DIVIDER, menu, type MenuEntry } from './menu.svelte'
+  import { DIVIDER, menu, type MenuEntry, revealEntry } from './menu.svelte'
   import type { Entry, Hit, Panel, SortKey } from './workspace.svelte'
   import { workspace } from './workspace.svelte'
   import Tree from './Tree.svelte'
@@ -43,7 +43,7 @@
       { label: t('New note'), run: () => workspace.createNote() },
       { label: t('New folder'), run: () => workspace.createFolder() },
       DIVIDER,
-      { label: t('Reveal in Explorer'), run: () => workspace.reveal(workspace.activeSpace!.root) },
+      ...revealEntry(workspace.activeSpace!.root),
     ]
   }
 

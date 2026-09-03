@@ -1,7 +1,7 @@
 <script lang="ts">
   import { account } from './account.svelte'
   import { t } from './i18n.svelte'
-  import { DIVIDER, menu } from './menu.svelte'
+  import { DIVIDER, menu, revealEntry } from './menu.svelte'
   import { deleteSpace, newSpace, renameSpace } from './space-actions'
   import { settings } from './settings.svelte'
   import { workspace } from './workspace.svelte'
@@ -27,7 +27,7 @@
           menu.show(event, [
             { label: t('New note'), run: () => workspace.createNote(space.root) },
             { label: t('Rename'), run: () => void renameSpace(space) },
-            { label: t('Reveal in Explorer'), run: () => workspace.reveal(space.root) },
+            ...revealEntry(space.root),
             DIVIDER,
             { label: t('Delete space'), danger: true, run: () => void deleteSpace(space) },
           ])}
@@ -45,14 +45,18 @@
   </div>
 
   <div class="foot">
-    <!-- Sliders, not a cog: the cog reads as the sun in the theme button. -->
-    <button class="add" title={t('Settings')} aria-label={t('Settings')} onclick={() => settings.show()}>
-      <svg viewBox="0 0 14 14">
-        <path d="M1 3.5h3M7 3.5h6M1 10.5h6M10 10.5h3" />
-        <circle cx="5.5" cy="3.5" r="1.6" />
-        <circle cx="8.5" cy="10.5" r="1.6" />
-      </svg>
-    </button>
+    <!-- Sliders, not a cog: the cog reads as the sun in the theme button.
+         Signing in comes first, so the rail offers nothing else until then;
+         Ctrl+, still opens settings for anyone who wants them sooner. -->
+    {#if account.signedIn}
+      <button class="add" title={t('Settings')} aria-label={t('Settings')} onclick={() => settings.show()}>
+        <svg viewBox="0 0 14 14">
+          <path d="M1 3.5h3M7 3.5h6M1 10.5h6M10 10.5h3" />
+          <circle cx="5.5" cy="3.5" r="1.6" />
+          <circle cx="8.5" cy="10.5" r="1.6" />
+        </svg>
+      </button>
+    {/if}
 
     <!-- Signing in is the only thing this button is for, so once there is an
          account it has nothing left to do; the settings sheet owns it. -->
