@@ -11,6 +11,8 @@ export interface Account {
 export interface RemoteSpace {
   id: string
   name: string
+  /** Where it sits in the rail, shared across machines. */
+  position: number
   createdAt: number
   updatedAt: number
   blog: {
@@ -99,6 +101,9 @@ export const api = {
 
   createSpace: (token: string, name: string) =>
     request<{ space: RemoteSpace }>('/v1/spaces', { token, body: { name } }),
+
+  reorderSpaces: (token: string, order: string[]) =>
+    request<{ ok: true }>('/v1/spaces/order', { method: 'PUT', token, body: { order } }),
 
   deleteSpace: (token: string, id: string) =>
     request<{ ok: true }>(`/v1/spaces/${id}`, { method: 'DELETE', token }),

@@ -14,6 +14,16 @@ export async function newSpace() {
   if (name) await workspace.addSpace(name)
 }
 
+/** Moves a space in the rail and tells the account about it, so the order is
+ *  the same on the next machine. Lives here rather than on the workspace,
+ *  which knows nothing about syncing. */
+export async function moveSpace(id: string, beforeId: string | null) {
+  if (!workspace.moveSpace(id, beforeId)) return
+
+  const { sync } = await import('./sync.svelte')
+  void sync.pushSpaceOrder()
+}
+
 export async function renameSpace(space: Space) {
   const name = await prompt.ask({
     title: t('Rename the space'),

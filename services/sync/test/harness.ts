@@ -1,12 +1,16 @@
-import { readFileSync } from 'node:fs'
+import { readdirSync, readFileSync } from 'node:fs'
 import { DatabaseSync } from 'node:sqlite'
 import { fileURLToPath } from 'node:url'
 import app from '../src/index'
 import type { Env } from '../src/types'
 
-const MIGRATIONS = ['0001_init.sql', '0002_mcp_tokens.sql', '0003_blog_note.sql'].map((name) =>
-  fileURLToPath(new URL(`../migrations/${name}`, import.meta.url)),
-)
+// Read rather than listed: a migration that exists but was never added here
+// would leave every test running against yesterday's schema.
+const FOLDER = fileURLToPath(new URL('../migrations/', import.meta.url))
+const MIGRATIONS = readdirSync(FOLDER)
+  .filter((name) => name.endsWith('.sql'))
+  .sort()
+  .map((name) => FOLDER + name)
 
 /** D1's shape over Node's built-in SQLite, so routes run against real SQL. */
 function d1(database: DatabaseSync) {

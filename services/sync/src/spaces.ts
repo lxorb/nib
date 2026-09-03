@@ -29,7 +29,7 @@ export const spaces = new Hono<{ Bindings: Env; Variables: Variables }>()
 spaces.get('/', async (context) => {
   const user = context.get('user')
   const { results } = await context.env.DB.prepare(
-    'select * from spaces where user_id = ? order by created_at',
+    'select * from spaces where user_id = ? order by position, created_at',
   )
     .bind(user.id)
     .all<Space>()
@@ -44,10 +44,17 @@ spaces.post('/', async (context) => {
 
   if (!label) return context.json({ error: 'give the space a name' }, 400)
 
+  const last = await context.env.DB.prepare(
+    'select max(position) as last from spaces where user_id = ?',
+  )
+    .bind(user.id)
+    .first<{ last: number | null }>()
+
   const space: Space = {
     id: newId(),
     user_id: user.id,
     name: label,
+    position: (last?.last ?? -1) + 1,
     created_at: now(),
     updated_at: now(),
     blog_enabled: 0,
@@ -58,12 +65,43 @@ spaces.post('/', async (context) => {
   }
 
   await context.env.DB.prepare(
-    'insert into spaces (id, user_id, name, created_at, updated_at) values (?, ?, ?, ?, ?)',
+    'insert into spaces (id, user_id, name, position, created_at, updated_at) values (?, ?, ?, ?, ?, ?)',
   )
-    .bind(space.id, space.user_id, space.name, space.created_at, space.updated_at)
+    .bind(space.id, space.user_id, space.name, space.position, space.created_at, space.updated_at)
     .run()
 
   return context.json({ space: present(space) }, 201)
+})
+
+/** The whole rail order in one go: ids in the order they should appear.
+ *  Anything the account holds but the list leaves out keeps its place at the
+ *  end, so a machine that has not seen a space yet cannot lose it. */
+spaces.put('/order', async (context) => {
+  const user = context.get('user')
+  const { order } = await context.req.json<{ order?: string[] }>()
+  if (!Array.isArray(order)) return context.json({ error: 'send an order' }, 400)
+
+  const { results } = await context.env.DB.prepare('select id from spaces where user_id = ?')
+    .bind(user.id)
+    .all<{ id: string }>()
+
+  const owned = new Set(results.map((row) => row.id))
+  const listed = order.filter((id) => owned.has(id))
+  const rest = results.map((row) => row.id).filter((id) => !listed.includes(id))
+
+  const ids = [...listed, ...rest]
+  if (ids.length) {
+    // One statement, so a half-applied order is not a state the rail can end
+    // up in. The positions are array indexes, never anything sent in.
+    const cases = ids.map((one, index) => `when ? then ${index}`).join(' ')
+    await context.env.DB.prepare(
+      `update spaces set position = case id ${cases} else position end where user_id = ?`,
+    )
+      .bind(...ids, user.id)
+      .run()
+  }
+
+  return context.json({ ok: true })
 })
 
 spaces.patch('/:id', async (context) => {
@@ -212,6 +250,7 @@ function present(space: Space) {
   return {
     id: space.id,
     name: space.name,
+    position: space.position,
     createdAt: space.created_at,
     updatedAt: space.updated_at,
     blog: {

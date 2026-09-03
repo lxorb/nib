@@ -4,7 +4,7 @@
   import { type IconNode, loadIcons } from './icons'
   import { t } from './i18n.svelte'
   import { DIVIDER, menu, revealEntry } from './menu.svelte'
-  import { deleteSpace, newSpace, renameSpace } from './space-actions'
+  import { deleteSpace, moveSpace, newSpace, renameSpace } from './space-actions'
   import { settings } from './settings.svelte'
   import { workspace } from './workspace.svelte'
   import { theme } from './theme.svelte'
@@ -12,6 +12,42 @@
   let picker = $state<IconPicker>()
   /** Filled once any space has an icon, so the rail can draw them. */
   let library = $state<Record<string, IconNode>>({})
+
+  /** The space being dragged, and the gap the line is drawn in. `null` for the
+   *  gap under the last space, which is where a drop past the end lands. */
+  let dragging = $state<string | null>(null)
+  let gap = $state<string | null | undefined>(undefined)
+
+  function start(event: DragEvent, id: string) {
+    dragging = id
+    if (!event.dataTransfer) return
+
+    event.dataTransfer.effectAllowed = 'move'
+    // Firefox starts no drag at all unless something is on the clipboard.
+    event.dataTransfer.setData('text/plain', id)
+  }
+
+  /** Above the middle of a space means in front of it, below means after. */
+  function over(event: DragEvent, id: string, next: string | null) {
+    if (!dragging) return
+
+    event.preventDefault()
+    if (event.dataTransfer) event.dataTransfer.dropEffect = 'move'
+
+    const box = (event.currentTarget as HTMLElement).getBoundingClientRect()
+    gap = event.clientY < box.top + box.height / 2 ? id : next
+  }
+
+  function drop(event: DragEvent) {
+    event.preventDefault()
+    if (dragging && gap !== undefined) void moveSpace(dragging, gap)
+    stop()
+  }
+
+  function stop() {
+    dragging = null
+    gap = undefined
+  }
 
   function initial(name: string): string {
     return [...name.trim()][0]?.toUpperCase() ?? '·'
@@ -33,13 +69,21 @@
 
 <nav>
   <div class="spaces">
-    {#each workspace.spaces as space (space.id)}
+    {#each workspace.spaces as space, index (space.id)}
       <button
         class="space"
         class:active={space.id === workspace.activeSpaceId}
+        class:dragging={space.id === dragging}
+        class:before={gap === space.id}
+        class:after={gap === null && index === workspace.spaces.length - 1}
         title={space.name}
         aria-label={space.name}
         aria-current={space.id === workspace.activeSpaceId}
+        draggable="true"
+        ondragstart={(event) => start(event, space.id)}
+        ondragover={(event) => over(event, space.id, workspace.spaces[index + 1]?.id ?? null)}
+        ondrop={drop}
+        ondragend={stop}
         onclick={() => workspace.selectSpace(space.id)}
         oncontextmenu={(event) =>
           menu.show(event, [
@@ -177,6 +221,30 @@
     background: var(--surface-3);
     color: var(--text-strong);
     transform: scale(1.08);
+  }
+
+  /* Dragged spaces get out of the way of the line showing where they land. */
+  .space.dragging {
+    opacity: 0.4;
+  }
+
+  .space.before::after,
+  .space.after::after {
+    content: '';
+    position: absolute;
+    left: 2px;
+    right: 2px;
+    height: 2px;
+    border-radius: 1px;
+    background: var(--accent);
+  }
+
+  .space.before::after {
+    top: -4px;
+  }
+
+  .space.after::after {
+    bottom: -4px;
   }
 
   /* The active space grows a marker rather than announcing itself in words. */

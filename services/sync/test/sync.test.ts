@@ -62,6 +62,92 @@ describe('spaces', () => {
   })
 })
 
+describe('the order spaces appear in', () => {
+  /** Names as the account lists them, which is the rail order. */
+  async function order(): Promise<string[]> {
+    const listed = await call(env, '/v1/spaces', { token })
+    return listed.json.spaces.map((one: { name: string }) => one.name)
+  }
+
+  async function idOf(name: string): Promise<string> {
+    const listed = await call(env, '/v1/spaces', { token })
+    return listed.json.spaces.find((one: { name: string }) => one.name === name).id
+  }
+
+  beforeEach(async () => {
+    await call(env, '/v1/spaces', { token, body: { name: 'Ideas' } })
+    await call(env, '/v1/spaces', { token, body: { name: 'Journal' } })
+  })
+
+  test('a new space joins the end', async () => {
+    expect(await order()).toEqual(['Work', 'Ideas', 'Journal'])
+  })
+
+  test('is whatever was last sent', async () => {
+    const response = await call(env, '/v1/spaces/order', {
+      method: 'PUT',
+      token,
+      body: { order: [await idOf('Journal'), await idOf('Work'), await idOf('Ideas')] },
+    })
+
+    expect(response.status).toBe(200)
+    expect(await order()).toEqual(['Journal', 'Work', 'Ideas'])
+  })
+
+  test('keeps a space the sender left out, rather than losing it', async () => {
+    await call(env, '/v1/spaces/order', {
+      method: 'PUT',
+      token,
+      body: { order: [await idOf('Journal'), await idOf('Ideas')] },
+    })
+
+    expect(await order()).toEqual(['Journal', 'Ideas', 'Work'])
+  })
+
+  test('ignores ids belonging to someone else', async () => {
+    const other = await signIn(env, 'other@b.dev')
+    const theirs = await call(env, '/v1/spaces', { token: other, body: { name: 'Theirs' } })
+
+    await call(env, '/v1/spaces/order', {
+      method: 'PUT',
+      token,
+      body: { order: [theirs.json.space.id, await idOf('Journal')] },
+    })
+
+    expect(await order()).toEqual(['Journal', 'Work', 'Ideas'])
+  })
+
+  test('a reorder cannot touch another account', async () => {
+    const other = await signIn(env, 'other@b.dev')
+    await call(env, '/v1/spaces', { token: other, body: { name: 'First' } })
+    await call(env, '/v1/spaces', { token: other, body: { name: 'Second' } })
+
+    await call(env, '/v1/spaces/order', {
+      method: 'PUT',
+      token,
+      body: { order: [await idOf('Journal'), await idOf('Ideas'), await idOf('Work')] },
+    })
+
+    const listed = await call(env, '/v1/spaces', { token: other })
+    expect(listed.json.spaces.map((one: { name: string }) => one.name)).toEqual(['First', 'Second'])
+  })
+
+  test('an order has to be a list', async () => {
+    const response = await call(env, '/v1/spaces/order', { method: 'PUT', token, body: {} })
+    expect(response.status).toBe(400)
+  })
+
+  test('`order` is read as a word, not as a space id', async () => {
+    const response = await call(env, '/v1/spaces/order', {
+      method: 'PATCH',
+      token,
+      body: { name: 'Nope' },
+    })
+
+    expect(response.status).toBe(404)
+  })
+})
+
 describe('notes', () => {
   test('creating one stores its content', async () => {
     const created = await addNote('Read me.md', '# Hello')

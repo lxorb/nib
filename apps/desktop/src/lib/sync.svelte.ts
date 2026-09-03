@@ -105,7 +105,31 @@ class Sync {
       if (!roots.has(root)) delete this.mirrors[root]
     }
 
+    // The account already lists spaces in the order it holds them, so adopting
+    // that order is what makes a second machine look like the first.
+    workspace.applySpaceOrder(account.spaces.map((space) => space.name))
+
     this.save()
+  }
+
+  /** Sends the rail order up. Local spaces the account has never heard of are
+   *  simply left out; the server keeps them where they were. */
+  async pushSpaceOrder() {
+    const token = account.token
+    if (!token) return
+
+    const order = workspace.spaces
+      .map((space) => this.mirrors[space.root]?.spaceId)
+      .filter((id): id is string => !!id)
+
+    if (!order.length) return
+
+    try {
+      await api.reorderSpaces(token, order)
+      await account.loadSpaces()
+    } catch {
+      // The next reconcile will notice; an order is not worth an error banner.
+    }
   }
 
   /** The remote space a local folder mirrors, if any. Publishing needs it. */

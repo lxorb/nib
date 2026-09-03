@@ -35,6 +35,8 @@ export interface Space {
   id: string
   user_id: string
   name: string
+  /** Where it sits in the rail. Ties are broken by created_at. */
+  position: number
   created_at: number
   updated_at: number
   blog_enabled: number
