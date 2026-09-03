@@ -99,10 +99,16 @@
 
   /** Nothing with words in it is lost on the way out: closing asks first. */
   async function guardClose() {
-    if (!isDesktop) return
-
     const window = await currentWindow()
     await window.onCloseRequested(async (event) => {
+      // A tab gets no chance to ask its own question - `beforeunload` runs to
+      // completion before anything is painted. Preventing it is the whole
+      // signal, and the browser puts up its own leave-page dialog.
+      if (!isDesktop) {
+        if (workspace.unsaved.length) event.preventDefault()
+        return
+      }
+
       // Nothing to ask about, but there may still be an update to put in place.
       if (!workspace.unsaved.length) {
         if (!ready()) return
