@@ -67,9 +67,10 @@ function escape(text: string): string {
 }
 
 const STYLE = `
-:root{--bg:#fbfcfd;--fg:#1a1d23;--muted:#8a93a2;--line:#e1e6ed;--accent:#5b4be0;--surface:#f3f5f8}
-@media (prefers-color-scheme:dark){:root{--bg:#0e1013;--fg:#dde2ea;--muted:#767e8c;--line:#232830;--accent:#7c6bf5;--surface:#14171c}}
+:root{--bg:#fbfcfd;--fg:#1a1d23;--muted:#8a93a2;--line:#e1e6ed;--accent:#5b4be0;--surface:#f3f5f8;--scrollbar:#c3cbd6}
+@media (prefers-color-scheme:dark){:root{--bg:#0e1013;--fg:#dde2ea;--muted:#767e8c;--line:#232830;--accent:#7c6bf5;--surface:#14171c;--scrollbar:#39404d}}
 *{box-sizing:border-box}
+@media (pointer:fine){::-webkit-scrollbar{width:11px;height:11px}::-webkit-scrollbar-track,::-webkit-scrollbar-corner{background:transparent}::-webkit-scrollbar-thumb{background-color:var(--scrollbar);background-clip:padding-box;border:3px solid transparent;border-radius:99px}::-webkit-scrollbar-thumb:hover{background-color:var(--muted)}::-webkit-scrollbar-button{display:none}@supports not selector(::-webkit-scrollbar){*{scrollbar-width:thin;scrollbar-color:var(--scrollbar) transparent}}}
 body{margin:0;background:var(--bg);color:var(--fg);font:16.5px/1.72 ui-sans-serif,system-ui,sans-serif;-webkit-font-smoothing:antialiased}
 main{max-width:42rem;margin:0 auto;padding:6rem 1.5rem 8rem}
 h1,h2,h3,h4{line-height:1.28;letter-spacing:-.015em;margin:1.9em 0 .6em}

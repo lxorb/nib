@@ -169,6 +169,57 @@ body {
   border-bottom-color: var(--accent);
 }
 
+/* ── Scrollbars ────────────────────────────────────── */
+
+/* The same bar on every platform. Only where a pointer can actually grab it:
+   touch scrollbars are already transient overlays, and styling them would make
+   them permanent and reserve layout width on a screen with none to give. */
+@media (pointer: fine) {
+  /* Chromium and WebKit take the pseudo elements. Setting `scrollbar-width`
+     alongside them would make Chromium drop them, so Firefox is served in a
+     separate block below. */
+  @supports selector(::-webkit-scrollbar) {
+    ::-webkit-scrollbar {
+      width: 11px;
+      height: 11px;
+    }
+
+    ::-webkit-scrollbar-track,
+    ::-webkit-scrollbar-corner {
+      background: transparent;
+    }
+
+    /* A transparent border clipped to the padding box is what insets the
+       thumb, so it reads as floating rather than filling a gutter. */
+    ::-webkit-scrollbar-thumb {
+      background-color: var(--scrollbar);
+      background-clip: padding-box;
+      border: 3px solid transparent;
+      border-radius: 99px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background-color: var(--scrollbar-hover);
+    }
+
+    ::-webkit-scrollbar-thumb:active {
+      background-color: var(--muted);
+    }
+
+    /* Arrow buttons are a platform habit, not a design decision. */
+    ::-webkit-scrollbar-button {
+      display: none;
+    }
+  }
+
+  @supports not selector(::-webkit-scrollbar) {
+    * {
+      scrollbar-width: thin;
+      scrollbar-color: var(--scrollbar) transparent;
+    }
+  }
+}
+
 /* ── Code ────────────────────────────────────────────────────────── */
 
 #write code {

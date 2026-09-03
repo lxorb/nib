@@ -65,6 +65,8 @@
   --danger: #f2555a;
   --success: #3fcf8e;
   --selection: rgb(124 107 245 / 0.28);
+  --scrollbar: #39404d;
+  --scrollbar-hover: #4d5665;
   --shadow-sm: 0 1px 2px rgb(0 0 0 / 0.4);
   --shadow-md: 0 8px 24px -6px rgb(0 0 0 / 0.55);
   --shadow-lg: 0 24px 64px -12px rgb(0 0 0 / 0.7);
@@ -90,6 +92,8 @@
   --danger: #d92b34;
   --success: #16a06a;
   --selection: rgb(91 75 224 / 0.18);
+  --scrollbar: #c3cbd6;
+  --scrollbar-hover: #a7b1bf;
   --shadow-sm: 0 1px 2px rgb(16 24 40 / 0.06);
   --shadow-md: 0 8px 24px -6px rgb(16 24 40 / 0.12);
   --shadow-lg: 0 24px 64px -12px rgb(16 24 40 / 0.18);
