@@ -34,6 +34,16 @@ function exportCommands(): Command[] {
 
   if (!settings.pandoc) return commands
 
+  commands.push({
+    id: 'import',
+    label: 'Import a document',
+    run: () =>
+      void import('./export').then(async (m) => {
+        const imported = await m.importDocument()
+        if (imported) workspace.openBlank(imported.name, imported.markdown)
+      }),
+  })
+
   for (const format of PANDOC_FORMATS) {
     commands.push({
       id: `export-${format.id}`,

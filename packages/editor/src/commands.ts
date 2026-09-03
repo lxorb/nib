@@ -166,6 +166,12 @@ export const insertCodeFence = insertBlock(() => ({ text: '```\n\n```', caret: 3
 export const insertMathBlock = insertBlock(() => ({ text: '$$\n\n$$', caret: 3 }))
 export const insertHorizontalRule = insertBlock(() => ({ text: '---\n', caret: 4 }))
 
+/** Markdown has no page break, so this is the HTML every exporter understands. */
+export const insertPageBreak = insertBlock(() => ({
+  text: '<div style="page-break-after: always;"></div>\n',
+  caret: 45,
+}))
+
 export function insertTable(rows = 2, columns = 2): StateCommand {
   const header = `| ${Array.from({ length: columns }, (_, i) => `Column ${i + 1}`).join(' | ')} |`
   const divider = `| ${Array.from({ length: columns }, () => '---').join(' | ')} |`

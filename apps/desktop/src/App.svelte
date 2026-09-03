@@ -5,7 +5,9 @@
     type StateCommand,
     type Transaction,
     insertCodeFence,
+    insertHorizontalRule,
     insertLink,
+    insertPageBreak,
     insertTable,
     toggleBulletList,
     toggleOrderedList,
@@ -110,6 +112,8 @@
       { label: 'Numbered list', run: () => runCommand(toggleOrderedList) },
       { label: 'Table', hint: 'Ctrl T', run: () => runCommand(insertTable()) },
       { label: 'Code block', run: () => runCommand(insertCodeFence) },
+      { label: 'Horizontal rule', run: () => runCommand(insertHorizontalRule) },
+      { label: 'Page break', run: () => runCommand(insertPageBreak) },
       DIVIDER,
       {
         label: modes.source ? 'Leave source mode' : 'Source mode',

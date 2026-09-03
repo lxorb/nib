@@ -22,6 +22,7 @@
     "@lezer/common": "^1.5.2",
     "@lezer/highlight": "^1.2.3",
     "@lezer/markdown": "^1.7.2",
+    "flowchart.js": "^1.18.0",
     "katex": "^0.18.5",
     "mermaid": "^11.17.2",
     "node-emoji": "^2.2.0",

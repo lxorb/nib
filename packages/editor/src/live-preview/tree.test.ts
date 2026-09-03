@@ -73,6 +73,15 @@ test('inline', () => {
   `)
 })
 
+test('html', () => {
+  expect(dump('a\n\n<div style="page-break-after: always;"></div>\n\nb')).toMatchInlineSnapshot(`
+    "Document "a\\n\\n<div style=\\"page-break-after: always;\\"></div>\\n\\nb"
+      Paragraph "a"
+      HTMLBlock "<div style=\\"page-break-after: always;\\"></div>"
+      Paragraph "b""
+  `)
+})
+
 test('blocks', () => {
   expect(
     dump('# H\n\n> q\n\n---\n\n```js\nx\n```\n\n| a | b |\n| - | - |\n| 1 | 2 |\n'),

@@ -165,6 +165,15 @@ describe('images', () => {
   test('leaves other inline HTML alone', () => {
     expect(concealed('text <u>underlined</u> more')).toEqual([])
   })
+
+  test('renders a page break', () => {
+    const tag = '<div style="page-break-after: always;"></div>'
+    expect(concealed(`a\n\n${tag}\n\nb`)).toEqual([tag])
+  })
+
+  test('treats a flow fence as a diagram', () => {
+    expect(blocks('```flow\nst=>start: Go\n```')).toEqual(['```flow\nst=>start: Go\n```'])
+  })
 })
 
 describe('extensions', () => {

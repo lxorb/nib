@@ -116,6 +116,28 @@ export async function pandocAvailable(): Promise<boolean> {
   return invoke<boolean>('has_pandoc').catch(() => false)
 }
 
+/** Reads a Word, ODT, EPUB, RST or similar file in as markdown. */
+export async function importDocument(): Promise<{ name: string; markdown: string } | null> {
+  if (!isDesktop) return null
+
+  const { open } = await import('@tauri-apps/plugin-dialog')
+  const picked = await open({
+    filters: [
+      {
+        name: 'Documents',
+        extensions: ['docx', 'odt', 'rtf', 'epub', 'rst', 'textile', 'tex', 'html', 'opml', 'org'],
+      },
+    ],
+  })
+
+  if (typeof picked !== 'string') return null
+
+  const markdown = await invoke<string>('import_document', { path: picked })
+  const name = picked.split(/[\\/]/).pop()?.replace(/\.[^.]+$/, '') ?? 'Imported'
+
+  return { name: `${name}.md`, markdown }
+}
+
 /** Typora shells out to pandoc for these too; the formats are pandoc's, not ours. */
 export async function exportPandoc(source: string, name: string, format: PandocFormat) {
   if (!isDesktop) return

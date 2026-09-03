@@ -23,6 +23,7 @@ pub fn run() {
             mcp::mcp_config,
             export::has_pandoc,
             export::run_pandoc,
+            export::import_document,
             themes::theme_dir,
             themes::list_themes,
             themes::read_theme,

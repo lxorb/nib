@@ -188,8 +188,8 @@ class Workspace {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(state))
   }
 
-  openBlank() {
-    const tab: Tab = { id: identifier(), path: null, name: UNTITLED, doc: '', dirty: false }
+  openBlank(name = UNTITLED, doc = '') {
+    const tab: Tab = { id: identifier(), path: null, name, doc, dirty: !!doc }
     this.tabs = [...this.tabs, tab]
     this.activeTabId = tab.id
   }

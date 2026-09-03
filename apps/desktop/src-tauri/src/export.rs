@@ -14,6 +14,35 @@ fn command(program: &str) -> Command {
     command
 }
 
+/// Converts a document into markdown with pandoc. The format comes from the
+/// file's extension, which is what pandoc infers from anyway.
+#[tauri::command]
+pub fn import_document(path: String) -> Result<String, String> {
+    let result = command("pandoc")
+        .args([
+            "--to",
+            "markdown_strict+pipe_tables+backtick_code_blocks+strikeout+task_lists+tex_math_dollars",
+            "--wrap",
+            "none",
+            "--extract-media",
+            ".",
+            &path,
+        ])
+        .output()
+        .map_err(|e| format!("pandoc could not start: {e}. Is it installed?"))?;
+
+    if result.status.success() {
+        return String::from_utf8(result.stdout).map_err(|e| e.to_string());
+    }
+
+    let message = String::from_utf8_lossy(&result.stderr);
+    Err(if message.trim().is_empty() {
+        "pandoc could not read that file".into()
+    } else {
+        message.trim().to_string()
+    })
+}
+
 #[tauri::command]
 pub fn has_pandoc() -> bool {
     command("pandoc")

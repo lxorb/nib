@@ -180,6 +180,20 @@ export class FenceHeaderWidget extends WidgetType {
   }
 }
 
+/** Where a printed page ends. Invisible in the file, obvious on screen. */
+export class PageBreakWidget extends WidgetType {
+  eq() {
+    return true
+  }
+
+  toDOM() {
+    const rule = document.createElement('span')
+    rule.className = 'nib-page-break'
+    rule.dataset.label = 'page break'
+    return rule
+  }
+}
+
 /** Shows `:smile:` as the character it names. */
 export class EmojiWidget extends WidgetType {
   constructor(private readonly character: string) {

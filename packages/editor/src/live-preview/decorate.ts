@@ -19,6 +19,7 @@ import {
   EmojiWidget,
   FenceHeaderWidget,
   ImageWidget,
+  PageBreakWidget,
   RuleWidget,
 } from './widgets'
 
@@ -277,11 +278,20 @@ class Decorator {
     return false
   }
 
-  /** A resized image is stored as an `<img>` tag, so those render as pictures too. */
+  /** Two pieces of HTML get rendered rather than shown: a resized image, which
+   *  is how a size is recorded, and a page break, which has no markdown form. */
   private htmlImage(node: SyntaxNode): boolean | void {
-    if (revealed(this.state, node)) return
+    // Its own range, not its parent's: a block-level tag's parent is the whole
+    // document, which the caret always overlaps.
+    if (overlaps(this.state, node.from, node.to)) return
 
     const tag = this.state.doc.sliceString(node.from, node.to)
+
+    if (/page-break-(after|before)\s*:\s*always/i.test(tag)) {
+      this.inlineWidget(node, new PageBreakWidget(), false)
+      return false
+    }
+
     const src = /\bsrc\s*=\s*["']([^"']+)["']/i.exec(tag)
     if (!src) return
 
