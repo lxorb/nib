@@ -1,6 +1,7 @@
 import { type EditorView, reformatDocument, type Transaction } from '@nib/editor'
 import { account } from './account.svelte'
 import { PANDOC_FORMATS } from './export'
+import { imagePath, imageUrl } from './images'
 import { modes } from './modes.svelte'
 import { settings } from './settings.svelte'
 import { invoke, isDesktop } from './tauri'
@@ -30,18 +31,27 @@ function exportCommands(): Command[] {
   const source = () => note()?.doc ?? ''
   const name = () => note()?.name ?? 'Untitled.md'
 
-  const page = () => ({ page: settings.page })
+  /** PDF wants URLs the print frame can fetch; HTML wants paths it can read. */
+  const forPrint = () => ({
+    page: settings.page,
+    resolveImage: (src: string) => imageUrl(src, note()?.path, source()),
+  })
+
+  const forFile = () => ({
+    page: settings.page,
+    resolveImage: (src: string) => imagePath(src, note()?.path, source()) ?? src,
+  })
 
   const commands: Command[] = [
     {
       id: 'export-pdf',
       label: 'Export as PDF',
-      run: () => import('./export').then((m) => m.exportPdf(source(), name(), page())),
+      run: () => import('./export').then((m) => m.exportPdf(source(), name(), forPrint())),
     },
     {
       id: 'export-html',
       label: 'Export as HTML',
-      run: () => void import('./export').then((m) => m.exportHtml(source(), name(), page())),
+      run: () => void import('./export').then((m) => m.exportHtml(source(), name(), forFile())),
     },
     { id: 'page-setup', label: 'Page setup for export', run: () => settings.show('export') },
     {

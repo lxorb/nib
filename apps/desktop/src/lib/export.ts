@@ -30,6 +30,8 @@ function escape(text: string): string {
 export interface HtmlOptions {
   /** Leave the stylesheet out, for pasting into a site that has its own. */
   bare?: boolean
+  /** Turns a path written in the note into one the filesystem understands. */
+  resolveImage?: (src: string) => string
   /** Which theme to bake in. Defaults to the one on screen. */
   theme?: string
   /** Paper and running text. The note's own front matter wins over this. */
@@ -93,6 +95,42 @@ ${body}</div>
 `
 }
 
+/** Every `src` in the page that points at a file rather than at the network. */
+export function localSources(html: string): string[] {
+  const found = new Set<string>()
+
+  for (const match of html.matchAll(/<img\b[^>]*?\bsrc="([^"]*)"/g)) {
+    const src = match[1]
+    if (src && !/^(data:|https?:|\/\/)/i.test(src)) found.add(src)
+  }
+
+  return [...found]
+}
+
+/** Swaps local image paths for `data:` URIs so the exported file stands alone.
+ *  An image that cannot be read is left pointing where it did. */
+export async function inlineImages(
+  html: string,
+  resolve: (src: string) => string,
+): Promise<string> {
+  const sources = localSources(html)
+  if (!sources.length) return html
+
+  const inlined = new Map<string, string>()
+
+  await Promise.all(
+    sources.map(async (src) => {
+      const data = await invoke<string>('read_asset', { path: resolve(src) }).catch(() => null)
+      if (data) inlined.set(src, data)
+    }),
+  )
+
+  return html.replace(/(<img\b[^>]*?\bsrc=")([^"]*)(")/g, (whole, before, src, after) => {
+    const data = inlined.get(src)
+    return data ? `${before}${data}${after}` : whole
+  })
+}
+
 async function chooseTarget(name: string, extension: string, label: string) {
   const { save } = await import('@tauri-apps/plugin-dialog')
   return save({
@@ -107,7 +145,10 @@ export async function exportHtml(source: string, name: string, options: HtmlOpti
   const target = await chooseTarget(name, 'html', 'HTML')
   if (!target) return
 
-  await invoke('write_note', { path: target, content: buildHtml(source, name, options) })
+  let content = buildHtml(source, name, options)
+  if (options.resolveImage) content = await inlineImages(content, options.resolveImage)
+
+  await invoke('write_note', { path: target, content })
   return target
 }
 
@@ -121,8 +162,17 @@ export function exportPdf(source: string, name: string, options: HtmlOptions = {
   const doc = frame.contentDocument
   if (!doc) return
 
+  // The print frame cannot read the disk, so paths become asset URLs first.
+  const html = options.resolveImage
+    ? buildHtml(source, name, options).replace(
+        /(<img\b[^>]*?\bsrc=")([^"]*)(")/g,
+        (whole, before, src: string, after) =>
+          /^(data:|https?:|\/\/)/i.test(src) ? whole : `${before}${options.resolveImage!(src)}${after}`,
+      )
+    : buildHtml(source, name, options)
+
   doc.open()
-  doc.write(buildHtml(source, name, options))
+  doc.write(html)
   doc.close()
 
   // Give the fonts and any maths a moment before the dialog freezes the page.

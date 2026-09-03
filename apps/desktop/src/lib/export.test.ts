@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest'
-import { buildHtml, PANDOC_FORMATS } from './export'
+import { buildHtml, localSources, PANDOC_FORMATS } from './export'
 
 const NOTE = `---
 title: Meta
@@ -89,5 +89,23 @@ describe('pandoc formats', () => {
     for (const format of PANDOC_FORMATS) {
       expect(format.extension).toMatch(/^[a-z]+$/)
     }
+  })
+})
+
+describe('finding local images', () => {
+  test('picks out the paths that are files', () => {
+    const html =
+      '<img src="a.png"><img src="assets/b.jpg" alt="x"><img src="https://e.com/c.png">' +
+      '<img src="data:image/png;base64,AAA"><img src="//e.com/d.png">'
+
+    expect(localSources(html)).toEqual(['a.png', 'assets/b.jpg'])
+  })
+
+  test('lists each path once', () => {
+    expect(localSources('<img src="a.png"><img src="a.png">')).toEqual(['a.png'])
+  })
+
+  test('finds nothing in a page without images', () => {
+    expect(localSources('<p>text</p>')).toEqual([])
   })
 })

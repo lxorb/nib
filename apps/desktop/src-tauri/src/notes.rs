@@ -62,6 +62,66 @@ pub fn delete_note(path: String) -> Result<(), String> {
     fs::remove_file(&path).map_err(|e| e.to_string())
 }
 
+/// An image, as a `data:` URI, so an exported page carries its own pictures.
+/// Refuses anything large enough to bloat the file past usefulness.
+#[tauri::command]
+pub fn read_asset(path: String) -> Result<String, String> {
+    const LIMIT: u64 = 12 * 1024 * 1024;
+
+    let target = PathBuf::from(&path);
+    let size = fs::metadata(&target).map_err(|e| e.to_string())?.len();
+    if size > LIMIT {
+        return Err(format!("{path} is larger than 12 MB"));
+    }
+
+    let bytes = fs::read(&target).map_err(|e| e.to_string())?;
+    Ok(format!("data:{};base64,{}", mime_of(&target), encode(&bytes)))
+}
+
+fn mime_of(path: &Path) -> &'static str {
+    match path
+        .extension()
+        .and_then(|e| e.to_str())
+        .unwrap_or_default()
+        .to_ascii_lowercase()
+        .as_str()
+    {
+        "png" => "image/png",
+        "jpg" | "jpeg" => "image/jpeg",
+        "gif" => "image/gif",
+        "webp" => "image/webp",
+        "avif" => "image/avif",
+        "bmp" => "image/bmp",
+        "svg" => "image/svg+xml",
+        _ => "application/octet-stream",
+    }
+}
+
+fn encode(bytes: &[u8]) -> String {
+    const ALPHABET: &[u8; 64] =
+        b"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+
+    let mut out = String::with_capacity(bytes.len().div_ceil(3) * 4);
+
+    for chunk in bytes.chunks(3) {
+        let block = chunk
+            .iter()
+            .enumerate()
+            .fold(0u32, |acc, (i, byte)| acc | (u32::from(*byte) << (16 - 8 * i)));
+
+        for i in 0..4 {
+            // The tail is padded to a whole quantum with `=`.
+            if i <= chunk.len() {
+                out.push(ALPHABET[(block >> (18 - 6 * i)) as usize & 0x3f] as char);
+            } else {
+                out.push('=');
+            }
+        }
+    }
+
+    out
+}
+
 /// Copies a pasted or dropped image next to the note and returns the relative
 /// path to write into the markdown, so the note stays portable.
 #[tauri::command]
@@ -285,4 +345,35 @@ fn is_markdown(path: &Path) -> bool {
         .and_then(|e| e.to_str())
         .map(|e| MARKDOWN_EXTENSIONS.contains(&e.to_lowercase().as_str()))
         .unwrap_or(false)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn encodes_the_rfc_4648_vectors() {
+        assert_eq!(encode(b""), "");
+        assert_eq!(encode(b"f"), "Zg==");
+        assert_eq!(encode(b"fo"), "Zm8=");
+        assert_eq!(encode(b"foo"), "Zm9v");
+        assert_eq!(encode(b"foob"), "Zm9vYg==");
+        assert_eq!(encode(b"fooba"), "Zm9vYmE=");
+        assert_eq!(encode(b"foobar"), "Zm9vYmFy");
+    }
+
+    #[test]
+    fn encodes_bytes_that_are_not_text() {
+        assert_eq!(encode(&[0x00, 0xff, 0x80]), "AP+A");
+        assert_eq!(encode(&[0xfb, 0xff]), "+/8=");
+    }
+
+    #[test]
+    fn names_the_type_from_the_extension() {
+        assert_eq!(mime_of(Path::new("a/b.PNG")), "image/png");
+        assert_eq!(mime_of(Path::new("a/b.jpeg")), "image/jpeg");
+        assert_eq!(mime_of(Path::new("a/b.svg")), "image/svg+xml");
+        assert_eq!(mime_of(Path::new("a/b.xyz")), "application/octet-stream");
+        assert_eq!(mime_of(Path::new("noextension")), "application/octet-stream");
+    }
 }

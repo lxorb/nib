@@ -14,7 +14,6 @@
     toggleQuote,
     toggleWrap,
   } from '@nib/editor'
-  import { frontMatter } from '@nib/markdown'
   import ContextMenu from './lib/ContextMenu.svelte'
   import Editor from './lib/Editor.svelte'
   import FormatBar from './lib/FormatBar.svelte'
@@ -32,7 +31,8 @@
   import Tabs from './lib/Tabs.svelte'
   import Titlebar from './lib/Titlebar.svelte'
   import { modes } from './lib/modes.svelte'
-  import { assetUrl, currentWindow, folderOf, invoke, isDesktop, joinPath } from './lib/tauri'
+  import { imageUrl } from './lib/images'
+  import { currentWindow, invoke, isDesktop } from './lib/tauri'
   import { theme } from './lib/theme.svelte'
   import { workspace } from './lib/workspace.svelte'
 
@@ -152,22 +152,7 @@
   }
 
   function resolveImage(src: string): string {
-    if (/^([a-z]+:)?\/\//i.test(src) || src.startsWith('data:')) return src
-
-    const path = workspace.active?.path
-    if (!path) return src
-
-    // `typora-root-url` in the front matter re-bases absolute-looking paths,
-    // which is how Typora makes a note portable between a vault and a site.
-    const root = /^\s*typora-root-url\s*:\s*(.+)$/m.exec(
-      frontMatter(workspace.active?.doc ?? '') ?? '',
-    )?.[1]
-
-    if (root && src.startsWith('/')) {
-      return assetUrl(joinPath(root.trim().replace(/["']/g, ''), src.slice(1)))
-    }
-
-    return assetUrl(joinPath(folderOf(path), src))
+    return imageUrl(src, workspace.active?.path, workspace.active?.doc ?? '')
   }
 
   async function toggleFullscreen() {
