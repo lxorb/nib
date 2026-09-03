@@ -5,6 +5,21 @@
   padding: 0;
 }
 
+/* CodeMirror pads every widget with a zero-size <img>. The writing surface
+   carries Typora's `#write` id, so any theme rule for real images lands on
+   these too and breaks the line they sit on. Outrank it on specificity. */
+#write img.cm-widgetBuffer {
+  display: inline;
+  width: 0;
+  height: 0;
+  max-width: none;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  vertical-align: text-top;
+}
+
 .cm-editor #write {
   max-width: var(--measure);
   margin: 0 auto;
