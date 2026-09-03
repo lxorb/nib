@@ -1,4 +1,5 @@
 mod export;
+mod history;
 mod launch;
 mod mcp;
 mod notes;
@@ -50,6 +51,9 @@ pub fn run() {
             export::run_pandoc,
             export::import_document,
             launch::take_startup_files,
+            history::snapshot_note,
+            history::list_snapshots,
+            history::read_snapshot,
         ])
         .setup(|app| {
             let files = markdown_paths(std::env::args());

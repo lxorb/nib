@@ -17,6 +17,7 @@
   import { frontMatter } from '@nib/markdown'
   import ContextMenu from './lib/ContextMenu.svelte'
   import Editor from './lib/Editor.svelte'
+  import History from './lib/History.svelte'
   import { DIVIDER, type MenuEntry, menu } from './lib/menu.svelte'
   import Palette from './lib/Palette.svelte'
   import Rail from './lib/Rail.svelte'
@@ -260,6 +261,7 @@
 <Palette bind:open={palette} {view} />
 <SignIn />
 <SettingsPanel />
+<History bind:open={settings.historyOpen} />
 <ContextMenu />
 
 <style>

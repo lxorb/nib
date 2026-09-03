@@ -85,6 +85,7 @@ export interface Command {
   id: string
   label: string
   hint?: string
+  disabled?: boolean
   run(): void
 }
 
@@ -106,6 +107,12 @@ export function appCommands(view?: EditorView): Command[] {
       run: () => workspace.setAutoSave(!workspace.autoSave),
     },
     { id: 'settings', label: 'Settings', hint: 'Ctrl ,', run: () => settings.show() },
+    {
+      id: 'history',
+      label: 'Version history',
+      disabled: !workspace.active?.path,
+      run: () => (settings.historyOpen = true),
+    },
 
     ...workspace.recent
       .filter((path) => !workspace.tabs.some((tab) => tab.path === path))

@@ -29,6 +29,8 @@ function links(): Record<string, string> {
 class Settings {
   open = $state(false)
   section = $state<Section>('account')
+  /** The version-history sheet, which is its own overlay. */
+  historyOpen = $state(false)
 
   /** LLM access is off until switched on, and read-only until widened. */
   llmEnabled = $state(false)

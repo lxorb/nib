@@ -35,8 +35,10 @@
   })
 
   function choose(item: Command | Entry) {
-    if ('run' in item) item.run()
-    else void workspace.open(item.path)
+    if ('run' in item) {
+      if (item.disabled) return
+      item.run()
+    } else void workspace.open(item.path)
 
     open = false
     query = ''
@@ -86,7 +88,12 @@
       <ul>
         {#each results as item, index (label(item) + index)}
           <li>
-            <button class:selected={index === cursor} onmouseenter={() => (cursor = index)} onclick={() => choose(item)}>
+            <button
+              class:selected={index === cursor}
+              class:dim={'disabled' in item && item.disabled}
+              onmouseenter={() => (cursor = index)}
+              onclick={() => choose(item)}
+            >
               <span class="text">{label(item)}</span>
               {#if 'hint' in item && item.hint}<kbd>{item.hint}</kbd>{/if}
             </button>
@@ -168,6 +175,10 @@
   button.selected {
     background: var(--accent-soft);
     color: var(--text-strong);
+  }
+
+  button.dim {
+    opacity: 0.45;
   }
 
   .text {

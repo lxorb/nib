@@ -357,6 +357,11 @@ class Workspace {
       path = picked
     }
 
+    // Keep the version that is about to be replaced, before replacing it.
+    if (tab.path) {
+      await invoke('snapshot_note', { path, content: tab.doc }).catch(() => undefined)
+    }
+
     await invoke('write_note', { path, content: tab.doc })
 
     tab.path = path
@@ -437,6 +442,12 @@ class Workspace {
   }
 
   async remove(path: string, isFolder: boolean) {
+    // A deleted note keeps one last snapshot, so the delete is recoverable.
+    if (!isFolder) {
+      const content = await invoke<string>('read_note', { path }).catch(() => '')
+      if (content) await invoke('snapshot_note', { path, content }).catch(() => undefined)
+    }
+
     await invoke(isFolder ? 'delete_folder' : 'delete_note', { path })
 
     for (const tab of this.tabs.filter((entry) => entry.path?.startsWith(path))) {
