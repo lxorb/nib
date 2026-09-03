@@ -10,7 +10,7 @@
     {
       "binding": "DB",
       "database_name": "nib",
-      "database_id": "PLACEHOLDER",
+      "database_id": "3eb83f94-5361-4850-a256-28611a4f94a4",
       "migrations_dir": "migrations"
     }
   ],

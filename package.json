@@ -14,6 +14,11 @@
     "typescript": "^5.9.3"
   },
   "pnpm": {
-    "onlyBuiltDependencies": ["esbuild", "workerd"]
+    "onlyBuiltDependencies": ["esbuild", "workerd"],
+    "comment": "workerd ships no win32-arm64 binary; pull the x64 one so wrangler runs under emulation.",
+    "supportedArchitectures": {
+      "os": ["current", "win32", "linux"],
+      "cpu": ["current", "x64", "arm64"]
+    }
   }
 }
