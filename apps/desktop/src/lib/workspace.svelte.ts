@@ -151,6 +151,8 @@ class Workspace {
   activeTabId = $state<string | null>(null)
   // Hidden until asked for, the way Typora starts.
   panel = $state<Panel | null>(null)
+  /** The one tab holding a note that is only being looked at. */
+  previewTabId = $state<string | null>(null)
   /** Path of the tree row currently being renamed in place. */
   renaming = $state<string | null>(null)
   autoSave = $state(localStorage.getItem(AUTO_SAVE_KEY) !== 'false')
@@ -395,9 +397,13 @@ class Workspace {
     this.persist()
   }
 
-  async open(path: string, options: { activate?: boolean } = {}) {
+  /** `preview` opens the way a single click in the file list does: one tab,
+   *  reused by the next preview, and kept only until something is typed in it. */
+  async open(path: string, options: { activate?: boolean; preview?: boolean } = {}) {
     const existing = this.tabs.find((tab) => tab.path === path)
     if (existing) {
+      // Opening for real what was only being looked at makes it stay.
+      if (!options.preview && this.previewTabId === existing.id) this.previewTabId = null
       if (options.activate !== false) this.activeTabId = existing.id
       return
     }
@@ -409,9 +415,26 @@ class Workspace {
       return
     }
 
+    // A preview reuses the one preview tab rather than opening another.
+    const reusable =
+      options.preview && this.tabs.find((tab) => tab.id === this.previewTabId && !tab.dirty)
+
+    if (reusable) {
+      reusable.path = path
+      reusable.name = basename(path)
+      reusable.doc = doc
+      reusable.dirty = false
+
+      if (options.activate !== false) this.activeTabId = reusable.id
+      this.remember(path)
+      this.persist()
+      return
+    }
+
     const tab: Tab = { id: identifier(), path, name: basename(path), doc, dirty: false }
     this.tabs = [...this.tabs, tab]
     if (options.activate !== false) this.activeTabId = tab.id
+    this.previewTabId = options.preview ? tab.id : this.previewTabId
     this.remember(path)
 
     // A blank untouched tab is scaffolding, not something worth keeping around.
@@ -445,6 +468,10 @@ class Workspace {
 
     tab.doc = doc
     tab.dirty = true
+
+    // Typing in a note you were only previewing is what makes it yours.
+    if (this.previewTabId === tab.id) this.previewTabId = null
+
     this.scheduleSave()
   }
 

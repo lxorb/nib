@@ -128,7 +128,8 @@
           class:active={workspace.active?.path === entry.path}
           style:padding-left="{depth * 12 + 20}px"
           draggable="true"
-          onclick={() => workspace.open(entry.path)}
+          onclick={() => workspace.open(entry.path, { preview: true })}
+          ondblclick={() => workspace.open(entry.path)}
           oncontextmenu={(event) => menu.show(event, noteMenu(entry))}
           ondragstart={(event) => startDrag(event, entry.path)}
         >

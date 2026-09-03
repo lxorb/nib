@@ -35,6 +35,7 @@
     <div
       class="tab"
       class:active={tab.id === workspace.activeTabId}
+      class:preview={tab.id === workspace.previewTabId}
       transition:fly={{ y: -8, duration: 180, easing: cubicOut }}
     >
       <button
@@ -145,6 +146,12 @@
 
   .tab.active .pick {
     color: var(--text-strong);
+  }
+
+  /* Italic says the note is only being looked at, and that the next thing
+     clicked in the file list will take this tab's place. */
+  .tab.preview .pick {
+    font-style: italic;
   }
 
   .dot {

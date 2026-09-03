@@ -130,7 +130,8 @@
                 <button
                   class="row"
                   class:active={workspace.active?.path === entry.path}
-                  onclick={() => !entry.is_dir && workspace.open(entry.path)}
+                  onclick={() => !entry.is_dir && workspace.open(entry.path, { preview: true })}
+                  ondblclick={() => !entry.is_dir && workspace.open(entry.path)}
                   oncontextmenu={(event) =>
                     menu.show(event, [
                       { label: t('Unpin'), run: () => workspace.togglePin(entry.path) },
