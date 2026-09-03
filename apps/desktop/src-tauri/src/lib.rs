@@ -19,6 +19,7 @@ pub fn run() {
             notes::create_folder,
             notes::delete_folder,
             notes::save_asset,
+            notes::search_space,
             mcp::mcp_config,
             export::has_pandoc,
             export::run_pandoc,

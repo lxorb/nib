@@ -115,6 +115,77 @@ pub fn delete_folder(path: String) -> Result<(), String> {
     fs::remove_dir_all(&path).map_err(|e| e.to_string())
 }
 
+#[derive(Serialize)]
+pub struct Hit {
+    path: String,
+    name: String,
+    line: usize,
+    text: String,
+}
+
+/// Case-insensitive search across every note in a space, returning the matching
+/// line so the result reads like the note rather than just naming it.
+#[tauri::command]
+pub fn search_space(root: String, query: String, limit: usize) -> Result<Vec<Hit>, String> {
+    let needle = query.trim().to_lowercase();
+    if needle.is_empty() {
+        return Ok(Vec::new());
+    }
+
+    let mut files = Vec::new();
+    collect(&PathBuf::from(&root), &mut files);
+    files.sort();
+
+    let mut hits = Vec::new();
+
+    for path in files {
+        let Ok(body) = fs::read_to_string(&path) else {
+            continue;
+        };
+
+        for (index, line) in body.lines().enumerate() {
+            if !line.to_lowercase().contains(&needle) {
+                continue;
+            }
+
+            hits.push(Hit {
+                path: path.to_string_lossy().to_string(),
+                name: path
+                    .file_name()
+                    .map(|n| n.to_string_lossy().to_string())
+                    .unwrap_or_default(),
+                line: index,
+                text: line.trim().chars().take(200).collect(),
+            });
+
+            if hits.len() >= limit {
+                return Ok(hits);
+            }
+        }
+    }
+
+    Ok(hits)
+}
+
+fn collect(dir: &Path, out: &mut Vec<PathBuf>) {
+    let Ok(entries) = fs::read_dir(dir) else {
+        return;
+    };
+
+    for entry in entries.flatten() {
+        let path = entry.path();
+        if entry.file_name().to_string_lossy().starts_with('.') {
+            continue;
+        }
+
+        if path.is_dir() {
+            collect(&path, out);
+        } else if is_markdown(&path) {
+            out.push(path);
+        }
+    }
+}
+
 #[tauri::command]
 pub fn read_tree(root: String) -> Result<Entry, String> {
     let path = PathBuf::from(&root);

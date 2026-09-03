@@ -139,5 +139,11 @@ export function appCommands(view?: EditorView): Command[] {
     { id: 'outline', label: 'Outline', hint: 'Ctrl Shift 1', run: () => workspace.showPanel('outline') },
     { id: 'articles', label: 'Notes', hint: 'Ctrl Shift 2', run: () => workspace.showPanel('articles') },
     { id: 'files', label: 'Files', hint: 'Ctrl Shift 3', run: () => workspace.showPanel('tree') },
+    {
+      id: 'search-space',
+      label: 'Search this space',
+      hint: 'Ctrl Shift F',
+      run: () => workspace.showPanel('search'),
+    },
   ]
 }

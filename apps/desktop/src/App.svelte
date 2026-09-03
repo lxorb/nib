@@ -178,6 +178,7 @@
     if (key === '1') return act(event, () => workspace.showPanel('outline'))
     if (key === '2') return act(event, () => workspace.showPanel('articles'))
     if (key === '3') return act(event, () => workspace.showPanel('tree'))
+    if (key === 'f') return act(event, () => workspace.showPanel('search'))
     if (key === '0') return act(event, () => modes.resetZoom())
     if (key === '=' || key === '+') return act(event, () => modes.stepZoom(1))
     if (key === '-' || key === '_') return act(event, () => modes.stepZoom(-1))

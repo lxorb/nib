@@ -1,5 +1,5 @@
 <script lang="ts">
-  import type { Panel } from './workspace.svelte'
+  import type { Hit, Panel } from './workspace.svelte'
   import { workspace } from './workspace.svelte'
   import Tree from './Tree.svelte'
 
@@ -9,9 +9,36 @@
     { id: 'tree', label: 'Files', path: 'M1 3.5h4l1 1.5h6v6.5H1z' },
     { id: 'articles', label: 'Notes', path: 'M2 2.5h9M2 6.5h9M2 10.5h6' },
     { id: 'outline', label: 'Outline', path: 'M2 2.5h9M4 6.5h7M6 10.5h5' },
+    { id: 'search', label: 'Search', path: 'M5.5 1.5a4 4 0 1 0 0 8 4 4 0 0 0 0-8zM8.6 8.6l3 3' },
   ]
 
   const stripped = (name: string) => name.replace(/\.(md|markdown|mdown|mkd)$/i, '')
+
+  let query = $state('')
+  let hits = $state<Hit[]>([])
+  let searching = $state(false)
+  let debounce: ReturnType<typeof setTimeout>
+
+  function onQuery(value: string) {
+    query = value
+    clearTimeout(debounce)
+
+    if (value.trim().length < 2) {
+      hits = []
+      return
+    }
+
+    searching = true
+    debounce = setTimeout(async () => {
+      hits = await workspace.search(value)
+      searching = false
+    }, 220)
+  }
+
+  async function openHit(hit: Hit) {
+    await workspace.open(hit.path)
+    ongoto?.(hit.line)
+  }
 </script>
 
 <!-- A CSS animation rather than a Svelte transition: transitions are driven by
@@ -53,6 +80,31 @@
           </li>
         {/each}
       </ul>
+    {:else if workspace.panel === 'search'}
+      <!-- svelte-ignore a11y_autofocus -->
+      <input
+        class="query"
+        value={query}
+        oninput={(event) => onQuery(event.currentTarget.value)}
+        placeholder="Search this space"
+        spellcheck="false"
+        autofocus
+      />
+
+      {#if hits.length}
+        <ul>
+          {#each hits as hit, index (hit.path + hit.line + index)}
+            <li>
+              <button class="hit" onclick={() => openHit(hit)}>
+                <span class="hit-note">{stripped(hit.name)}</span>
+                <span class="hit-line">{hit.text}</span>
+              </button>
+            </li>
+          {/each}
+        </ul>
+      {:else if query.trim().length >= 2 && !searching}
+        <p class="empty-text">Nothing found</p>
+      {/if}
     {:else if workspace.panel === 'outline'}
       <ul>
         {#each workspace.headings as heading, index (index)}
@@ -179,6 +231,62 @@
   .row:focus-visible {
     outline: 2px solid var(--accent);
     outline-offset: -2px;
+  }
+
+  .query {
+    width: 100%;
+    padding: 6px 9px;
+    margin-bottom: var(--space-2);
+    border: 1px solid var(--line-strong);
+    border-radius: var(--radius-sm);
+    background: var(--bg);
+    color: var(--text-strong);
+    font-family: var(--font-ui);
+    font-size: var(--text-sm);
+    outline: none;
+    transition: border-color var(--dur-fast) var(--ease-out);
+  }
+
+  .query:focus {
+    border-color: var(--accent);
+  }
+
+  .hit {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: 6px 8px;
+    border: none;
+    border-radius: var(--radius-sm);
+    background: none;
+    text-align: left;
+    cursor: default;
+    transition: background var(--dur-fast) var(--ease-out);
+  }
+
+  .hit:hover {
+    background: var(--item-hover-bg-color);
+  }
+
+  .hit-note {
+    font-family: var(--font-ui);
+    font-size: var(--text-xs);
+    color: var(--accent);
+  }
+
+  .hit-line {
+    font-size: var(--text-sm);
+    color: var(--muted-strong);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .empty-text {
+    margin: var(--space-3) 0 0;
+    font-size: var(--text-sm);
+    color: var(--muted);
   }
 
   .empty {

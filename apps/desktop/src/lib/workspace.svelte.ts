@@ -23,7 +23,14 @@ export interface Tab {
   dirty: boolean
 }
 
-export type Panel = 'tree' | 'outline' | 'articles'
+export type Panel = 'tree' | 'outline' | 'articles' | 'search'
+
+export interface Hit {
+  path: string
+  name: string
+  line: number
+  text: string
+}
 
 export interface Heading {
   level: number
@@ -288,6 +295,14 @@ class Workspace {
 
     await this.loadTree()
     this.persist()
+  }
+
+  /** Searches every note in the space and returns the matching lines. */
+  async search(query: string): Promise<Hit[]> {
+    const root = this.activeSpace?.root
+    if (!root || query.trim().length < 2) return []
+
+    return invoke<Hit[]>('search_space', { root, query, limit: 200 }).catch(() => [])
   }
 
   /** Creates `Untitled.md` in a folder, stepping the name until it is free. */

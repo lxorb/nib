@@ -400,6 +400,93 @@
   line-height: 1;
 }
 
+/* ── Find and replace ────────────────────────────────────────────── */
+
+.cm-panels {
+  border: none;
+  background: var(--surface);
+  color: var(--text);
+}
+
+.cm-panels.cm-panels-top {
+  border-bottom: 1px solid var(--line);
+}
+
+.cm-panels.cm-panels-bottom {
+  border-top: 1px solid var(--line);
+}
+
+.cm-panel.cm-search {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  padding: 8px var(--space-4);
+  font-family: var(--font-ui);
+  font-size: var(--text-sm);
+}
+
+.cm-panel.cm-search input[type='text'] {
+  padding: 5px 9px;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-sm);
+  background: var(--bg);
+  color: var(--text-strong);
+  font-family: inherit;
+  font-size: inherit;
+  outline: none;
+  transition: border-color var(--dur-fast) var(--ease-out);
+}
+
+.cm-panel.cm-search input[type='text']:focus {
+  border-color: var(--accent);
+}
+
+.cm-panel.cm-search button {
+  padding: 5px 10px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--surface-2);
+  background-image: none;
+  color: var(--muted-strong);
+  font-family: inherit;
+  font-size: inherit;
+  cursor: default;
+  transition:
+    background var(--dur-fast) var(--ease-out),
+    color var(--dur-fast) var(--ease-out);
+}
+
+.cm-panel.cm-search button:hover {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+
+.cm-panel.cm-search label {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--muted);
+}
+
+.cm-panel.cm-search label input {
+  accent-color: var(--accent);
+}
+
+.cm-panel.cm-search [name='close'] {
+  padding: 2px 8px;
+  border: none;
+  background: none;
+  color: var(--muted);
+  font-size: 1.1em;
+}
+
+.cm-panel.cm-search [name='close']:hover {
+  background: none;
+  color: var(--danger);
+}
+
 /* ── Completion popup ────────────────────────────────────────────── */
 
 .cm-tooltip.cm-tooltip-autocomplete {

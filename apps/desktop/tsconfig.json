@@ -14,5 +14,10 @@
     "allowJs": true,
     "noEmit": true
   },
-  "include": ["src/**/*.ts", "src/**/*.svelte"]
+  "include": [
+    "src/**/*.ts",
+    "src/**/*.svelte",
+    // The editor package declares the modules that ship without types.
+    "../../packages/editor/src/env.d.ts"
+  ]
 }

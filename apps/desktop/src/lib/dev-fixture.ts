@@ -111,6 +111,18 @@ export function fixtureInvoke<T>(command: string, args?: Record<string, unknown>
       }
       return undefined as T
     }
+    case 'search_space': {
+      const needle = String(args?.query ?? '').toLowerCase()
+      const hits: unknown[] = []
+
+      for (const [file, body] of NOTES) {
+        body.split('\n').forEach((line, index) => {
+          if (!line.toLowerCase().includes(needle)) return
+          hits.push({ path: file, name: file.split('/').pop(), line: index, text: line.trim() })
+        })
+      }
+      return hits as T
+    }
     case 'create_folder':
       return undefined as T
     case 'delete_folder':
