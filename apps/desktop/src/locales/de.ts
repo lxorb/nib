@@ -127,6 +127,17 @@ export const de: Dictionary = {
   'Actual size': 'Originalgröße',
 
   // Appearance
+  Accent: 'Akzent',
+  'Accent: {name}': 'Akzent: {name}',
+  Violet: 'Violett',
+  Blue: 'Blau',
+  Teal: 'Türkis',
+  Green: 'Grün',
+  Yellow: 'Gelb',
+  Orange: 'Orange',
+  Red: 'Rot',
+  Pink: 'Rosa',
+  Slate: 'Schiefer',
   Appearance: 'Darstellung',
   Light: 'Hell',
   Dark: 'Dunkel',

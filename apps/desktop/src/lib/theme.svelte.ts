@@ -1,3 +1,4 @@
+import { ACCENTS, accentTokens, DEFAULT_ACCENT } from './accents'
 import { invoke, isDesktop } from './tauri'
 
 export type Scheme = 'dark' | 'light'
@@ -19,12 +20,14 @@ const STORAGE_KEY = 'nib:theme'
 const STYLE_ID = 'nib-user-theme'
 const CUSTOM_ID = 'nib-custom-css'
 
+// Two schemes, and a colour of your own on top. More built-in themes only
+// asked people to choose between things that were nearly the same.
 const BUILT_IN: ThemeInfo[] = [
-  { id: 'dark', name: 'Nib dark', scheme: 'dark' },
-  { id: 'light', name: 'Nib light', scheme: 'light' },
-  { id: 'slate', name: 'Slate', scheme: 'dark' },
-  { id: 'paper', name: 'Paper', scheme: 'light' },
+  { id: 'dark', name: 'Dark', scheme: 'dark' },
+  { id: 'light', name: 'Light', scheme: 'light' },
 ]
+
+const ACCENT_KEY = 'nib:accent'
 
 function systemScheme(): Scheme {
   return window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark'
@@ -32,7 +35,10 @@ function systemScheme(): Scheme {
 
 class Themes {
   id = $state<string>('dark')
+  accent = $state<string>(DEFAULT_ACCENT)
   files = $state<ThemeInfo[]>([])
+
+  readonly accents = ACCENTS
 
   readonly all = $derived([...BUILT_IN, ...this.files])
   readonly active = $derived(this.all.find((theme) => theme.id === this.id) ?? BUILT_IN[0])
@@ -41,6 +47,7 @@ class Themes {
   init() {
     const saved = localStorage.getItem(STORAGE_KEY)
     this.id = saved && saved !== 'null' ? saved : systemScheme()
+    this.accent = localStorage.getItem(ACCENT_KEY) ?? DEFAULT_ACCENT
     this.apply()
     void this.reload()
   }
@@ -99,6 +106,21 @@ class Themes {
     localStorage.setItem(STORAGE_KEY, id)
   }
 
+  setAccent(id: string) {
+    this.accent = id
+    localStorage.setItem(ACCENT_KEY, id)
+    this.paintAccent()
+  }
+
+  /** Written straight onto the root element, so it sits above whatever theme
+   *  is underneath, including one loaded from a file. */
+  private paintAccent() {
+    const style = document.documentElement.style
+    for (const [token, value] of Object.entries(accentTokens(this.accent, this.current))) {
+      style.setProperty(token, value)
+    }
+  }
+
   /** The rail's one-click switch: jump to the counterpart scheme. */
   toggle() {
     const wanted: Scheme = this.current === 'dark' ? 'light' : 'dark'
@@ -112,6 +134,7 @@ class Themes {
     // Built-in tokens still provide the base, so a file theme only overrides
     // what it cares about.
     document.documentElement.dataset.theme = theme.path ? theme.scheme : theme.id
+    this.paintAccent()
 
     if (!theme.path) return this.inject('')
     void invoke<string>('read_theme', { path: theme.path }).then((css) => this.inject(css))

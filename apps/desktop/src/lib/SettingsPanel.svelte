@@ -331,10 +331,27 @@
                 data-scheme={item.scheme}
                 onclick={() => theme.select(item.id)}
               >
-                {item.name}
+                {t(item.name)}
               </button>
             {/each}
           </div>
+
+          <label class="field">
+            <span class="label">{t('Accent')}</span>
+            <div class="accents">
+              {#each theme.accents as swatch (swatch.id)}
+                <button
+                  class="swatch"
+                  class:active={theme.accent === swatch.id}
+                  title={t(swatch.name)}
+                  aria-label={t(swatch.name)}
+                  aria-pressed={theme.accent === swatch.id}
+                  style:--swatch={swatch[theme.current]}
+                  onclick={() => theme.setAccent(swatch.id)}
+                ></button>
+              {/each}
+            </div>
+          </label>
           <label class="field">
             <span class="label">{t('Language')}</span>
             <select value={i18n.choice} onchange={(event) => i18n.select(event.currentTarget.value)}>
@@ -583,6 +600,37 @@
     display: flex;
     align-items: center;
     gap: var(--space-2);
+  }
+
+  .accents {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 7px;
+  }
+
+  .swatch {
+    width: 24px;
+    height: 24px;
+    padding: 0;
+    border: none;
+    border-radius: 50%;
+    background: var(--swatch);
+    cursor: default;
+    box-shadow: 0 0 0 0 var(--swatch);
+    transition:
+      box-shadow var(--dur-fast) var(--ease-out),
+      transform var(--dur-base) var(--ease-spring);
+  }
+
+  .swatch:hover {
+    transform: scale(1.12);
+  }
+
+  /* A ring rather than a tick: the colour is the whole point of the control. */
+  .swatch.active {
+    box-shadow:
+      0 0 0 2px var(--surface),
+      0 0 0 4px var(--swatch);
   }
 
   .field select {

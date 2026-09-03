@@ -127,6 +127,17 @@ export const fr: Dictionary = {
   'Actual size': 'Taille réelle',
 
   // Appearance
+  Accent: 'Couleur',
+  'Accent: {name}': 'Couleur : {name}',
+  Violet: 'Violet',
+  Blue: 'Bleu',
+  Teal: 'Turquoise',
+  Green: 'Vert',
+  Yellow: 'Jaune',
+  Orange: 'Orange',
+  Red: 'Rouge',
+  Pink: 'Rose',
+  Slate: 'Ardoise',
   Appearance: 'Apparence',
   Light: 'Clair',
   Dark: 'Sombre',

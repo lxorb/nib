@@ -249,6 +249,12 @@ export function appCommands(view?: EditorView): Command[] {
       hint: item.id === theme.id ? 'current' : undefined,
       run: () => theme.select(item.id),
     })),
+    ...theme.accents.map((swatch) => ({
+      id: `accent:${swatch.id}`,
+      label: t('Accent: {name}', { name: t(swatch.name) }),
+      hint: swatch.id === theme.accent ? 'current' : undefined,
+      run: () => theme.setAccent(swatch.id),
+    })),
     ...CODE_PALETTES.map((palette) => ({
       id: `code-theme:${palette.id}`,
       label: `Code theme: ${palette.name}`,

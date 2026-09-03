@@ -128,6 +128,17 @@ export const gsw: Dictionary = {
   'Actual size': 'Originalgrössi',
 
   // Appearance
+  Accent: 'Akzänt',
+  'Accent: {name}': 'Akzänt: {name}',
+  Violet: 'Violett',
+  Blue: 'Blau',
+  Teal: 'Türkis',
+  Green: 'Grüen',
+  Yellow: 'Gäl',
+  Orange: 'Orange',
+  Red: 'Rot',
+  Pink: 'Rosa',
+  Slate: 'Schiefer',
   Appearance: 'Uusgseh',
   Light: 'Hell',
   Dark: 'Dunkel',

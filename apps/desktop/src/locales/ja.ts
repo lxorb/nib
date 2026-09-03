@@ -126,6 +126,17 @@ export const ja: Dictionary = {
   'Actual size': '実際のサイズ',
 
   // Appearance
+  Accent: 'アクセント',
+  'Accent: {name}': 'アクセント: {name}',
+  Violet: 'バイオレット',
+  Blue: 'ブルー',
+  Teal: 'ティール',
+  Green: 'グリーン',
+  Yellow: 'イエロー',
+  Orange: 'オレンジ',
+  Red: 'レッド',
+  Pink: 'ピンク',
+  Slate: 'スレート',
   Appearance: '外観',
   Light: 'ライト',
   Dark: 'ダーク',
