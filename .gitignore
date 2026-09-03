@@ -15,4 +15,5 @@ Thumbs.db
 services/mcp/target/
 
 # The MCP connector is staged here at build time
-apps/desktop/src-tauri/binaries/
+apps/desktop/src-tauri/binaries/*
+!apps/desktop/src-tauri/binaries/.gitkeep

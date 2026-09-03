@@ -89,6 +89,49 @@
   margin-bottom: 1.1em;
 }
 
+/* The fence's own line carries its language and a copy button. */
+.nib-fence-header {
+  float: right;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-3);
+  font-family: var(--font-ui);
+  font-size: 0.82rem;
+  line-height: 1;
+  color: var(--muted);
+  user-select: none;
+}
+
+.nib-fence-language {
+  letter-spacing: 0.02em;
+}
+
+.nib-fence-copy {
+  padding: 3px 7px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--surface-2);
+  color: var(--muted-strong);
+  font: inherit;
+  cursor: default;
+  opacity: 0;
+  transition:
+    opacity var(--dur-fast) var(--ease-out),
+    background var(--dur-fast) var(--ease-out),
+    color var(--dur-fast) var(--ease-out);
+}
+
+.cm-line.nib-code:hover .nib-fence-copy,
+.nib-fence-header:hover .nib-fence-copy {
+  opacity: 1;
+}
+
+.nib-fence-copy:hover {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+
 /* ── Lists ───────────────────────────────────────────────────────── */
 
 .cm-line.nib-li {

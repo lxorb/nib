@@ -83,6 +83,57 @@ export class CalloutWidget extends WidgetType {
   }
 }
 
+/** Sits on a code fence's top line: what language it is, and a way to take it. */
+export class FenceHeaderWidget extends WidgetType {
+  constructor(
+    private readonly language: string,
+    private readonly code: string,
+  ) {
+    super()
+  }
+
+  eq(other: FenceHeaderWidget) {
+    return other.language === this.language && other.code === this.code
+  }
+
+  toDOM() {
+    const bar = document.createElement('span')
+    bar.className = 'nib-fence-header'
+    bar.contentEditable = 'false'
+
+    if (this.language) {
+      const label = document.createElement('span')
+      label.className = 'nib-fence-language'
+      label.textContent = this.language
+      bar.append(label)
+    }
+
+    const copy = document.createElement('button')
+    copy.className = 'nib-fence-copy'
+    copy.type = 'button'
+    copy.title = 'Copy'
+    copy.setAttribute('aria-label', 'Copy code')
+    copy.textContent = 'Copy'
+
+    copy.addEventListener('mousedown', (event) => {
+      event.preventDefault()
+      event.stopPropagation()
+
+      void navigator.clipboard.writeText(this.code).then(() => {
+        copy.textContent = 'Copied'
+        window.setTimeout(() => (copy.textContent = 'Copy'), 1400)
+      })
+    })
+
+    bar.append(copy)
+    return bar
+  }
+
+  ignoreEvent() {
+    return true
+  }
+}
+
 /** Shows `:smile:` as the character it names. */
 export class EmojiWidget extends WidgetType {
   constructor(private readonly character: string) {

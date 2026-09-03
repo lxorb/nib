@@ -17,6 +17,7 @@ import {
   CalloutWidget,
   CheckboxWidget,
   EmojiWidget,
+  FenceHeaderWidget,
   ImageWidget,
   RuleWidget,
 } from './widgets'
@@ -183,8 +184,19 @@ class Decorator {
 
     this.markLines(node, 'nib-code')
     const doc = this.state.doc
-    this.addLineClass(doc.lineAt(node.from).from, 'nib-code-open')
+    const open = doc.lineAt(node.from)
+    this.addLineClass(open.from, 'nib-code-open')
     this.addLineClass(doc.lineAt(node.to).from, 'nib-code-close')
+
+    // The opening line reads as empty once its fence is hidden, which leaves
+    // room for the language and a copy button.
+    const text = node.getChild('CodeText')
+    this.marks.push(
+      Decoration.widget({
+        widget: new FenceHeaderWidget(language, text ? doc.sliceString(text.from, text.to) : ''),
+        side: 1,
+      }).range(open.to),
+    )
   }
 
   private inlineMath(node: SyntaxNode): boolean | void {

@@ -32,6 +32,8 @@ export interface Heading {
 }
 
 const STORAGE_KEY = 'nib:workspace'
+const AUTO_SAVE_KEY = 'nib:autosave'
+const AUTO_SAVE_DELAY = 1200
 const UNTITLED = 'Untitled'
 
 interface Persisted {
@@ -83,6 +85,9 @@ class Workspace {
   panel = $state<Panel | null>(null)
   /** Path of the tree row currently being renamed in place. */
   renaming = $state<string | null>(null)
+  autoSave = $state(localStorage.getItem(AUTO_SAVE_KEY) !== 'false')
+
+  private saveTimer: ReturnType<typeof setTimeout> | undefined
 
   readonly activeSpace = $derived(this.spaces.find((space) => space.id === this.activeSpaceId) ?? null)
   readonly active = $derived(this.tabs.find((tab) => tab.id === this.activeTabId) ?? null)
@@ -243,6 +248,22 @@ class Workspace {
 
     tab.doc = doc
     tab.dirty = true
+    this.scheduleSave()
+  }
+
+  /** Typora saves as you pause; so does this, but only for notes that already
+   *  live somewhere. An untitled note waits for you to choose a home. */
+  private scheduleSave() {
+    if (!this.autoSave || !this.active?.path) return
+
+    clearTimeout(this.saveTimer)
+    this.saveTimer = setTimeout(() => void this.save(), AUTO_SAVE_DELAY)
+  }
+
+  setAutoSave(on: boolean) {
+    this.autoSave = on
+    localStorage.setItem(AUTO_SAVE_KEY, String(on))
+    if (!on) clearTimeout(this.saveTimer)
   }
 
   async save() {

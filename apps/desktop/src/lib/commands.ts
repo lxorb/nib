@@ -74,6 +74,11 @@ export function appCommands(view?: EditorView): Command[] {
       run: () => workspace.activeTabId && workspace.close(workspace.activeTabId),
     },
     { id: 'space', label: 'Add a space', run: () => void workspace.addSpace() },
+    {
+      id: 'autosave',
+      label: workspace.autoSave ? 'Turn off auto-save' : 'Turn on auto-save',
+      run: () => workspace.setAutoSave(!workspace.autoSave),
+    },
     { id: 'settings', label: 'Settings', hint: 'Ctrl ,', run: () => settings.show() },
 
     ...exportCommands(),
