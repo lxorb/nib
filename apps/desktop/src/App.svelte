@@ -4,6 +4,8 @@
   import Palette from './lib/Palette.svelte'
   import Rail from './lib/Rail.svelte'
   import Sidebar from './lib/Sidebar.svelte'
+  import SignIn from './lib/SignIn.svelte'
+  import { account } from './lib/account.svelte'
   import StatusBar from './lib/StatusBar.svelte'
   import Tabs from './lib/Tabs.svelte'
   import Titlebar from './lib/Titlebar.svelte'
@@ -24,6 +26,7 @@
   theme.init()
   modes.restore()
   void workspace.restore()
+  void account.restore()
 
   // A new view starts with no modes applied, so re-apply on every swap.
   $effect(() => {
@@ -124,6 +127,7 @@
 </main>
 
 <Palette bind:open={palette} {view} />
+<SignIn />
 
 <style>
   main {

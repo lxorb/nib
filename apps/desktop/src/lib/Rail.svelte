@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { account } from './account.svelte'
   import { workspace } from './workspace.svelte'
   import { theme } from './theme.svelte'
 
@@ -28,12 +29,27 @@
     </button>
   </div>
 
-  <button
-    class="add"
-    title={theme.current === 'dark' ? 'Light' : 'Dark'}
-    aria-label="Switch theme"
-    onclick={() => theme.toggle()}
-  >
+  <div class="foot">
+    <button
+      class="add account"
+      class:signed-in={account.signedIn}
+      title={account.user?.email ?? 'Sign in'}
+      aria-label={account.user?.email ?? 'Sign in'}
+      onclick={() => (account.open = true)}
+    >
+      {#if account.signedIn}
+        {initial(account.user!.email)}
+      {:else}
+        <svg viewBox="0 0 14 14"><circle cx="7" cy="4.6" r="2.8" /><path d="M1.6 13a5.4 5.4 0 0 1 10.8 0" /></svg>
+      {/if}
+    </button>
+
+    <button
+      class="add"
+      title={theme.current === 'dark' ? 'Light' : 'Dark'}
+      aria-label="Switch theme"
+      onclick={() => theme.toggle()}
+    >
     {#if theme.current === 'dark'}
       <svg viewBox="0 0 14 14"
         ><circle cx="7" cy="7" r="3" /><path
@@ -41,9 +57,10 @@
         /></svg
       >
     {:else}
-      <svg viewBox="0 0 14 14"><path d="M12 8.6A5.6 5.6 0 1 1 5.4 2a4.4 4.4 0 0 0 6.6 6.6z" /></svg>
-    {/if}
-  </button>
+        <svg viewBox="0 0 14 14"><path d="M12 8.6A5.6 5.6 0 1 1 5.4 2a4.4 4.4 0 0 0 6.6 6.6z" /></svg>
+      {/if}
+    </button>
+  </div>
 </nav>
 
 <style>
@@ -174,8 +191,26 @@
     transform: rotate(90deg);
   }
 
-  nav > .add:hover {
+  .foot {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .foot .add:hover {
     transform: none;
+  }
+
+  .account {
+    font-family: var(--font-ui);
+    font-size: var(--text-sm);
+    font-weight: 620;
+  }
+
+  .account.signed-in {
+    background: var(--surface-3);
+    color: var(--text-strong);
   }
 
   svg {

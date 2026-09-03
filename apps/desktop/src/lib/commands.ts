@@ -1,4 +1,5 @@
 import type { EditorView } from '@nib/editor'
+import { account } from './account.svelte'
 import { modes } from './modes.svelte'
 import { invoke, isDesktop } from './tauri'
 import { theme } from './theme.svelte'
@@ -33,6 +34,10 @@ export function appCommands(view?: EditorView): Command[] {
       run: () => workspace.activeTabId && workspace.close(workspace.activeTabId),
     },
     { id: 'space', label: 'Add a space', run: () => void workspace.addSpace() },
+
+    account.signedIn
+      ? { id: 'signout', label: `Sign out ${account.user?.email ?? ''}`.trim(), run: () => void account.signOut() }
+      : { id: 'signin', label: 'Sign in', run: () => (account.open = true) },
 
     {
       id: 'source',
