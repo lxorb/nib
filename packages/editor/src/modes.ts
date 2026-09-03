@@ -4,6 +4,7 @@ import { syntaxTree } from '@codemirror/language'
 import { commonmarkLanguage, markdown, markdownLanguage } from '@codemirror/lang-markdown'
 import { languages } from '@codemirror/language-data'
 import { livePreview } from './live-preview'
+import { mermaidDescription } from './mermaid'
 import { numberEquations } from './live-preview/blocks'
 import { nibMarkdownExtensions } from './markdown/extensions'
 import { smartPunctuation } from './typography'
@@ -22,7 +23,7 @@ const equations = new Compartment()
 function markdownFor(strict: boolean) {
   return markdown({
     base: strict ? commonmarkLanguage : markdownLanguage,
-    codeLanguages: languages,
+    codeLanguages: [...languages, mermaidDescription],
     extensions: strict ? [] : nibMarkdownExtensions,
   })
 }
