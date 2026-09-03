@@ -4,7 +4,12 @@
 export const MARKDOWN = /\.(md|markdown|mdown|mkd)$/i
 
 export function normalise(path: string): string {
-  return `/${path.replace(/\\/g, '/').replace(/^\/+|\/+$/g, '')}`
+  return `/${path
+    .replace(/\\/g, '/')
+    // Interior runs collapse too, so joining a path that already ends in a
+    // slash to one that starts with one does not leave `//` behind.
+    .replace(/\/+/g, '/')
+    .replace(/^\/+|\/+$/g, '')}`
 }
 
 export function basename(path: string): string {
