@@ -137,12 +137,12 @@ describe('blocks', () => {
     expect(concealed('- [x] done')).toEqual(['- ', '[x]'])
   })
 
-  test('drops the table alignment row entirely', () => {
-    expect(blocks('| a |\n| - |\n| 1 |')).toEqual(['| - |'])
+  test('replaces the whole table with a rendered one', () => {
+    expect(blocks('| a |\n| - |\n| 1 |')).toEqual(['| a |\n| - |\n| 1 |'])
     expect(concealed('| a |\n| - |\n| 1 |')).toEqual([])
   })
 
-  test('keeps the alignment row while the caret is on it', () => {
+  test('falls back to source while the caret is in the table', () => {
     expect(blocks('| a |\n| - |\n| 1 |', 8)).toEqual([])
   })
 })

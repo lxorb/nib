@@ -1,7 +1,8 @@
 import { syntaxTree } from '@codemirror/language'
 import { type EditorState, type Range, StateField } from '@codemirror/state'
 import { Decoration, type DecorationSet, EditorView } from '@codemirror/view'
-import { lineRevealed, overlaps } from './reveal'
+import { TableWidget } from '../table/widget'
+import { overlaps } from './reveal'
 import { DIAGRAM_LANGUAGES, DiagramWidget, MathWidget } from './render'
 
 /** CodeMirror only accepts block-level replacements from a state field, so the
@@ -50,14 +51,19 @@ export function buildBlockDecorations(state: EditorState): DecorationSet {
           return false
         }
 
-        case 'TableDelimiter': {
-          // The `| --- |` row only tells the parser about alignment. Drop the
-          // whole line so the table has no gap under its header.
-          if (node.node.parent?.name !== 'Table') return false
-          if (lineRevealed(state, node.from)) return false
+        case 'Table': {
+          // Clicks inside the widget do not move CodeMirror's selection, so the
+          // rendered table stays up while its cells are edited. Source only
+          // shows while the caret is genuinely in the table's text.
+          if (overlaps(state, node.from, node.to)) return true
 
-          const line = doc.lineAt(node.from)
-          ranges.push(Decoration.replace({ block: true }).range(line.from, line.to))
+          const span = wholeLines(node.from, node.to)
+          ranges.push(
+            Decoration.replace({
+              widget: new TableWidget(doc.sliceString(span.from, span.to), span.from, span.to),
+              block: true,
+            }).range(span.from, span.to),
+          )
           return false
         }
 

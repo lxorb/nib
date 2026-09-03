@@ -197,6 +197,7 @@
 
 /* ── Tables ──────────────────────────────────────────────────────── */
 
+/* Source view, shown only while the caret is inside the table's text. */
 .cm-line.nib-table {
   font-family: var(--font-mono);
   font-size: 0.88em;
@@ -204,6 +205,132 @@
 
 .nib-table-pipe {
   color: var(--line-strong);
+}
+
+/* Rendered, editable table. */
+.nib-table-wrap {
+  position: relative;
+  margin: 1.6em 0;
+  padding: 20px 0 0 26px;
+  overflow-x: auto;
+  animation: settle-in var(--dur-base) var(--ease-out);
+}
+
+.nib-table {
+  border-collapse: collapse;
+  font-family: var(--font-content);
+  font-size: 0.94em;
+  min-width: 60%;
+}
+
+.nib-table th,
+.nib-table td {
+  position: relative;
+  border: 1px solid var(--table-border-color);
+  padding: 0.44em 0.7em;
+  min-width: 3.5em;
+  text-align: left;
+  vertical-align: top;
+  outline: none;
+  transition: background var(--dur-fast) var(--ease-out);
+}
+
+.nib-table th {
+  background: var(--surface);
+  font-weight: 620;
+  color: var(--text-strong);
+}
+
+.nib-table tr {
+  position: relative;
+}
+
+.nib-table tbody tr:hover td {
+  background: color-mix(in srgb, var(--surface) 55%, transparent);
+}
+
+.nib-table th:focus,
+.nib-table td:focus {
+  box-shadow: inset 0 0 0 2px var(--accent);
+  background: var(--accent-soft);
+}
+
+/* Controls stay out of the way until the cell they belong to is engaged. */
+.nib-table-controls,
+.nib-table-grip {
+  display: flex;
+  gap: 1px;
+  opacity: 0;
+  pointer-events: none;
+  transition:
+    opacity var(--dur-fast) var(--ease-out),
+    transform var(--dur-base) var(--ease-out);
+}
+
+.nib-table-controls {
+  position: absolute;
+  bottom: 100%;
+  left: -1px;
+  padding-bottom: 3px;
+  transform: translateY(4px);
+}
+
+.nib-table-grip {
+  position: absolute;
+  left: -26px;
+  top: 0;
+  height: 100%;
+  align-items: center;
+  border: none;
+  padding: 0;
+  transform: translateX(4px);
+}
+
+.nib-table th:hover .nib-table-controls,
+.nib-table th:focus-within .nib-table-controls,
+.nib-table tr:hover .nib-table-grip,
+.nib-table tr:focus-within .nib-table-grip {
+  opacity: 1;
+  pointer-events: auto;
+  transform: none;
+}
+
+.nib-table-btn {
+  width: 17px;
+  height: 17px;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  background: var(--surface-2);
+  color: var(--muted-strong);
+  cursor: pointer;
+  transition:
+    background var(--dur-instant) var(--ease-out),
+    color var(--dur-instant) var(--ease-out),
+    transform var(--dur-fast) var(--ease-spring);
+}
+
+.nib-table-btn:hover {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+  transform: scale(1.14);
+}
+
+.nib-table-btn-danger:hover {
+  background: var(--danger);
+  border-color: var(--danger);
+}
+
+.nib-table-btn svg {
+  width: 9px;
+  height: 9px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.3;
+  stroke-linecap: round;
 }
 
 /* ── Subscript and superscript ───────────────────────────────────── */

@@ -240,9 +240,9 @@ class Decorator {
     return false
   }
 
-  /** Cell separators dim; the alignment row is dropped whole by blocks.ts. */
+  /** Only reached while the caret is in the table's source; blocks.ts renders
+   *  the real table otherwise. Dimming the pipes keeps the source readable. */
   private tableDelimiter(node: SyntaxNode) {
-    if (node.parent?.name === 'Table') return
     this.marks.push(Decoration.mark({ class: 'nib-table-pipe' }).range(node.from, node.to))
   }
 

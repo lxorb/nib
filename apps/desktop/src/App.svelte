@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { flushTableEdits } from '@nib/editor'
   import Editor from './lib/Editor.svelte'
   import Titlebar from './lib/Titlebar.svelte'
   import { theme } from './lib/theme.svelte'
@@ -36,6 +37,10 @@ Put your cursor on this line and the **syntax** bleeds back in.
   }
 
   async function save() {
+    // A cell being edited holds its text until it loses focus, so make sure it
+    // has reached the document before anything is written to disk.
+    flushTableEdits()
+
     if (!path) {
       const { save: pick } = await import('@tauri-apps/plugin-dialog')
       const picked = await pick({ defaultPath: 'untitled.md' })
