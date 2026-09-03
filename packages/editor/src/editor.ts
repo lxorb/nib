@@ -9,6 +9,7 @@ import { EditorView, drawSelection, dropCursor, highlightActiveLine, keymap } fr
 import { emojiCompletion } from './emoji'
 import { imageHandling, imageResolver, type ImageSink } from './images'
 import { nibKeymap } from './keymap'
+import { richPaste } from './paste'
 import { nibMarkdownExtensions } from './markdown/extensions'
 import { modeExtensions } from './modes'
 import { nibHighlightStyle, nibTheme } from './theme'
@@ -55,7 +56,9 @@ export function createEditor({
         syntaxHighlighting(nibHighlightStyle),
         modeExtensions(),
         emojiCompletion(),
+        // Images are checked first, so a screenshot beats the HTML around it.
         ...(onImage ? [imageHandling(onImage)] : []),
+        richPaste(),
         ...(resolveImage ? [imageResolver.of(resolveImage)] : []),
         nibTheme,
         keymap.of([

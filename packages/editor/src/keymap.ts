@@ -16,6 +16,7 @@ import {
   toggleQuote,
   toggleWrap,
 } from './commands'
+import { copyMarkdown, pastePlain } from './paste'
 
 const WORD = /[\p{L}\p{N}_]/u
 
@@ -74,4 +75,7 @@ export const nibKeymap: KeyBinding[] = [
 
   { key: 'Mod-d', run: selectWord, preventDefault: true },
   { key: 'Mod-l', run: selectLine, preventDefault: true },
+
+  copyMarkdown,
+  pastePlain,
 ]
