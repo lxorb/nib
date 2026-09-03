@@ -75,7 +75,11 @@ pub fn read_asset(path: String) -> Result<String, String> {
     }
 
     let bytes = fs::read(&target).map_err(|e| e.to_string())?;
-    Ok(format!("data:{};base64,{}", mime_of(&target), encode(&bytes)))
+    Ok(format!(
+        "data:{};base64,{}",
+        mime_of(&target),
+        encode(&bytes)
+    ))
 }
 
 fn mime_of(path: &Path) -> &'static str {
@@ -98,16 +102,14 @@ fn mime_of(path: &Path) -> &'static str {
 }
 
 fn encode(bytes: &[u8]) -> String {
-    const ALPHABET: &[u8; 64] =
-        b"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+    const ALPHABET: &[u8; 64] = b"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 
     let mut out = String::with_capacity(bytes.len().div_ceil(3) * 4);
 
     for chunk in bytes.chunks(3) {
-        let block = chunk
-            .iter()
-            .enumerate()
-            .fold(0u32, |acc, (i, byte)| acc | (u32::from(*byte) << (16 - 8 * i)));
+        let block = chunk.iter().enumerate().fold(0u32, |acc, (i, byte)| {
+            acc | (u32::from(*byte) << (16 - 8 * i))
+        });
 
         for i in 0..4 {
             // The tail is padded to a whole quantum with `=`.
@@ -307,7 +309,8 @@ fn tags_in(body: &str) -> Vec<String> {
             // A tag starts a word, so what comes before must be a space.
             let opens = i == 0 || chars[i - 1].is_whitespace() || chars[i - 1] == '(';
             let mut end = i + 1;
-            while end < chars.len() && (chars[end].is_alphanumeric() || "-_/".contains(chars[end])) {
+            while end < chars.len() && (chars[end].is_alphanumeric() || "-_/".contains(chars[end]))
+            {
                 end += 1;
             }
 
@@ -462,7 +465,10 @@ mod tests {
 
     #[test]
     fn keeps_the_characters_a_tag_may_contain() {
-        assert_eq!(tags_in("#work/2026 #a-b #c_d"), vec!["#work/2026", "#a-b", "#c_d"]);
+        assert_eq!(
+            tags_in("#work/2026 #a-b #c_d"),
+            vec!["#work/2026", "#a-b", "#c_d"]
+        );
     }
 
     #[test]
@@ -481,6 +487,9 @@ mod tests {
         assert_eq!(mime_of(Path::new("a/b.jpeg")), "image/jpeg");
         assert_eq!(mime_of(Path::new("a/b.svg")), "image/svg+xml");
         assert_eq!(mime_of(Path::new("a/b.xyz")), "application/octet-stream");
-        assert_eq!(mime_of(Path::new("noextension")), "application/octet-stream");
+        assert_eq!(
+            mime_of(Path::new("noextension")),
+            "application/octet-stream"
+        );
     }
 }

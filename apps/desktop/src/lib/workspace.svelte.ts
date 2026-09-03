@@ -324,7 +324,9 @@ class Workspace {
     this.remember(path)
 
     // A blank untouched tab is scaffolding, not something worth keeping around.
-    this.tabs = this.tabs.filter((other) => other === tab || other.path || other.dirty)
+    // Compared by id: `this.tabs` holds reactive proxies, so `=== tab` on the
+    // object that was just pushed is never true.
+    this.tabs = this.tabs.filter((other) => other.id === tab.id || other.path || other.dirty)
     this.persist()
   }
 

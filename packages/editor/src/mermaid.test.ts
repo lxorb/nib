@@ -1,10 +1,10 @@
 import { describe, expect, test } from 'vitest'
 import { StringStream } from '@codemirror/language'
-import { mermaidLanguage } from './mermaid'
+import { mermaidParser } from './mermaid'
 
 /** The tokens one line produces, as `[text, type]` pairs, skipping whitespace. */
 function tokens(line: string): [string, string | null][] {
-  const streamParser = mermaidLanguage.streamParser
+  const streamParser = mermaidParser
   const state = streamParser.startState!(2)
   const stream = new StringStream(line, 2, 2)
   const out: [string, string | null][] = []
@@ -32,7 +32,7 @@ describe('highlighting a mermaid fence', () => {
   })
 
   test('marks it only at the top, so a node called graph stays a node', () => {
-    const streamParser = mermaidLanguage.streamParser
+    const streamParser = mermaidParser
     const state = streamParser.startState!(2)
 
     const first = new StringStream('graph TD', 2, 2)

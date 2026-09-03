@@ -1,5 +1,10 @@
-import { LanguageSupport, StreamLanguage, type StringStream } from '@codemirror/language'
-import { LanguageDescription } from '@codemirror/language'
+import {
+  LanguageDescription,
+  LanguageSupport,
+  StreamLanguage,
+  type StreamParser,
+  type StringStream,
+} from '@codemirror/language'
 
 /** The word that opens a diagram, which is the one thing every Mermaid dialect
  *  agrees on. */
@@ -13,7 +18,12 @@ const KEYWORDS =
 /** Arrows and links, the part that carries the meaning. */
 const ARROW = /^(-{1,3}[->x)]+|={1,3}[=>]+|\.-+[.>]*|-\.->?|<-{1,2}>?|:{2,3}|--[ox]|o--o|x--x)/
 
-export const mermaidLanguage = StreamLanguage.define<{ diagram: boolean }>({
+interface MermaidState {
+  /** Set once the opening word is seen, so a later `graph` is just a node. */
+  diagram: boolean
+}
+
+export const mermaidParser: StreamParser<MermaidState> = {
   name: 'mermaid',
 
   startState: () => ({ diagram: false }),
@@ -42,7 +52,9 @@ export const mermaidLanguage = StreamLanguage.define<{ diagram: boolean }>({
   },
 
   languageData: { commentTokens: { line: '%%' } },
-})
+}
+
+export const mermaidLanguage = StreamLanguage.define(mermaidParser)
 
 /** Registered the way `@codemirror/language-data` registers everything else, so
  *  a ` ```mermaid ` fence highlights in source mode and while the diagram is
