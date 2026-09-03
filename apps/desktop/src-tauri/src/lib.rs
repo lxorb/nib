@@ -1,15 +1,33 @@
 mod export;
+mod launch;
 mod mcp;
 mod notes;
 mod themes;
 
-use tauri::Manager;
+use launch::{markdown_paths, Pending};
+use tauri::{Emitter, Manager};
 
 pub fn run() {
-    tauri::Builder::default()
+    let mut builder = tauri::Builder::default();
+
+    // A second launch belongs to the window that is already open: it raises it
+    // and hands over whatever file it was asked to open.
+    #[cfg(desktop)]
+    {
+        builder = builder.plugin(tauri_plugin_single_instance::init(|app, argv, _cwd| {
+            if let Some(window) = app.get_webview_window("main") {
+                let _ = window.unminimize();
+                let _ = window.set_focus();
+            }
+            let _ = app.emit("nib://open-files", markdown_paths(argv));
+        }));
+    }
+
+    builder
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_fs::init())
+        .manage(Pending::default())
         .invoke_handler(tauri::generate_handler![
             notes::read_note,
             notes::write_note,
@@ -21,14 +39,22 @@ pub fn run() {
             notes::save_asset,
             notes::search_space,
             mcp::mcp_config,
-            export::has_pandoc,
-            export::run_pandoc,
-            export::import_document,
             themes::theme_dir,
             themes::list_themes,
             themes::read_theme,
+            export::has_pandoc,
+            export::run_pandoc,
+            export::import_document,
+            launch::take_startup_files,
         ])
         .setup(|app| {
+            let files = markdown_paths(std::env::args());
+            if !files.is_empty() {
+                if let Ok(mut pending) = app.state::<Pending>().0.lock() {
+                    *pending = files;
+                }
+            }
+
             if let Some(window) = app.get_webview_window("main") {
                 window.show()?;
             }

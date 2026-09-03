@@ -46,7 +46,7 @@
   theme.init()
   modes.restore()
   settings.restore()
-  void workspace.restore()
+  void workspace.restore().then(openLaunchFiles)
   void account.restore()
 
   // A new view starts with no modes applied, so re-apply on every swap.
@@ -74,6 +74,20 @@
       effects: EditorView.scrollIntoView(target.from, { y: 'start', yMargin: 72 }),
     })
     view.focus()
+  }
+
+  /** Files named on the command line, and any handed over by a second launch. */
+  async function openLaunchFiles() {
+    if (!isDesktop) return
+
+    for (const path of await invoke<string[]>('take_startup_files').catch(() => [])) {
+      await workspace.open(path)
+    }
+
+    const { listen } = await import('@tauri-apps/api/event')
+    void listen<string[]>('nib://open-files', async (event) => {
+      for (const path of event.payload) await workspace.open(path)
+    })
   }
 
   function runCommand(command: StateCommand) {
