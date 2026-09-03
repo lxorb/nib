@@ -376,6 +376,15 @@
 
           <button class="quiet" onclick={() => theme.reload()}>{t('Reload themes and custom CSS')}</button>
 
+          <label class="switch">
+            <input
+              type="checkbox"
+              checked={workspace.autoSave}
+              onchange={(event) => workspace.setAutoSave(event.currentTarget.checked)}
+            />
+            <span>{t('Save notes as I type')}</span>
+          </label>
+
           {#if isWindows}
             <label class="switch">
               <input

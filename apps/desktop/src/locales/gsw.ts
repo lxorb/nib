@@ -150,6 +150,7 @@ export const gsw: Dictionary = {
   'Edit custom CSS': 'Eiges CSS bearbeite',
   'Edit snippets': 'Textbaustei bearbeite',
   'Reload themes and custom CSS': 'Designs und eiges CSS neu lade',
+  'Save notes as I type': 'Notize spichere, wärend i tippe',
   'Offer a markdown document in Explorer’s New menu':
     'Es Markdown-Dokumänt im „Nöi“-Menü vom Explorer aabiete',
   'Open the log file': 'Protokolldatei ufmache',
