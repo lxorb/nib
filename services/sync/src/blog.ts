@@ -1,5 +1,19 @@
-import { marked } from 'marked'
+import { documentTitle, renderMarkdown } from '@nib/markdown'
 import type { Env, Note, Space } from './types'
+
+const KATEX_CSS = 'https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css'
+
+/** Scripts cannot run on a published note, whatever its markdown contained. */
+const CSP = [
+  "default-src 'none'",
+  "script-src 'none'",
+  `style-src 'unsafe-inline' ${new URL(KATEX_CSS).origin}`,
+  `font-src ${new URL(KATEX_CSS).origin}`,
+  'img-src https: data:',
+  "base-uri 'none'",
+  "form-action 'none'",
+  "frame-ancestors 'none'",
+].join('; ')
 
 /** Which space, if any, a hostname publishes. */
 export async function spaceForHost(env: Env, host: string): Promise<Space | null> {
@@ -39,9 +53,11 @@ export function slugFor(path: string): string {
 }
 
 function title(note: Note, body: string): string {
-  const heading = /^#\s+(.+)$/m.exec(body)
-  if (heading) return heading[1].trim()
-  return note.path.replace(/\.(md|markdown|mdown|mkd)$/i, '').split('/').pop() ?? note.path
+  return (
+    documentTitle(body) ??
+    note.path.replace(/\.(md|markdown|mdown|mkd)$/i, '').split('/').pop() ??
+    note.path
+  )
 }
 
 function escape(text: string): string {
@@ -84,6 +100,7 @@ function page(heading: string, body: string, env: Env): Response {
 <html lang="en"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>${escape(heading)}</title>
+<link rel="stylesheet" href="${KATEX_CSS}">
 <style>${STYLE}</style>
 </head><body><main>${body}
 <footer>Published with <a href="${env.APP_ORIGIN}">Nib</a></footer>
@@ -93,6 +110,9 @@ function page(heading: string, body: string, env: Env): Response {
     headers: {
       'content-type': 'text/html; charset=utf-8',
       'cache-control': 'public, max-age=60',
+      'content-security-policy': CSP,
+      'referrer-policy': 'strict-origin-when-cross-origin',
+      'x-content-type-options': 'nosniff',
     },
   })
 }
@@ -128,11 +148,9 @@ export async function serveBlog(env: Env, space: Space, url: URL): Promise<Respo
 
   const object = await env.NOTES.get(`spaces/${space.id}/${note.id}`)
   const source = object ? await object.text() : ''
-  const rendered = await marked.parse(stripFrontMatter(source), { gfm: true, breaks: false })
+
+  // A published note is public: its raw HTML is shown, never run.
+  const rendered = renderMarkdown(source, { footnotes: true, escapeHtml: true })
 
   return page(title(note, source), `${rendered}<p><a href="/">← ${escape(heading)}</a></p>`, env)
-}
-
-function stripFrontMatter(source: string): string {
-  return source.startsWith('---') ? source.replace(/^---\r?\n[\s\S]*?\r?\n---\r?\n?/, '') : source
 }

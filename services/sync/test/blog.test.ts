@@ -119,6 +119,44 @@ describe('publishing', () => {
   })
 })
 
+describe('a published note cannot script the reader', () => {
+  test('raw HTML in a note is shown, not run', async () => {
+    await call(env, `/v1/spaces/${space}/notes`, {
+      token,
+      body: { path: 'nasty.md', content: '# Nasty\n\n<script>alert(1)</script>\n' },
+    })
+    await publish({ subdomain: 'field' })
+
+    const response = await call(env, '/nasty', { host: 'field.icinoxis.net' })
+    expect(response.text).not.toContain('<script>alert(1)</script>')
+    expect(response.text).toContain('&lt;script&gt;')
+  })
+
+  test('every page forbids scripts outright', async () => {
+    await publish({ subdomain: 'field' })
+
+    const response = await call(env, '/', { host: 'field.icinoxis.net' })
+    const policy = response.headers.get('content-security-policy') ?? ''
+
+    expect(policy).toContain("script-src 'none'")
+    expect(policy).toContain("form-action 'none'")
+    expect(response.headers.get('x-content-type-options')).toBe('nosniff')
+  })
+
+  test('markdown still renders fully', async () => {
+    await call(env, `/v1/spaces/${space}/notes`, {
+      token,
+      body: { path: 'rich.md', content: '# Rich\n\n==marked== and $E=mc^2$ and H~2~O\n' },
+    })
+    await publish({ subdomain: 'field' })
+
+    const response = await call(env, '/rich', { host: 'field.icinoxis.net' })
+    expect(response.text).toContain('<mark>marked</mark>')
+    expect(response.text).toContain('katex')
+    expect(response.text).toContain('<sub>2</sub>')
+  })
+})
+
 describe('choosing a subdomain', () => {
   test('reserved names are refused', async () => {
     expect((await publish({ subdomain: 'www' })).status).toBe(409)
