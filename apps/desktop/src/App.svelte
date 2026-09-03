@@ -29,7 +29,6 @@
   import { settings } from './lib/settings.svelte'
   import { sync } from './lib/sync.svelte'
   import StatusBar from './lib/StatusBar.svelte'
-  import Tabs from './lib/Tabs.svelte'
   import Titlebar from './lib/Titlebar.svelte'
   import { modes } from './lib/modes.svelte'
   import { imageUrl } from './lib/images'
@@ -47,6 +46,14 @@
       ? `${workspace.active.name.replace(/\.(md|markdown|mdown|mkd)$/i, '')}${workspace.active.dirty ? ' ·' : ''}`
       : '',
   )
+
+  // The header shows no title, so the note's name goes to the window itself —
+  // which is what the taskbar and the window switcher read.
+  $effect(() => {
+    const next = title ? `${title} — Nib` : 'Nib'
+    document.title = next
+    if (isDesktop) void currentWindow().then((window) => window.setTitle(next))
+  })
 
   collectErrors()
   i18n.restore()
@@ -216,9 +223,9 @@
 
 <!-- The titlebar spans the whole window, so the rail, the sidebar and the
      document all start on the same line. -->
+<!-- The rail and the sidebar run the full height, so the window's one header
+     row sits beside them rather than above everything. -->
 <main class:focus={modes.focus}>
-  <Titlebar {title} />
-
   <div class="middle">
     <Rail />
 
@@ -227,9 +234,7 @@
     {/if}
 
     <div class="document">
-      {#if workspace.tabs.length > 1}
-        <Tabs />
-      {/if}
+      <Titlebar />
 
       <!-- svelte-ignore a11y_no_static_element_interactions -->
       <div class="editor" oncontextmenu={(event) => menu.show(event, editorMenu())}>

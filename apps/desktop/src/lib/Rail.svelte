@@ -44,28 +44,27 @@
   </div>
 
   <div class="foot">
+    <!-- Sliders, not a cog: the cog reads as the sun in the theme button. -->
     <button class="add" title={t('Settings')} aria-label={t('Settings')} onclick={() => settings.show()}>
       <svg viewBox="0 0 14 14">
-        <circle cx="7" cy="7" r="2.4" />
-        <path
-          d="M7 1v1.6M7 11.4V13M1 7h1.6M11.4 7H13M2.8 2.8l1.1 1.1M10.1 10.1l1.1 1.1M11.2 2.8l-1.1 1.1M3.9 10.1l-1.1 1.1"
-        />
+        <path d="M1 3.5h3M7 3.5h6M1 10.5h6M10 10.5h3" />
+        <circle cx="5.5" cy="3.5" r="1.6" />
+        <circle cx="8.5" cy="10.5" r="1.6" />
       </svg>
     </button>
 
-    <button
-      class="add account"
-      class:signed-in={account.signedIn}
-      title={account.user?.email ?? t('Sign in')}
-      aria-label={account.user?.email ?? t('Sign in')}
-      onclick={() => (account.open = true)}
-    >
-      {#if account.signedIn}
-        {initial(account.user!.email)}
-      {:else}
+    <!-- Signing in is the only thing this button is for, so once there is an
+         account it has nothing left to do; the settings sheet owns it. -->
+    {#if !account.signedIn}
+      <button
+        class="add account"
+        title={t('Sign in')}
+        aria-label={t('Sign in')}
+        onclick={() => (account.open = true)}
+      >
         <svg viewBox="0 0 14 14"><circle cx="7" cy="4.6" r="2.8" /><path d="M1.6 13a5.4 5.4 0 0 1 10.8 0" /></svg>
-      {/if}
-    </button>
+      </button>
+    {/if}
 
     <button
       class="add"
@@ -229,11 +228,6 @@
     font-family: var(--font-ui);
     font-size: var(--text-sm);
     font-weight: 620;
-  }
-
-  .account.signed-in {
-    background: var(--surface-3);
-    color: var(--text-strong);
   }
 
   svg {

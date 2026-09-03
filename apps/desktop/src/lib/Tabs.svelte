@@ -57,15 +57,15 @@
 </div>
 
 <style>
+  /* Shrinks before the window controls do, and scrolls once it runs out. */
   .tabs {
     display: flex;
     align-items: stretch;
     gap: 2px;
-    flex: none;
-    padding: 0 var(--space-2);
+    min-width: 0;
+    padding: 0 var(--space-1);
     overflow-x: auto;
     scrollbar-width: none;
-    border-bottom: 1px solid var(--line);
   }
 
   .tab {
