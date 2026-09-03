@@ -2,6 +2,8 @@ import { markdown, markdownLanguage } from '@codemirror/lang-markdown'
 import { EditorSelection, EditorState } from '@codemirror/state'
 import { describe, expect, test } from 'vitest'
 import { buildDecorations } from './decorate'
+import { buildBlockDecorations } from './blocks'
+import { nibMarkdownExtensions } from '../markdown/extensions'
 
 /** Somewhere to park the caret that is outside every construct under test. */
 const PARK = '\n\nx'
@@ -10,7 +12,9 @@ function state(doc: string, cursor: number) {
   return EditorState.create({
     doc,
     selection: EditorSelection.cursor(cursor),
-    extensions: [markdown({ base: markdownLanguage })],
+    extensions: [
+      markdown({ base: markdownLanguage, extensions: nibMarkdownExtensions }),
+    ],
   })
 }
 
@@ -22,6 +26,18 @@ function concealed(doc: string, cursor?: number): string[] {
 
   const out: string[] = []
   atomic.between(0, full.length, (from, to) => {
+    out.push(full.slice(from, to))
+  })
+  return out
+}
+
+/** Whole-line constructs replaced by a rendered block: math and diagrams. */
+function blocks(doc: string, cursor?: number): string[] {
+  const full = cursor === undefined ? doc + PARK : doc
+  const pos = cursor ?? full.length
+
+  const out: string[] = []
+  buildBlockDecorations(state(full, pos)).between(0, full.length, (from, to) => {
     out.push(full.slice(from, to))
   })
   return out
@@ -121,8 +137,13 @@ describe('blocks', () => {
     expect(concealed('- [x] done')).toEqual(['- ', '[x]'])
   })
 
-  test('hides the table alignment row', () => {
-    expect(concealed('| a |\n| - |\n| 1 |')).toEqual(['| - |'])
+  test('drops the table alignment row entirely', () => {
+    expect(blocks('| a |\n| - |\n| 1 |')).toEqual(['| - |'])
+    expect(concealed('| a |\n| - |\n| 1 |')).toEqual([])
+  })
+
+  test('keeps the alignment row while the caret is on it', () => {
+    expect(blocks('| a |\n| - |\n| 1 |', 8)).toEqual([])
   })
 })
 
@@ -134,6 +155,50 @@ describe('images', () => {
   test('shows the source once the caret enters it', () => {
     expect(concealed('![alt](pic.png)', 3)).toEqual([])
     expect(revealedMeta('![alt](pic.png)', 3)).toEqual(['![', ']', '(', 'pic.png', ')'])
+  })
+})
+
+describe('extensions', () => {
+  test('replaces inline math with a rendered widget', () => {
+    expect(concealed('mass $E=mc^2$ here')).toEqual(['$E=mc^2$'])
+  })
+
+  test('reveals math source when the caret enters it', () => {
+    expect(revealedMeta('mass $E=mc^2$ here', 8)).toEqual(['$', '$'])
+  })
+
+  test('replaces a block math fence', () => {
+    expect(blocks('$$\nE = mc^2\n$$')).toEqual(['$$\nE = mc^2\n$$'])
+  })
+
+  test('hides highlight markers', () => {
+    expect(concealed('a ==marked== b')).toEqual(['==', '=='])
+  })
+
+  test('hides footnote reference brackets', () => {
+    expect(concealed('text[^1] more')).toEqual(['[^', ']'])
+  })
+
+  test('hides front matter fences', () => {
+    expect(concealed('---\ntitle: Hi\n---\n\nbody')).toEqual(['---', '---'])
+  })
+
+  test('replaces a callout tag with its label', () => {
+    expect(concealed('> [!NOTE]\n> careful')).toEqual(['> ', '[!NOTE]', '> '])
+  })
+
+  test('replaces a mermaid fence with a diagram', () => {
+    expect(blocks('```mermaid\ngraph TD;\nA-->B;\n```')).toEqual([
+      '```mermaid\ngraph TD;\nA-->B;\n```',
+    ])
+  })
+
+  test('leaves a diagram fence as source while the caret is inside', () => {
+    expect(blocks('```mermaid\ngraph TD;\n```', 14)).toEqual([])
+  })
+
+  test('leaves a normal code fence as code', () => {
+    expect(concealed('```js\nlet x\n```')).toEqual(['```', 'js', '```'])
   })
 })
 

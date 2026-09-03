@@ -63,6 +63,25 @@ export class RuleWidget extends WidgetType {
   }
 }
 
+/** GitHub-style alert headers. The kind is the one word worth showing. */
+export class CalloutWidget extends WidgetType {
+  constructor(private readonly kind: string) {
+    super()
+  }
+
+  eq(other: CalloutWidget) {
+    return other.kind === this.kind
+  }
+
+  toDOM() {
+    const label = document.createElement('span')
+    label.className = 'nib-callout-label'
+    label.dataset.kind = this.kind
+    label.textContent = this.kind.charAt(0).toUpperCase() + this.kind.slice(1)
+    return label
+  }
+}
+
 export class ImageWidget extends WidgetType {
   constructor(
     private readonly src: string,

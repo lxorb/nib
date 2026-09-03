@@ -1,9 +1,17 @@
 import { syntaxTree } from '@codemirror/language'
 import type { EditorState, Range } from '@codemirror/state'
-import { Decoration, type DecorationSet, EditorView, ViewPlugin, type ViewUpdate, type WidgetType } from '@codemirror/view'
+import {
+  Decoration,
+  type DecorationSet,
+  EditorView,
+  ViewPlugin,
+  type ViewUpdate,
+  type WidgetType,
+} from '@codemirror/view'
 import type { SyntaxNode } from '@lezer/common'
-import { lineRevealed, revealed } from './reveal'
-import { BulletWidget, CheckboxWidget, ImageWidget, RuleWidget } from './widgets'
+import { lineRevealed, overlaps, revealed } from './reveal'
+import { DIAGRAM_LANGUAGES, MathWidget } from './render'
+import { BulletWidget, CalloutWidget, CheckboxWidget, ImageWidget, RuleWidget } from './widgets'
 
 const hide = Decoration.replace({})
 const meta = Decoration.mark({ class: 'md-meta' })
@@ -15,23 +23,31 @@ const INLINE_MARKS = new Set([
   'SubscriptMark',
   'SuperscriptMark',
   'HighlightMark',
+  'MathMark',
+  'FootnoteMark',
+  'FrontMatterMark',
   'LinkMark',
   'URL',
   'LinkTitle',
 ])
 
 const HEADING = /^(?:ATX|Setext)Heading(\d)$/
+const CALLOUT = /^>\s*\[!(note|tip|important|warning|caution)\]/i
 
 const LINE_CLASS: Record<string, string> = {
-  Blockquote: 'nib-quote',
   CodeBlock: 'nib-code',
   Table: 'nib-table',
+  FrontMatter: 'nib-frontmatter',
+  FootnoteDef: 'nib-footnote',
 }
 
 class Decorator {
   private readonly marks: Range<Decoration>[] = []
   private readonly hidden: Range<Decoration>[] = []
   private readonly lineClasses = new Map<number, Set<string>>()
+  /** Spans already replaced wholesale. Nested syntax inside them must not be
+   *  decorated again, or the two replacements would overlap and throw. */
+  private readonly claimed: { from: number; to: number }[] = []
 
   constructor(private readonly state: EditorState) {}
 
@@ -58,17 +74,13 @@ class Decorator {
     const name = node.name
 
     const heading = HEADING.exec(name)
-    if (heading) {
-      this.markLines(node, `nib-h${heading[1]}`)
-      return
-    }
+    if (heading) return this.markLines(node, `nib-h${heading[1]}`)
 
-    if (LINE_CLASS[name]) {
-      this.markLines(node, LINE_CLASS[name])
-      return
-    }
+    if (LINE_CLASS[name]) return this.markLines(node, LINE_CLASS[name])
 
     switch (name) {
+      case 'Blockquote':
+        return this.blockquote(node)
       case 'FencedCode':
         return this.fence(node)
       case 'ListItem':
@@ -76,7 +88,7 @@ class Decorator {
       case 'HeaderMark':
       case 'QuoteMark':
         // Block marks follow the caret's line, and swallow the space after them
-        // so hiding `# ` does not leave the heading indented by one column.
+        // so hiding `# ` does not indent the heading by one column.
         return this.conceal(node.from, this.eatSpace(node.to), lineRevealed(this.state, node.from))
       case 'CodeMark':
         // A fence's ``` follows the caret's line; inline backticks follow the span.
@@ -92,36 +104,94 @@ class Decorator {
       case 'TaskMarker':
         return this.taskMarker(node)
       case 'HorizontalRule':
-        return this.replaceWith(node.from, node.to, new RuleWidget(), lineRevealed(this.state, node.from))
+        return this.inlineWidget(node, new RuleWidget(), lineRevealed(this.state, node.from))
       case 'Image':
         return this.image(node)
+      case 'InlineMath':
+        return this.inlineMath(node)
+      case 'BlockMath':
+        return this.blockMath(node)
       case 'CodeInfo':
         return this.conceal(node.from, node.to, lineRevealed(this.state, node.from))
       case 'TableDelimiter':
         return this.tableDelimiter(node)
+      case 'Subscript':
+        return void this.marks.push(Decoration.mark({ class: 'nib-sub' }).range(node.from, node.to))
+      case 'Superscript':
+        return void this.marks.push(Decoration.mark({ class: 'nib-sup' }).range(node.from, node.to))
       default:
         if (INLINE_MARKS.has(name)) this.conceal(node.from, node.to, revealed(this.state, node))
     }
   }
 
+  private isClaimed(from: number, to: number): boolean {
+    return this.claimed.some((range) => from >= range.from && to <= range.to)
+  }
+
   /** Hidden when inactive; tagged `.md-meta` when shown so it bleeds back in. */
   private conceal(from: number, to: number, show: boolean) {
-    if (from >= to) return
+    if (from >= to || this.isClaimed(from, to)) return
     if (show) this.marks.push(meta.range(from, to))
     else this.hidden.push(hide.range(from, to))
   }
 
-  private replaceWith(from: number, to: number, widget: WidgetType, show: boolean) {
-    if (show || from >= to) return
-    this.hidden.push(Decoration.replace({ widget }).range(from, to))
+  private inlineWidget(node: SyntaxNode, widget: WidgetType, show: boolean) {
+    if (show || node.from >= node.to || this.isClaimed(node.from, node.to)) return
+    this.hidden.push(Decoration.replace({ widget }).range(node.from, node.to))
   }
 
-  private fence(node: SyntaxNode) {
-    this.markLines(node, 'nib-code')
+  private blockquote(node: SyntaxNode) {
+    this.markLines(node, 'nib-quote')
 
+    const first = this.state.doc.lineAt(node.from)
+    const callout = CALLOUT.exec(first.text)
+    if (!callout) return
+
+    // Every line needs the kind, not just the header, so the accent runs the
+    // full height of the callout.
+    const kind = callout[1].toLowerCase()
+    this.markLines(node, `nib-callout nib-callout-${kind}`)
+
+    const from = first.from + first.text.indexOf('[!')
+    const to = first.from + first.text.indexOf(']', first.text.indexOf('[!')) + 1
+
+    // `[!NOTE]` also parses as a link label, so claim it before the walk reaches
+    // the LinkMarks inside it.
+    this.claimed.push({ from, to })
+
+    if (lineRevealed(this.state, first.from)) this.marks.push(meta.range(from, to))
+    else this.hidden.push(Decoration.replace({ widget: new CalloutWidget(kind) }).range(from, to))
+  }
+
+  private fence(node: SyntaxNode): boolean | void {
+    const info = node.getChild('CodeInfo')
+    const language = info ? this.state.doc.sliceString(info.from, info.to).trim() : ''
+
+    // Rendered diagrams are block replacements, which only a state field may
+    // provide — see blocks.ts. Skip the subtree so nothing double-decorates it.
+    if (DIAGRAM_LANGUAGES.has(language) && !overlaps(this.state, node.from, node.to)) return false
+
+    this.markLines(node, 'nib-code')
     const doc = this.state.doc
     this.addLineClass(doc.lineAt(node.from).from, 'nib-code-open')
     this.addLineClass(doc.lineAt(node.to).from, 'nib-code-close')
+  }
+
+  private inlineMath(node: SyntaxNode): boolean | void {
+    if (revealed(this.state, node)) return
+
+    const tex = this.state.doc.sliceString(node.from + 1, node.to - 1)
+    this.inlineWidget(node, new MathWidget(tex, false), false)
+    return false
+  }
+
+  private blockMath(node: SyntaxNode): boolean | void {
+    if (overlaps(this.state, node.from, node.to)) {
+      this.markLines(node, 'nib-math-source')
+      return
+    }
+    // Rendered by the block state field; see blocks.ts.
+    return false
   }
 
   private listMark(node: SyntaxNode) {
@@ -134,7 +204,7 @@ class Decorator {
       return
     }
 
-    this.replaceWith(node.from, node.to, new BulletWidget(this.depth(node)), false)
+    this.inlineWidget(node, new BulletWidget(this.depth(node)), false)
   }
 
   private taskMarker(node: SyntaxNode) {
@@ -165,18 +235,15 @@ class Decorator {
     const close = open?.nextSibling
     const alt = open && close ? this.state.doc.sliceString(open.to, close.from) : ''
 
-    this.replaceWith(node.from, node.to, new ImageWidget(src, alt), false)
-    // Its marks are inside the replacement now; decorating them would overlap.
+    this.inlineWidget(node, new ImageWidget(src, alt), false)
+    // Its marks live inside the replacement now; decorating them would overlap.
     return false
   }
 
-  /** The alignment row carries no meaning once the table renders, so it goes. */
+  /** Cell separators dim; the alignment row is dropped whole by blocks.ts. */
   private tableDelimiter(node: SyntaxNode) {
-    const isAlignmentRow = node.parent?.name === 'Table'
-    const show = lineRevealed(this.state, node.from)
-
-    if (isAlignmentRow) this.conceal(node.from, node.to, show)
-    else this.marks.push(Decoration.mark({ class: 'nib-table-pipe' }).range(node.from, node.to))
+    if (node.parent?.name === 'Table') return
+    this.marks.push(Decoration.mark({ class: 'nib-table-pipe' }).range(node.from, node.to))
   }
 
   private eatSpace(pos: number): number {

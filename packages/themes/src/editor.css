@@ -206,6 +206,124 @@
   color: var(--line-strong);
 }
 
+/* ── Subscript and superscript ───────────────────────────────────── */
+
+.nib-sub,
+.nib-sup {
+  font-size: 0.72em;
+}
+
+.nib-sub {
+  vertical-align: -0.28em;
+}
+
+.nib-sup {
+  vertical-align: 0.42em;
+}
+
+/* ── Math ────────────────────────────────────────────────────────── */
+
+.nib-math-inline {
+  padding: 0 0.12em;
+}
+
+.nib-math-block {
+  display: block;
+  margin: 1.4em 0;
+  padding: var(--space-3) 0;
+  text-align: center;
+  overflow-x: auto;
+  animation: settle-in var(--dur-base) var(--ease-out);
+}
+
+.cm-line.nib-math-source {
+  font-family: var(--font-mono);
+  font-size: 0.88em;
+  color: var(--muted-strong);
+}
+
+/* ── Diagrams ────────────────────────────────────────────────────── */
+
+.nib-diagram {
+  display: block;
+  margin: 1.5em 0;
+  padding: var(--space-4);
+  text-align: center;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  overflow-x: auto;
+  animation: settle-in var(--dur-slow) var(--ease-out);
+}
+
+.nib-diagram svg {
+  max-width: 100%;
+  height: auto;
+}
+
+.nib-diagram-error {
+  font-family: var(--font-mono);
+  font-size: 0.82em;
+  color: var(--danger);
+  text-align: left;
+}
+
+@keyframes settle-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+}
+
+/* ── Front matter and footnotes ──────────────────────────────────── */
+
+.cm-line.nib-frontmatter {
+  font-family: var(--font-mono);
+  font-size: 0.82em;
+  color: var(--muted);
+  background: var(--surface);
+  border-left: 2px solid var(--line-strong);
+  padding: 0 var(--space-4);
+}
+
+.cm-line.nib-footnote {
+  font-size: 0.9em;
+  color: var(--muted-strong);
+}
+
+/* ── Callouts ────────────────────────────────────────────────────── */
+
+.cm-line.nib-callout {
+  border-left-color: var(--callout-accent);
+  background: color-mix(in srgb, var(--callout-accent) 7%, transparent);
+  padding-right: var(--space-3);
+}
+
+.cm-line.nib-callout-note {
+  --callout-accent: #4a8df6;
+}
+.cm-line.nib-callout-tip {
+  --callout-accent: var(--success);
+}
+.cm-line.nib-callout-important {
+  --callout-accent: var(--accent);
+}
+.cm-line.nib-callout-warning {
+  --callout-accent: #e0a233;
+}
+.cm-line.nib-callout-caution {
+  --callout-accent: var(--danger);
+}
+
+.nib-callout-label {
+  font-family: var(--font-ui);
+  font-weight: 620;
+  font-size: 0.86em;
+  letter-spacing: 0.01em;
+  color: var(--callout-accent);
+  text-transform: uppercase;
+}
+
 /* ── Images ──────────────────────────────────────────────────────── */
 
 .nib-image {
