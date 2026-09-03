@@ -1,5 +1,7 @@
 import { EditorView, WidgetType } from '@codemirror/view'
 import { imageResolver } from '../images'
+// Aliased: `label` is already a local variable in more than one widget here.
+import { label as uiLabel } from '../labels'
 
 export class BulletWidget extends WidgetType {
   constructor(private readonly depth: number) {
@@ -111,7 +113,7 @@ export class FenceHeaderWidget extends WidgetType {
     const label = document.createElement('button')
     label.className = 'nib-fence-language'
     label.type = 'button'
-    label.title = 'Set the language'
+    label.title = uiLabel('setLanguage')
     label.textContent = this.language || 'plain'
     if (!this.language) label.classList.add('nib-fence-unset')
 
@@ -126,17 +128,17 @@ export class FenceHeaderWidget extends WidgetType {
     const copy = document.createElement('button')
     copy.className = 'nib-fence-copy'
     copy.type = 'button'
-    copy.title = 'Copy'
-    copy.setAttribute('aria-label', 'Copy code')
-    copy.textContent = 'Copy'
+    copy.title = uiLabel('copy')
+    copy.setAttribute('aria-label', uiLabel('copyCode'))
+    copy.textContent = uiLabel('copy')
 
     copy.addEventListener('mousedown', (event) => {
       event.preventDefault()
       event.stopPropagation()
 
       void navigator.clipboard.writeText(this.code).then(() => {
-        copy.textContent = 'Copied'
-        window.setTimeout(() => (copy.textContent = 'Copy'), 1400)
+        copy.textContent = uiLabel('copied')
+        window.setTimeout(() => (copy.textContent = uiLabel('copy')), 1400)
       })
     })
 
@@ -256,7 +258,7 @@ export class ImageWidget extends WidgetType {
 
     const handle = document.createElement('span')
     handle.className = 'nib-image-handle'
-    handle.title = 'Drag to resize'
+    handle.title = uiLabel('dragToResize')
     handle.addEventListener('mousedown', (event) => this.startResize(event, view, image))
 
     frame.append(image, handle)

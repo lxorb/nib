@@ -55,6 +55,7 @@ pub fn run() {
             export::run_pandoc,
             export::import_document,
             launch::take_startup_files,
+            launch::new_window,
             history::snapshot_note,
             history::list_snapshots,
             history::read_snapshot,

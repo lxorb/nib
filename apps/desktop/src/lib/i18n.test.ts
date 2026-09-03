@@ -1,4 +1,5 @@
 import { describe, expect, test } from 'vitest'
+import { englishLabel, LABEL_KEYS } from '@nib/editor'
 import { de } from '../locales/de'
 import { LANGUAGES } from './i18n.svelte'
 
@@ -52,6 +53,14 @@ describe('filling in placeholders', () => {
 
   test('takes numbers', () => {
     expect(fill('Digit {number}', { number: 3 })).toBe('Digit 3')
+  })
+})
+
+describe("the editor's own labels", () => {
+  test('are all translated, so no widget is left in English', () => {
+    for (const key of LABEL_KEYS) {
+      expect(de[englishLabel(key)], key).toBeDefined()
+    }
   })
 })
 

@@ -125,6 +125,12 @@ export function appCommands(view?: EditorView): Command[] {
     },
     { id: 'space', label: t('Add a space'), run: () => void workspace.addSpace() },
     {
+      id: 'new-window',
+      label: t('New window'),
+      disabled: !isDesktop,
+      run: () => void invoke('new_window').catch(() => undefined),
+    },
+    {
       id: 'undo-file',
       label: workspace.undoLabel ?? t('Undo the last file change'),
       disabled: !workspace.undoLabel,

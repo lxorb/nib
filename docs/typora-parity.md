@@ -29,9 +29,9 @@ Legend: `[x]` done · `[~]` partial · `[ ]` todo · `[-]` deliberately skipped
 - [x] YAML front matter
 - [x] Table of contents `[toc]`
 - [x] GitHub-style alerts / callouts (`> [!NOTE]` …)
-- [ ] Page breaks for export
-- [ ] Definition lists (Pandoc)
-- [ ] Abbreviations (Pandoc)
+- [x] Page breaks for export
+- [x] Definition lists (Pandoc)
+- [x] Abbreviations (Pandoc)
 
 ## 2. Span elements
 
@@ -47,7 +47,7 @@ Legend: `[x]` done · `[~]` partial · `[ ]` todo · `[-]` deliberately skipped
 - [x] Inline code with backtick runs
 - [x] Strikethrough `~~`
 - [x] Escaping with `\`
-- [~] Emoji shortcodes `:smile:` — parsed, not yet rendered or autocompleted
+- [x] Emoji shortcodes `:smile:`
 - [x] Inline math `$…$`
 - [x] Subscript `H~2~O`
 - [x] Superscript `X^2^`
@@ -70,27 +70,27 @@ Legend: `[x]` done · `[~]` partial · `[ ]` todo · `[-]` deliberately skipped
 - [x] KaTeX rendering, inline and block
 - [x] Auto-numbering for headings (CSS counters, toggleable)
 - [x] Footnote rendering + back-links
-- [ ] Auto-numbering for equations
-- [ ] Cross references to numbered equations
-- [ ] Chemical equations (mhchem)
+- [x] Auto-numbering for equations
+- [x] Cross references to numbered equations (`\label` / `\eqref`)
+- [x] Chemical equations (mhchem)
 
 ## 5. Diagrams
 
 - [x] ` ```mermaid ` — every Mermaid type, lazily loaded
+- [x] ` ```flow ` (flowchart.js legacy)
+- [x] ` ```sequence ` (js-sequence legacy syntax, drawn by Mermaid)
 - [x] Diagram export in HTML/PDF
-- [ ] ` ```sequence ` (js-sequence legacy)
-- [ ] ` ```flow ` (flowchart.js legacy)
-- [ ] Mermaid syntax highlighting inside the fence
+- [x] Mermaid syntax highlighting inside the fence
 
 ## 6. Code fences
 
 - [x] Syntax highlighting for ~150 languages
 - [x] Auto-pair brackets and quotes
 - [x] Tab/indent behaviour inside fences
-- [ ] Language selector on the fence
-- [ ] Line numbers (toggle)
-- [ ] Copy button
-- [ ] Code block themes independent of app theme
+- [x] Language selector on the fence
+- [x] Line numbers (toggle)
+- [x] Copy button
+- [x] Code block themes independent of app theme
 
 ## 7. Tables
 
@@ -101,8 +101,8 @@ Legend: `[x]` done · `[~]` partial · `[ ]` todo · `[-]` deliberately skipped
 - [x] Per-column alignment controls
 - [x] Keyboard navigation (`Tab`, `Enter`)
 - [x] Columns sized to content, CJK-aware
-- [ ] Resize columns by dragging
-- [ ] Paste TSV/CSV as a table
+- [x] Resize columns by dragging
+- [x] Paste TSV/CSV as a table
 
 ## 8. Images
 
@@ -110,10 +110,12 @@ Legend: `[x]` done · `[~]` partial · `[ ]` todo · `[-]` deliberately skipped
 - [x] Paste from clipboard, persisted to an `assets/` folder
 - [x] Relative and absolute paths
 - [x] Rendered inline in the editor
-- [ ] `typora-root-url` front matter
-- [ ] Resize handles / width attributes
-- [ ] Zoom / preview on click
-- [ ] Custom image uploader integration
+- [x] `typora-root-url` front matter
+- [x] Resize handles, written back as `style="zoom:N%"`
+- [x] Zoom / preview on click
+- [-] Custom image uploader integration — a hook for third-party upload CLIs
+      (PicGo, uPic). Sync already carries images; a second upload path would be
+      a second place for them to live.
 
 ## 9. File management
 
@@ -126,13 +128,13 @@ Legend: `[x]` done · `[~]` partial · `[ ]` todo · `[-]` deliberately skipped
 - [x] Copy file path
 - [x] Tabs, `Ctrl+Tab` switching
 - [x] Reopen last files on start
-- [ ] Drag to move
-- [ ] Sort by name, modified, created
-- [ ] Show hidden files toggle
-- [ ] Recent files and folders, pinning
-- [ ] Undo move/rename/delete
-- [ ] Auto-save
-- [ ] Version history and recovery
+- [x] Drag to move
+- [x] Sort by name, modified, created
+- [x] Show hidden files toggle
+- [x] Recent files, and pinning notes and folders
+- [x] Undo move/rename/delete
+- [x] Auto-save
+- [x] Version history and recovery
 
 ## 10. Search
 
@@ -140,8 +142,8 @@ Legend: `[x]` done · `[~]` partial · `[ ]` todo · `[-]` deliberately skipped
 - [x] Replace `Ctrl+H`, replace all
 - [x] Regex and case-sensitive toggles
 - [x] Quick open / fuzzy finder `Ctrl+P`
-- [ ] Global search across the space `Ctrl+Shift+F`
-- [ ] `#tag` search
+- [x] Global search across the space `Ctrl+Shift+F`
+- [x] `#tag` search, with the space's tags listed by use
 
 ## 11. Editing modes and view
 
@@ -154,10 +156,10 @@ Legend: `[x]` done · `[~]` partial · `[ ]` todo · `[-]` deliberately skipped
 - [x] Outline / Articles / File tree panels
 - [x] Word count (words, characters, lines, reading time)
 - [x] Custom context menus everywhere
-- [ ] Floating editor toolbar
-- [ ] Writing area width control
-- [ ] Line and paragraph spacing controls
-- [ ] RTL support
+- [x] Floating editor toolbar
+- [x] Writing area width control
+- [x] Line and paragraph spacing controls
+- [x] RTL support
 
 ## 12. Editing behaviour
 
@@ -168,10 +170,10 @@ Legend: `[x]` done · `[~]` partial · `[ ]` todo · `[-]` deliberately skipped
 - [x] Change list type via shortcut and context menu
 - [x] Spellcheck (native, in the editor)
 - [x] Every shortcut from Typora's table
-- [ ] Copy as Markdown / paste as plain text
-- [ ] Strict mode
-- [ ] Text snippets
-- [ ] Convert and reformat markdown
+- [x] Copy as Markdown / paste as plain text
+- [x] Strict mode
+- [x] Text snippets
+- [x] Convert and reformat markdown
 
 ## 13. Themes and appearance
 
@@ -183,8 +185,8 @@ Legend: `[x]` done · `[~]` partial · `[ ]` todo · `[-]` deliberately skipped
 - [x] Typora CSS variable compatibility (`--bg-color`, `--md-char-color`, …)
 - [x] `#write` container contract
 - [x] Custom fonts (via a theme)
-- [ ] Custom CSS injection separate from themes
-- [ ] Code block themes
+- [x] Custom CSS injection separate from themes
+- [x] Code block themes
 
 ## 14. Export
 
@@ -202,24 +204,27 @@ Legend: `[x]` done · `[~]` partial · `[ ]` todo · `[-]` deliberately skipped
 - [x] OPML (pandoc)
 - [x] RevealJS presentation (pandoc)
 - [x] Print styles
-- [ ] Image export
-- [ ] Export settings (paper size, margins, headers/footers)
-- [ ] Per-file export config in YAML front matter
+- [x] Image export (local images inlined as `data:` URIs)
+- [x] Export settings (paper size, orientation, margins, header/footer)
+- [x] Per-file export config in YAML front matter (`export:`)
 
 ## 15. Import
 
-- [ ] Import via pandoc (docx, odt, rst, textile, epub, …)
+- [x] Import via pandoc (docx, odt, rst, textile, epub, …)
 
 ## 16. System integration
 
 - [x] Multiple windows
-- [ ] Open from shell / CLI with arguments
-- [ ] "New Markdown" in Explorer context menu
-- [ ] File association for `.md`
-- [ ] Windows JumpList
-- [ ] Application logs
-- [ ] UI translations
-- [ ] Auto-update
+- [x] Open from shell / CLI with arguments
+- [x] File association for `.md`
+- [x] Taskbar Jump List — opened notes go to the shell's own recent documents
+- [x] Application logs
+- [x] UI translations (English, German; falls back to English)
+- [~] Auto-update — checks GitHub daily and offers the release. Signed
+      background install needs a Tauri updater keypair; the private half is a
+      release secret, so generating it is the maintainer's call.
+- [ ] "New Markdown" in Explorer context menu — needs a registry entry written
+      by the installer, which the current bundle does not do.
 
 ## 17. Beyond Typora
 

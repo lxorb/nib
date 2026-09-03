@@ -1,4 +1,5 @@
 import { EditorView, WidgetType } from '@codemirror/view'
+import { label } from '../labels'
 import {
   type TableModel,
   insertColumn,
@@ -76,6 +77,12 @@ const ALIGN_PATHS = {
   left: 'M0 2h10M0 5h6M0 8h10',
   center: 'M0 2h10M2 5h6M0 8h10',
   right: 'M0 2h10M4 5h6M0 8h10',
+} as const
+
+const ALIGN_LABELS = {
+  left: 'alignLeft',
+  center: 'alignCenter',
+  right: 'alignRight',
 } as const
 
 export class TableWidget extends WidgetType {
@@ -214,23 +221,23 @@ export class TableWidget extends WidgetType {
 
       for (const align of ['left', 'center', 'right'] as const) {
         controls.append(
-          button('nib-table-btn', `Align ${align}`, ALIGN_PATHS[align], () =>
+          button('nib-table-btn', label(ALIGN_LABELS[align]), ALIGN_PATHS[align], () =>
             commit(setAlign(current(), column, align === model.align[column] ? null : align)),
           ),
         )
       }
 
       controls.append(
-        button('nib-table-btn', 'Move column left', 'M6 1L2 5l4 4', () =>
+        button('nib-table-btn', label('moveColumnLeft'), 'M6 1L2 5l4 4', () =>
           commit(moveColumn(current(), column, column - 1)),
         ),
-        button('nib-table-btn', 'Move column right', 'M4 1l4 4-4 4', () =>
+        button('nib-table-btn', label('moveColumnRight'), 'M4 1l4 4-4 4', () =>
           commit(moveColumn(current(), column, column + 1)),
         ),
-        button('nib-table-btn', 'Insert column', 'M5 1v8M1 5h8', () =>
+        button('nib-table-btn', label('insertColumn'), 'M5 1v8M1 5h8', () =>
           commit(insertColumn(current(), column + 1)),
         ),
-        button('nib-table-btn nib-table-btn-danger', 'Delete column', 'M1 1l8 8M9 1l-8 8', () =>
+        button('nib-table-btn nib-table-btn-danger', label('deleteColumn'), 'M1 1l8 8M9 1l-8 8', () =>
           commit(removeColumn(current(), column)),
         ),
       )
@@ -256,16 +263,16 @@ export class TableWidget extends WidgetType {
       grip.className = 'nib-table-grip'
       grip.contentEditable = 'false'
       grip.append(
-        button('nib-table-btn', 'Move row up', 'M1 6l4-4 4 4', () =>
+        button('nib-table-btn', label('moveRowUp'), 'M1 6l4-4 4 4', () =>
           commit(moveRow(current(), index, index - 1)),
         ),
-        button('nib-table-btn', 'Move row down', 'M1 4l4 4 4-4', () =>
+        button('nib-table-btn', label('moveRowDown'), 'M1 4l4 4 4-4', () =>
           commit(moveRow(current(), index, index + 1)),
         ),
-        button('nib-table-btn', 'Insert row', 'M5 1v8M1 5h8', () =>
+        button('nib-table-btn', label('insertRow'), 'M5 1v8M1 5h8', () =>
           commit(insertRow(current(), index + 1)),
         ),
-        button('nib-table-btn nib-table-btn-danger', 'Delete row', 'M1 1l8 8M9 1l-8 8', () =>
+        button('nib-table-btn nib-table-btn-danger', label('deleteRow'), 'M1 1l8 8M9 1l-8 8', () =>
           commit(removeRow(current(), index)),
         ),
       )

@@ -1,3 +1,4 @@
+import { englishLabel, LABEL_KEYS, type LabelKey, setLabels } from '@nib/editor'
 import { de } from '../locales/de'
 
 /** The English string is its own key. A language that has not translated
@@ -28,12 +29,24 @@ class I18n {
   restore() {
     this.choice = localStorage.getItem(STORAGE_KEY) ?? 'system'
     document.documentElement.lang = this.language
+    this.translateEditor()
   }
 
   select(id: string) {
     this.choice = id
     localStorage.setItem(STORAGE_KEY, id)
     document.documentElement.lang = this.language
+    this.translateEditor()
+  }
+
+  /** The editor package has its own handful of labels; hand it ours. */
+  private translateEditor() {
+    setLabels(
+      Object.fromEntries(LABEL_KEYS.map((key) => [key, this.t(englishLabel(key))])) as Record<
+        LabelKey,
+        string
+      >,
+    )
   }
 
   /** Translates one string, filling in `{name}` placeholders. */

@@ -36,6 +36,24 @@ pub fn take_startup_files(pending: tauri::State<'_, Pending>) -> Vec<String> {
         .unwrap_or_default()
 }
 
+/// A second window onto the same spaces. Each gets its own label, so several
+/// can be open at once; closing one leaves the others alone.
+#[tauri::command]
+pub fn new_window(app: tauri::AppHandle) -> Result<(), String> {
+    use tauri::{Manager, WebviewUrl, WebviewWindowBuilder};
+
+    let label = format!("nib-{}", app.webview_windows().len() + 1);
+
+    WebviewWindowBuilder::new(&app, &label, WebviewUrl::default())
+        .title("Nib")
+        .inner_size(1180.0, 760.0)
+        .min_inner_size(520.0, 400.0)
+        .decorations(false)
+        .build()
+        .map(|_| ())
+        .map_err(|e| e.to_string())
+}
+
 #[cfg(test)]
 mod tests {
     use super::markdown_paths;
