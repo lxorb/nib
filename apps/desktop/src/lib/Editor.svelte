@@ -7,12 +7,14 @@
     onchange,
     onimage,
     resolveimage,
+    onselection,
     view = $bindable(),
   }: {
     doc?: string
     onchange?: (value: string) => void
     onimage?: (file: File) => Promise<string | null>
     resolveimage?: (src: string) => string
+    onselection?: (view: EditorView) => void
     view?: EditorView
   } = $props()
 
@@ -27,6 +29,7 @@
       onChange: onchange,
       onImage: onimage,
       resolveImage: resolveimage,
+      onSelection: onselection,
     })
     view = created
     if (import.meta.env.DEV) Object.assign(window, { nib: created })

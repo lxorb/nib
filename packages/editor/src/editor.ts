@@ -19,6 +19,8 @@ export interface EditorOptions {
   onImage?: ImageSink
   /** Maps a document-relative image path to a URL the view can load. */
   resolveImage?: (src: string) => string
+  /** Fires when the selection moves, so a toolbar can follow it. */
+  onSelection?: (view: EditorView) => void
 }
 
 export function createEditor({
@@ -27,6 +29,7 @@ export function createEditor({
   onChange,
   onImage,
   resolveImage,
+  onSelection,
 }: EditorOptions): EditorView {
   return new EditorView({
     parent,
@@ -64,6 +67,9 @@ export function createEditor({
         ]),
         EditorView.updateListener.of((update) => {
           if (update.docChanged) onChange?.(update.state.doc.toString())
+          if (update.selectionSet || update.docChanged || update.focusChanged) {
+            onSelection?.(update.view)
+          }
         }),
       ],
     }),

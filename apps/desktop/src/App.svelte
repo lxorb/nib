@@ -17,6 +17,7 @@
   import { frontMatter } from '@nib/markdown'
   import ContextMenu from './lib/ContextMenu.svelte'
   import Editor from './lib/Editor.svelte'
+  import FormatBar from './lib/FormatBar.svelte'
   import History from './lib/History.svelte'
   import { DIVIDER, type MenuEntry, menu } from './lib/menu.svelte'
   import Palette from './lib/Palette.svelte'
@@ -37,6 +38,7 @@
 
   let view = $state<EditorView>()
   let palette = $state(false)
+  let formatBar = $state<FormatBar>()
 
   const title = $derived(
     workspace.active
@@ -249,6 +251,7 @@
             onchange={(value) => workspace.edit(value)}
             onimage={saveImage}
             resolveimage={resolveImage}
+            onselection={(current) => formatBar?.follow(current)}
           />
         {/key}
       </div>
@@ -261,6 +264,7 @@
 <Palette bind:open={palette} {view} />
 <SignIn />
 <SettingsPanel />
+<FormatBar bind:this={formatBar} {view} />
 <History bind:open={settings.historyOpen} />
 <ContextMenu />
 
