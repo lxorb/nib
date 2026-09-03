@@ -7,6 +7,14 @@ import { invoke, isDesktop } from './tauri'
 import { theme } from './theme.svelte'
 import { workspace } from './workspace.svelte'
 
+/** Opens `custom.css` in the editor itself — it is a text file like any other. */
+async function openCustomCss() {
+  if (!isDesktop) return
+
+  const path = await invoke<string>('custom_css_path')
+  await workspace.open(path)
+}
+
 /** Export entries. The pandoc formats only appear when pandoc is installed,
  *  so the list never offers something that cannot work. */
 function exportCommands(): Command[] {
@@ -91,6 +99,15 @@ export function appCommands(view?: EditorView): Command[] {
     },
     { id: 'settings', label: 'Settings', hint: 'Ctrl ,', run: () => settings.show() },
 
+    ...workspace.recent
+      .filter((path) => !workspace.tabs.some((tab) => tab.path === path))
+      .slice(0, 8)
+      .map((path) => ({
+        id: `recent:${path}`,
+        label: `Recent: ${path.split(/[\\/]/).pop()?.replace(/\.[^.]+$/, '') ?? path}`,
+        run: () => void workspace.open(path),
+      })),
+
     ...exportCommands(),
     { id: 'publish', label: 'Publish this space as a blog', run: () => settings.show('publish') },
     { id: 'llm', label: 'Connect an LLM to this space', run: () => settings.show('llm') },
@@ -155,6 +172,7 @@ export function appCommands(view?: EditorView): Command[] {
       run: () => theme.select(item.id),
     })),
     { id: 'themes-folder', label: 'Open themes folder', run: () => void openThemesFolder() },
+    { id: 'custom-css', label: 'Edit custom CSS', run: () => void openCustomCss() },
     {
       id: 'sidebar',
       label: workspace.panel ? 'Hide sidebar' : 'Show sidebar',

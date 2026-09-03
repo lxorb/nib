@@ -51,6 +51,8 @@ export interface Heading {
 const STORAGE_KEY = 'nib:workspace'
 const AUTO_SAVE_KEY = 'nib:autosave'
 const TREE_KEY = 'nib:tree'
+const RECENT_KEY = 'nib:recent'
+const RECENT_LIMIT = 15
 const AUTO_SAVE_DELAY = 1200
 const UNTITLED = 'Untitled'
 
@@ -68,6 +70,15 @@ function basename(path: string): string {
 
 function identifier(): string {
   return Math.random().toString(36).slice(2, 10)
+}
+
+function readRecent(): string[] {
+  try {
+    const saved = JSON.parse(localStorage.getItem(RECENT_KEY) ?? '[]')
+    return Array.isArray(saved) ? (saved as string[]) : []
+  } catch {
+    return []
+  }
 }
 
 function readTreeOptions(): TreeOptions {
@@ -115,6 +126,7 @@ class Workspace {
   renaming = $state<string | null>(null)
   autoSave = $state(localStorage.getItem(AUTO_SAVE_KEY) !== 'false')
   treeOptions = $state<TreeOptions>(readTreeOptions())
+  recent = $state<string[]>(readRecent())
 
   private saveTimer: ReturnType<typeof setTimeout> | undefined
 
@@ -282,6 +294,7 @@ class Workspace {
     const tab: Tab = { id: identifier(), path, name: basename(path), doc, dirty: false }
     this.tabs = [...this.tabs, tab]
     if (options.activate !== false) this.activeTabId = tab.id
+    this.remember(path)
 
     // A blank untouched tab is scaffolding, not something worth keeping around.
     this.tabs = this.tabs.filter((other) => other === tab || other.path || other.dirty)
@@ -352,6 +365,17 @@ class Workspace {
 
     await this.loadTree()
     this.persist()
+  }
+
+  /** Most-recent-first, newest at the front, no duplicates. */
+  private remember(path: string) {
+    this.recent = [path, ...this.recent.filter((entry) => entry !== path)].slice(0, RECENT_LIMIT)
+    localStorage.setItem(RECENT_KEY, JSON.stringify(this.recent))
+  }
+
+  forgetRecent() {
+    this.recent = []
+    localStorage.removeItem(RECENT_KEY)
   }
 
   /** Searches every note in the space and returns the matching lines. */

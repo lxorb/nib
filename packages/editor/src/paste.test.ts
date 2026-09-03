@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest'
-import { htmlToMarkdown } from './paste'
+import { delimitedToTable, htmlToMarkdown } from './paste'
 
 describe('pasting a web page', () => {
   test('headings and emphasis become markdown', () => {
@@ -49,5 +49,34 @@ describe('pasting a web page', () => {
 
   test('images become markdown images', () => {
     expect(htmlToMarkdown('<img src="a.png" alt="alt">')).toBe('![alt](a.png)')
+  })
+})
+
+describe('pasting spreadsheet cells', () => {
+  test('tab-separated rows become a table', () => {
+    expect(delimitedToTable('Name\tSize\na\t1\nb\t2')).toBe(
+      ['| Name | Size |', '| --- | --- |', '| a | 1 |', '| b | 2 |'].join('\n'),
+    )
+  })
+
+  test('comma-separated rows work too', () => {
+    expect(delimitedToTable('a,b\n1,2')).toContain('| a | b |')
+  })
+
+  test('a pipe inside a cell is escaped', () => {
+    expect(delimitedToTable('a\tb\nx|y\tz')).toContain('x\\|y')
+  })
+
+  test('ordinary prose is left alone', () => {
+    expect(delimitedToTable('Just a sentence.')).toBeNull()
+    expect(delimitedToTable('One line\nAnother line')).toBeNull()
+  })
+
+  test('ragged rows are not a table', () => {
+    expect(delimitedToTable('a\tb\n1')).toBeNull()
+  })
+
+  test('a single column is not a table', () => {
+    expect(delimitedToTable('a\nb\nc')).toBeNull()
   })
 })

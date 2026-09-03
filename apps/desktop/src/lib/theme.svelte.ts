@@ -17,6 +17,7 @@ interface ThemeFile {
 
 const STORAGE_KEY = 'nib:theme'
 const STYLE_ID = 'nib-user-theme'
+const CUSTOM_ID = 'nib-custom-css'
 
 const BUILT_IN: ThemeInfo[] = [
   { id: 'dark', name: 'Nib dark', scheme: 'dark' },
@@ -67,6 +68,29 @@ class Themes {
 
     // A theme file may have been deleted while it was selected.
     if (!this.all.some((theme) => theme.id === this.id)) this.select(systemScheme())
+
+    await this.loadCustom()
+  }
+
+  /** `custom.css` applies on top of whichever theme is active. */
+  private async loadCustom() {
+    if (!isDesktop) return
+
+    const css = await invoke<string>('read_custom_css').catch(() => '')
+    let style = document.getElementById(CUSTOM_ID)
+
+    if (!css.trim()) {
+      style?.remove()
+      return
+    }
+
+    if (!style) {
+      style = document.createElement('style')
+      style.id = CUSTOM_ID
+      // Last in <head>, so it outranks the theme it sits on top of.
+      document.head.append(style)
+    }
+    style.textContent = css
   }
 
   select(id: string) {
@@ -104,7 +128,8 @@ class Themes {
     if (!style) {
       style = document.createElement('style')
       style.id = STYLE_ID
-      document.head.append(style)
+      // Before any custom.css block, which must stay last.
+      document.head.insertBefore(style, document.getElementById(CUSTOM_ID))
     }
     style.textContent = css
   }

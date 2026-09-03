@@ -214,7 +214,7 @@
               </button>
             {/each}
           </div>
-          <button class="quiet" onclick={() => theme.reload()}>Rescan themes folder</button>
+          <button class="quiet" onclick={() => theme.reload()}>Reload themes and custom CSS</button>
         </div>
       {/if}
 

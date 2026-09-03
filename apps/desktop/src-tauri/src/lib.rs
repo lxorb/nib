@@ -42,6 +42,8 @@ pub fn run() {
             themes::theme_dir,
             themes::list_themes,
             themes::read_theme,
+            themes::custom_css_path,
+            themes::read_custom_css,
             export::has_pandoc,
             export::run_pandoc,
             export::import_document,

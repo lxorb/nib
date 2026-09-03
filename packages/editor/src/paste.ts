@@ -50,6 +50,29 @@ export function htmlToMarkdown(html: string): string {
   return turndown().turndown(html).trim()
 }
 
+/** Spreadsheet cells arrive as tab-separated lines; Typora turns them into a
+ *  table, which is nearly always what was meant. */
+export function delimitedToTable(text: string): string | null {
+  const lines = text.replace(/\r\n?/g, '\n').split('\n').filter((line) => line.length > 0)
+  if (lines.length < 2) return null
+
+  const separator = lines[0].includes('\t') ? '\t' : lines.every((l) => l.includes(',')) ? ',' : null
+  if (!separator) return null
+
+  const rows = lines.map((line) => line.split(separator).map((cell) => cell.trim()))
+  const columns = rows[0].length
+  if (columns < 2 || rows.some((row) => row.length !== columns)) return null
+
+  const escape = (cell: string) => cell.replace(/\|/g, '\\|')
+  const render = (row: string[]) => `| ${row.map(escape).join(' | ')} |`
+
+  return [
+    render(rows[0]),
+    `| ${Array.from({ length: columns }, () => '---').join(' | ')} |`,
+    ...rows.slice(1).map(render),
+  ].join('\n')
+}
+
 function insert(view: EditorView, text: string) {
   const range = view.state.selection.main
   view.dispatch({
@@ -66,6 +89,14 @@ export function richPaste(): Extension {
     paste(event, view) {
       const data = event.clipboardData
       if (!data || data.files.length) return false
+
+      // A spreadsheet puts both on the clipboard; the plain text is the table.
+      const table = delimitedToTable(data.getData('text/plain'))
+      if (table) {
+        event.preventDefault()
+        insert(view, table)
+        return true
+      }
 
       const html = data.getData('text/html')
       if (!html.trim()) return false
