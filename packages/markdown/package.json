@@ -12,11 +12,12 @@
   },
   "dependencies": {
     "katex": "^0.18.5",
-    "marked": "^18.0.11"
+    "marked": "^18.0.11",
+    "node-emoji": "^2.2.0"
   },
   "devDependencies": {
     "@types/katex": "^0.16.8",
-    "vitest": "^5.0.0",
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "vitest": "^5.0.0"
   }
 }

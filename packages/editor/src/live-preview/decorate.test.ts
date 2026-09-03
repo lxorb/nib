@@ -171,6 +171,18 @@ describe('extensions', () => {
     expect(blocks('$$\nE = mc^2\n$$')).toEqual(['$$\nE = mc^2\n$$'])
   })
 
+  test('replaces a known emoji shortcode', () => {
+    expect(concealed('ship it :rocket: now')).toEqual([':rocket:'])
+  })
+
+  test('leaves an unknown shortcode alone', () => {
+    expect(concealed('a :not_an_emoji_name: b')).toEqual([])
+  })
+
+  test('shows the shortcode when the caret is on it', () => {
+    expect(concealed('ship :rocket: now', 8)).toEqual([])
+  })
+
   test('hides highlight markers', () => {
     expect(concealed('a ==marked== b')).toEqual(['==', '=='])
   })

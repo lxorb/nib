@@ -1,5 +1,6 @@
 import katex from 'katex'
 import type { MarkedExtension, Tokens } from 'marked'
+import { get } from 'node-emoji'
 
 /** Renders TeX, or shows the source when it will not parse. */
 function math(tex: string, display: boolean): string {
@@ -116,6 +117,27 @@ export const callouts: MarkedExtension = {
       return `<div class="callout" data-kind="${kind}"><p class="callout-label">${label}</p>\n${body}</div>\n`
     },
   },
+}
+
+/** `:smile:` becomes the character it names. */
+export const emoji: MarkedExtension = {
+  extensions: [
+    {
+      name: 'emoji',
+      level: 'inline',
+      start: (src: string) => src.indexOf(':'),
+      tokenizer(src: string) {
+        const match = /^:([a-z0-9_+-]+):/i.exec(src)
+        if (!match) return undefined
+
+        const character = get(match[1])
+        if (!character) return undefined
+
+        return { type: 'emoji', raw: match[0], text: character }
+      },
+      renderer: (token: Tokens.Generic) => String(token.text),
+    },
+  ],
 }
 
 /** `[^1]` in the text, `[^1]: …` at the bottom. */

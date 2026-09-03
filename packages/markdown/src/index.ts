@@ -1,6 +1,6 @@
 import { Marked } from 'marked'
 import type { Tokens } from 'marked'
-import { callouts, footnotes, highlight, maths, scripts } from './extensions'
+import { callouts, emoji, footnotes, highlight, maths, scripts } from './extensions'
 
 export interface RenderOptions {
   /** Gather footnote definitions into a list at the end. */
@@ -22,7 +22,7 @@ function escape(text: string): string {
  *  same wherever it is read. */
 function renderer(escapeHtml: boolean) {
   const marked = new Marked({ gfm: true, breaks: false })
-  marked.use(maths, highlight, scripts, footnotes, callouts)
+  marked.use(maths, highlight, scripts, emoji, footnotes, callouts)
 
   if (escapeHtml) {
     marked.use({
@@ -69,4 +69,4 @@ export function renderMarkdown(source: string, options: RenderOptions = {}): str
   )
 }
 
-export { callouts, footnotes, highlight, maths, scripts } from './extensions'
+export { callouts, emoji, footnotes, highlight, maths, scripts } from './extensions'

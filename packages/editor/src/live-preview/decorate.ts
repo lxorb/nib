@@ -11,7 +11,15 @@ import {
 import type { SyntaxNode } from '@lezer/common'
 import { lineRevealed, overlaps, revealed } from './reveal'
 import { DIAGRAM_LANGUAGES, MathWidget } from './render'
-import { BulletWidget, CalloutWidget, CheckboxWidget, ImageWidget, RuleWidget } from './widgets'
+import { emojiFor } from '../emoji'
+import {
+  BulletWidget,
+  CalloutWidget,
+  CheckboxWidget,
+  EmojiWidget,
+  ImageWidget,
+  RuleWidget,
+} from './widgets'
 
 const hide = Decoration.replace({})
 const meta = Decoration.mark({ class: 'md-meta' })
@@ -107,6 +115,8 @@ class Decorator {
         return this.inlineWidget(node, new RuleWidget(), lineRevealed(this.state, node.from))
       case 'Image':
         return this.image(node)
+      case 'Emoji':
+        return this.emoji(node)
       case 'InlineMath':
         return this.inlineMath(node)
       case 'BlockMath':
@@ -237,6 +247,17 @@ class Decorator {
 
     this.inlineWidget(node, new ImageWidget(src, alt), false)
     // Its marks live inside the replacement now; decorating them would overlap.
+    return false
+  }
+
+  private emoji(node: SyntaxNode): boolean | void {
+    if (revealed(this.state, node)) return
+
+    const shortcode = this.state.doc.sliceString(node.from + 1, node.to - 1)
+    const character = emojiFor(shortcode)
+    if (!character) return
+
+    this.inlineWidget(node, new EmojiWidget(character), false)
     return false
   }
 

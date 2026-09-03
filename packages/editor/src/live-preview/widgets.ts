@@ -83,6 +83,24 @@ export class CalloutWidget extends WidgetType {
   }
 }
 
+/** Shows `:smile:` as the character it names. */
+export class EmojiWidget extends WidgetType {
+  constructor(private readonly character: string) {
+    super()
+  }
+
+  eq(other: EmojiWidget) {
+    return other.character === this.character
+  }
+
+  toDOM() {
+    const span = document.createElement('span')
+    span.className = 'nib-emoji'
+    span.textContent = this.character
+    return span
+  }
+}
+
 export class ImageWidget extends WidgetType {
   constructor(
     private readonly src: string,

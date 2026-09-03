@@ -6,6 +6,7 @@ import { bracketMatching, indentOnInput, syntaxHighlighting } from '@codemirror/
 import { highlightSelectionMatches, searchKeymap } from '@codemirror/search'
 import { EditorState } from '@codemirror/state'
 import { EditorView, drawSelection, dropCursor, highlightActiveLine, keymap } from '@codemirror/view'
+import { emojiCompletion } from './emoji'
 import { imageHandling, imageResolver, type ImageSink } from './images'
 import { nibKeymap } from './keymap'
 import { nibMarkdownExtensions } from './markdown/extensions'
@@ -53,6 +54,7 @@ export function createEditor({
         }),
         syntaxHighlighting(nibHighlightStyle),
         modeExtensions(),
+        emojiCompletion(),
         ...(onImage ? [imageHandling(onImage)] : []),
         ...(resolveImage ? [imageResolver.of(resolveImage)] : []),
         nibTheme,

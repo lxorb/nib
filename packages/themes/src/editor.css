@@ -349,6 +349,49 @@
   padding-bottom: 55vh;
 }
 
+/* ── Emoji ───────────────────────────────────────────────────────── */
+
+.nib-emoji {
+  font-family: 'Apple Color Emoji', 'Segoe UI Emoji', 'Noto Color Emoji', sans-serif;
+  font-size: 1.05em;
+  line-height: 1;
+}
+
+/* ── Completion popup ────────────────────────────────────────────── */
+
+.cm-tooltip.cm-tooltip-autocomplete {
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+  box-shadow: var(--shadow-md);
+  overflow: hidden;
+}
+
+.cm-tooltip-autocomplete > ul {
+  font-family: var(--font-ui);
+  font-size: var(--text-sm);
+  max-height: 16em;
+}
+
+.cm-tooltip-autocomplete > ul > li {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: 5px 10px;
+  color: var(--muted-strong);
+}
+
+.cm-tooltip-autocomplete > ul > li[aria-selected] {
+  background: var(--accent-soft);
+  color: var(--text-strong);
+}
+
+.cm-completionDetail {
+  margin-left: auto;
+  font-style: normal;
+  font-size: 1.1em;
+}
+
 /* ── Table of contents ───────────────────────────────────────────── */
 
 .nib-toc {

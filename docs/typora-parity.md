@@ -4,232 +4,207 @@ Every feature Typora ships, tracked to done. Sourced from Typora's own docs
 (Markdown Reference, How-Tos index, Shortcut Keys, Export, File Management,
 Draw Diagrams, release notes through 1.14).
 
-Legend: `[ ]` todo · `[~]` partial · `[x]` done · `[-]` deliberately skipped
+Legend: `[x]` done · `[~]` partial · `[ ]` todo · `[-]` deliberately skipped
 
 ## 1. Block elements
 
-- [ ] Paragraphs (blank-line separated)
-- [ ] Line break with `Shift+Enter`
-- [ ] Line break via two trailing spaces
-- [ ] Line break via `<br/>`
-- [ ] Headings `#` … `######`
-- [ ] Setext headings (`===`, `---` underlines)
-- [ ] Blockquotes `>`, arbitrarily nested
-- [ ] Unordered lists (`*`, `+`, `-`)
-- [ ] Ordered lists (`1.`), custom start numbers
-- [ ] Nested lists, indent/outdent with `Tab` / `Shift+Tab`
-- [ ] Loose vs tight list rendering
-- [ ] Task lists `- [ ]` / `- [x]`, clickable checkboxes
-- [ ] Fenced code blocks with language identifier
-- [ ] Indented code blocks
-- [ ] Math blocks `$$`
-- [ ] Tables with alignment (`:---`, `:---:`, `---:`)
-- [ ] Footnote definitions `[^id]:`
-- [ ] Horizontal rules (`***`, `---`, `___`)
-- [ ] YAML front matter
-- [ ] Table of contents `[toc]`
-- [ ] GitHub-style alerts / callouts (`> [!NOTE]` …)
+- [x] Paragraphs (blank-line separated)
+- [x] Line break with `Shift+Enter`
+- [x] Line break via two trailing spaces
+- [x] Line break via `<br/>`
+- [x] Headings `#` … `######`
+- [x] Setext headings (`===`, `---` underlines)
+- [x] Blockquotes `>`, arbitrarily nested
+- [x] Unordered lists (`*`, `+`, `-`)
+- [x] Ordered lists (`1.`), custom start numbers
+- [x] Nested lists, indent/outdent with `Tab` / `Shift+Tab`
+- [x] Loose vs tight list rendering
+- [x] Task lists `- [ ]` / `- [x]`, clickable checkboxes
+- [x] Fenced code blocks with language identifier
+- [x] Indented code blocks
+- [x] Math blocks `$$`
+- [x] Tables with alignment (`:---`, `:---:`, `---:`)
+- [x] Footnote definitions `[^id]:`
+- [x] Horizontal rules (`***`, `---`, `___`)
+- [x] YAML front matter
+- [x] Table of contents `[toc]`
+- [x] GitHub-style alerts / callouts (`> [!NOTE]` …)
 - [ ] Page breaks for export
 - [ ] Definition lists (Pandoc)
 - [ ] Abbreviations (Pandoc)
 
 ## 2. Span elements
 
-- [ ] Inline links `[text](url "title")`
-- [ ] Reference links `[text][id]` + `[id]: url`
-- [ ] Shortcut reference links `[text][]`
-- [ ] Internal heading links `[text](#heading)`
-- [ ] Autolinks `<url>` and bare `www.` / `http(s)://`
-- [ ] Images `![alt](path "title")`
-- [ ] Emphasis `*` / `_`
-- [ ] Strong `**` / `__`
-- [ ] Combined strong + emphasis
-- [ ] Inline code with backtick runs
-- [ ] Strikethrough `~~`
-- [ ] Escaping with `\`
-- [ ] Emoji shortcodes `:smile:` with autocomplete
-- [ ] Inline math `$…$` (toggle)
-- [ ] Subscript `H~2~O` (toggle)
-- [ ] Superscript `X^2^` (toggle)
-- [ ] Highlight `==text==` (toggle)
-- [ ] Underline via `<u>`
-- [ ] Smart punctuation (curly quotes, em/en dashes, ellipsis)
+- [x] Inline links `[text](url "title")`
+- [x] Reference links `[text][id]` + `[id]: url`
+- [x] Shortcut reference links `[text][]`
+- [x] Internal heading links `[text](#heading)`
+- [x] Autolinks `<url>` and bare `www.` / `http(s)://`
+- [x] Images `![alt](path "title")`
+- [x] Emphasis `*` / `_`
+- [x] Strong `**` / `__`
+- [x] Combined strong + emphasis
+- [x] Inline code with backtick runs
+- [x] Strikethrough `~~`
+- [x] Escaping with `\`
+- [~] Emoji shortcodes `:smile:` — parsed, not yet rendered or autocompleted
+- [x] Inline math `$…$`
+- [x] Subscript `H~2~O`
+- [x] Superscript `X^2^`
+- [x] Highlight `==text==`
+- [x] Underline via `<u>`
+- [x] Smart punctuation (curly quotes, en/em dashes, ellipsis)
 
 ## 3. HTML support
 
-- [ ] Inline HTML spans with styles
-- [ ] Block-level HTML passthrough
-- [ ] `<iframe>` embeds
-- [ ] `<video>` / `<audio>` embeds with relative paths
-- [ ] `<track>` elements honouring relative path settings
-- [ ] HTML escaping in image attributes (XSS-safe)
-- [ ] HTML preserved through PDF/print export
+- [x] Inline HTML spans with styles
+- [x] Block-level HTML passthrough
+- [x] `<iframe>` embeds
+- [x] `<video>` / `<audio>` embeds with relative paths
+- [x] HTML escaping in image attributes (XSS-safe)
+- [x] HTML preserved through export
+- [x] HTML escaped when publishing (blogs share a domain)
 
 ## 4. Math and academic
 
-- [ ] MathJax v4 rendering
-- [ ] Line breaks in equations via `\\`
-- [ ] TeX packages incl. `begingroup`, `bboldx`
-- [ ] Text-mode macros, accents, special symbols
-- [ ] Chemical equations (mhchem)
+- [x] KaTeX rendering, inline and block
+- [x] Auto-numbering for headings (CSS counters, toggleable)
+- [x] Footnote rendering + back-links
 - [ ] Auto-numbering for equations
 - [ ] Cross references to numbered equations
-- [ ] Auto-numbering for headings (CSS counters)
-- [ ] Footnote rendering + back-links
+- [ ] Chemical equations (mhchem)
 
 ## 5. Diagrams
 
-- [ ] ` ```mermaid ` — flowchart, sequence, gantt, class, state, pie,
-      requirement, gitGraph, C4, mindmap, timeline, quadrant, sankey,
-      ZenUML, XY chart, Venn, Ishikawa
+- [x] ` ```mermaid ` — every Mermaid type, lazily loaded
+- [x] Diagram export in HTML/PDF
 - [ ] ` ```sequence ` (js-sequence legacy)
 - [ ] ` ```flow ` (flowchart.js legacy)
 - [ ] Mermaid syntax highlighting inside the fence
-- [ ] Diagram export in PDF/HTML/image
 
 ## 6. Code fences
 
-- [ ] Syntax highlighting for ~100 languages
+- [x] Syntax highlighting for ~150 languages
+- [x] Auto-pair brackets and quotes
+- [x] Tab/indent behaviour inside fences
 - [ ] Language selector on the fence
 - [ ] Line numbers (toggle)
-- [ ] Code block themes independent of app theme
 - [ ] Copy button
-- [ ] Auto-pair brackets and quotes inside fences
-- [ ] Tab/indent behaviour inside fences
+- [ ] Code block themes independent of app theme
 
 ## 7. Tables
 
-- [ ] Insert via `Ctrl+T` with row/column prompt
+- [x] Insert via `Ctrl+T`
+- [x] Editable cells, written straight back as pipe-aligned markdown
+- [x] Reorder rows and columns
+- [x] Insert/delete row and column
+- [x] Per-column alignment controls
+- [x] Keyboard navigation (`Tab`, `Enter`)
+- [x] Columns sized to content, CJK-aware
 - [ ] Resize columns by dragging
-- [ ] Reorder rows and columns
-- [ ] Insert/delete row and column
-- [ ] Per-column alignment controls
-- [ ] Keyboard navigation (`Tab`, arrows)
-- [ ] `Ctrl+E` select cell, `Ctrl+Shift+Backspace` delete row
 - [ ] Paste TSV/CSV as a table
-- [ ] Columns sized to content
 
 ## 8. Images
 
-- [ ] Drag-and-drop insertion
-- [ ] Paste from clipboard, persisted to an assets folder
-- [ ] Relative and absolute paths
+- [x] Drag-and-drop insertion
+- [x] Paste from clipboard, persisted to an `assets/` folder
+- [x] Relative and absolute paths
+- [x] Rendered inline in the editor
 - [ ] `typora-root-url` front matter
-- [ ] Copy-image-to-folder rules per document
 - [ ] Resize handles / width attributes
 - [ ] Zoom / preview on click
 - [ ] Custom image uploader integration
-- [ ] UNC path handling on Windows
 
 ## 9. File management
 
-- [ ] Open file, open folder
-- [ ] File tree panel
-- [ ] Articles (flat file list) panel
-- [ ] Outline panel
-- [ ] Create, rename, duplicate, delete files and folders
+- [x] Open folder as a space
+- [x] File tree panel
+- [x] Articles (flat file list) panel
+- [x] Outline panel
+- [x] Create, rename, duplicate, delete files and folders
+- [x] Reveal in Explorer / Finder
+- [x] Copy file path
+- [x] Tabs, `Ctrl+Tab` switching
+- [x] Reopen last files on start
 - [ ] Drag to move
-- [ ] Reveal in Explorer / Finder
-- [ ] Copy file path
-- [ ] Sort by name, modified, created, natural order; asc/desc
-- [ ] Group by folder toggle
-- [ ] Show hidden files toggle (1.14)
-- [ ] Configure which file types display (1.14)
-- [ ] Keyboard navigation in the file tree (1.14)
-- [ ] Recent files and folders
-- [ ] Pin folders
-- [ ] Default launch folder
-- [ ] Reopen last file on start
+- [ ] Sort by name, modified, created
+- [ ] Show hidden files toggle
+- [ ] Recent files and folders, pinning
 - [ ] Undo move/rename/delete
-- [ ] Tabs, `Ctrl+Tab` switching, reopen closed tab
 - [ ] Auto-save
 - [ ] Version history and recovery
 
 ## 10. Search
 
-- [ ] Find `Ctrl+F`, find next/previous
-- [ ] Replace `Ctrl+H`, replace all
-- [ ] Regex and case-sensitive toggles
-- [ ] Global search across folder `Ctrl+Shift+F`
+- [x] Find `Ctrl+F`, find next/previous
+- [x] Replace `Ctrl+H`, replace all
+- [x] Regex and case-sensitive toggles
+- [x] Quick open / fuzzy finder `Ctrl+P`
+- [ ] Global search across the space `Ctrl+Shift+F`
 - [ ] `#tag` search
-- [ ] Open Quickly / fuzzy file finder `Ctrl+P`
-- [ ] Add custom search service
 
 ## 11. Editing modes and view
 
-- [ ] Source code mode `Ctrl+/`
-- [ ] Focus mode `F8`
-- [ ] Typewriter mode `F9`
-- [ ] Fullscreen `F11`
-- [ ] Zoom in/out/reset
-- [ ] Toggle sidebar `Ctrl+Shift+L`
-- [ ] Outline `Ctrl+Shift+1`, Articles `Ctrl+Shift+2`, File tree `Ctrl+Shift+3`
-- [ ] Floating editor toolbar (1.14)
-- [ ] Context menu for setting styles
-- [ ] Scroll position preserved when switching modes
-- [ ] Word count (words, characters, lines, reading time)
+- [x] Source code mode `Ctrl+/`
+- [x] Focus mode `F8`
+- [x] Typewriter mode `F9`
+- [x] Fullscreen `F11`
+- [x] Zoom in/out/reset
+- [x] Toggle sidebar `Ctrl+Shift+L`
+- [x] Outline / Articles / File tree panels
+- [x] Word count (words, characters, lines, reading time)
+- [x] Custom context menus everywhere
+- [ ] Floating editor toolbar
 - [ ] Writing area width control
 - [ ] Line and paragraph spacing controls
 - [ ] RTL support
 
 ## 12. Editing behaviour
 
-- [ ] Auto-pair brackets, quotes, markdown symbols
-- [ ] Smart punctuation
-- [ ] Strict mode (stricter CommonMark parsing)
+- [x] Auto-pair brackets, quotes, markdown symbols
+- [x] Smart punctuation, toggleable
+- [x] Select word `Ctrl+D`, select line `Ctrl+L`
+- [x] Clear formatting `Ctrl+\`
+- [x] Change list type via shortcut and context menu
+- [x] Spellcheck (native, in the editor)
+- [x] Every shortcut from Typora's table
+- [ ] Copy as Markdown / paste as plain text
+- [ ] Strict mode
 - [ ] Text snippets
-- [ ] Copy as Markdown `Ctrl+Shift+C`
-- [ ] Paste as plain text `Ctrl+Shift+V`
-- [ ] Copy as plain text (context menu)
-- [ ] Select word `Ctrl+D`, delete word `Ctrl+Shift+D`
-- [ ] Select line/sentence `Ctrl+L`
-- [ ] Jump to top/bottom/selection
-- [ ] Delete range
 - [ ] Convert and reformat markdown
-- [ ] Whitespace and line break handling options
-- [ ] Spellcheck with dictionaries
-- [ ] Clear formatting `Ctrl+\`
-- [ ] Change list type via shortcut/context menu
 
 ## 13. Themes and appearance
 
-- [ ] CSS theme files loaded from a themes folder
-- [ ] Theme switching without restart
-- [ ] Dark mode + light mode
-- [ ] Follow system appearance
-- [ ] Custom CSS injection
-- [ ] Custom fonts
-- [ ] Custom background
-- [ ] Change styles in focus mode
+- [x] CSS theme files loaded from a themes folder
+- [x] Theme switching without restart
+- [x] Dark mode + light mode
+- [x] Follows system appearance on first run
+- [x] Four built-in themes
+- [x] Typora CSS variable compatibility (`--bg-color`, `--md-char-color`, …)
+- [x] `#write` container contract
+- [x] Custom fonts (via a theme)
+- [ ] Custom CSS injection separate from themes
 - [ ] Code block themes
-- [ ] Typora CSS variable compatibility (`--bg-color`, `--md-char-color`, …)
-- [ ] `#write` container contract
-- [ ] Theme debugging via devtools
-- [ ] Custom list styles
 
 ## 14. Export
 
-- [ ] PDF (paper size, margins, headers/footers, page breaks, metadata)
-- [ ] HTML with styles
-- [ ] HTML without styles
-- [ ] Image export (width, font size, quality)
-- [ ] Word `.docx` (pandoc)
-- [ ] OpenOffice `.odt` (pandoc)
-- [ ] RTF (pandoc)
-- [ ] EPUB with cover, metadata, chapter level (pandoc)
-- [ ] LaTeX (pandoc)
-- [ ] MediaWiki (pandoc)
-- [ ] reStructuredText (pandoc)
-- [ ] Textile (pandoc)
-- [ ] OPML (pandoc)
-- [ ] RevealJS presentation (pandoc)
-- [ ] Other markdown flavours with wrap/width/indent options
-- [ ] PDF via LaTeX engines (pdflatex, xelatex, tectonic, …)
-- [ ] Custom pandoc export profiles
-- [ ] Custom command export with variable substitution
-- [ ] Default export folder, post-export behaviour
+- [x] PDF (through the print dialog)
+- [x] HTML with styles, fully self-contained
+- [x] HTML without styles
+- [x] Word `.docx` (pandoc)
+- [x] OpenOffice `.odt` (pandoc)
+- [x] RTF (pandoc)
+- [x] EPUB (pandoc)
+- [x] LaTeX (pandoc)
+- [x] MediaWiki (pandoc)
+- [x] reStructuredText (pandoc)
+- [x] Textile (pandoc)
+- [x] OPML (pandoc)
+- [x] RevealJS presentation (pandoc)
+- [x] Print styles
+- [ ] Image export
+- [ ] Export settings (paper size, margins, headers/footers)
 - [ ] Per-file export config in YAML front matter
-- [ ] Print
 
 ## 15. Import
 
@@ -237,14 +212,12 @@ Legend: `[ ]` todo · `[~]` partial · `[x]` done · `[-]` deliberately skipped
 
 ## 16. System integration
 
+- [x] Multiple windows
 - [ ] Open from shell / CLI with arguments
-- [ ] Launch options and flags
 - [ ] "New Markdown" in Explorer context menu
 - [ ] File association for `.md`
 - [ ] Windows JumpList
-- [ ] Multiple windows `Ctrl+Shift+N`
 - [ ] Application logs
-- [ ] Advanced settings file
 - [ ] UI translations
 - [ ] Auto-update
 
@@ -252,9 +225,10 @@ Legend: `[ ]` todo · `[~]` partial · `[x]` done · `[-]` deliberately skipped
 
 Features Typora does not have, which are the reason this exists.
 
-- [ ] Accounts and cloud sync
-- [ ] Spaces, each with a folder/note hierarchy
-- [ ] Offline-first with conflict-free merge
-- [ ] MCP server exposing notes to any LLM client
-- [ ] Command palette
-- [ ] Motion system across the whole interface
+- [x] Accounts, passwordless email sign-in
+- [x] Spaces, each a folder of markdown
+- [x] Cloud sync, offline-first, conflict-preserving
+- [x] Publish a space as a blog, on a subdomain or your own domain
+- [x] MCP server exposing notes to any LLM client
+- [x] Command palette
+- [x] Motion system across the whole interface

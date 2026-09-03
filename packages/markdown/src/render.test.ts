@@ -78,6 +78,19 @@ describe('Typora extensions', () => {
     expect(renderMarkdown('costs $5 and $9')).not.toContain('katex')
   })
 
+  test('emoji shortcodes become characters', () => {
+    expect(renderMarkdown('ship it :rocket:')).toContain('🚀')
+    expect(renderMarkdown('ship it :rocket:')).not.toContain(':rocket:')
+  })
+
+  test('a lone colon is left alone', () => {
+    expect(renderMarkdown('note: this stays')).toContain('note: this stays')
+  })
+
+  test('an unknown shortcode is left as written', () => {
+    expect(renderMarkdown(':not_an_emoji_name:')).toContain(':not_an_emoji_name:')
+  })
+
   test('callouts become labelled blocks', () => {
     const html = renderMarkdown('> [!WARNING]\n> Careful.\n')
     expect(html).toContain('data-kind="warning"')
