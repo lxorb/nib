@@ -115,6 +115,12 @@ export function appCommands(view?: EditorView): Command[] {
     },
     { id: 'space', label: 'Add a space', run: () => void workspace.addSpace() },
     {
+      id: 'undo-file',
+      label: workspace.undoLabel ?? 'Undo the last file change',
+      disabled: !workspace.undoLabel,
+      run: () => void workspace.undoFileAction(),
+    },
+    {
       id: 'autosave',
       label: workspace.autoSave ? 'Turn off auto-save' : 'Turn on auto-save',
       run: () => workspace.setAutoSave(!workspace.autoSave),

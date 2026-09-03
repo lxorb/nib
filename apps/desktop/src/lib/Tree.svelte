@@ -22,7 +22,14 @@
       { label: 'Reveal in Explorer', run: () => workspace.reveal(entry.path) },
       DIVIDER,
       { label: 'Delete', danger: true, run: () => workspace.remove(entry.path, true) },
+      ...undoEntry(),
     ]
+  }
+
+  /** Only offered once there is something to take back. */
+  function undoEntry(): MenuEntry[] {
+    const label = workspace.undoLabel
+    return label ? [DIVIDER, { label, run: () => workspace.undoFileAction() }] : []
   }
 
   function noteMenu(entry: Entry): MenuEntry[] {
@@ -35,6 +42,7 @@
       { label: 'Reveal in Explorer', run: () => workspace.reveal(entry.path) },
       DIVIDER,
       { label: 'Delete', danger: true, run: () => workspace.remove(entry.path, false) },
+      ...undoEntry(),
     ]
   }
 

@@ -35,6 +35,11 @@ export interface Tab {
 
 export type Panel = 'tree' | 'outline' | 'articles' | 'search'
 
+/** A file operation that can be put back. */
+export type FileAction =
+  | { kind: 'move' | 'rename'; from: string; to: string }
+  | { kind: 'delete'; path: string; content: string }
+
 export interface Hit {
   path: string
   name: string
@@ -53,6 +58,7 @@ const AUTO_SAVE_KEY = 'nib:autosave'
 const TREE_KEY = 'nib:tree'
 const RECENT_KEY = 'nib:recent'
 const RECENT_LIMIT = 15
+const UNDO_LIMIT = 20
 const AUTO_SAVE_DELAY = 1200
 const UNTITLED = 'Untitled'
 
@@ -127,6 +133,8 @@ class Workspace {
   autoSave = $state(localStorage.getItem(AUTO_SAVE_KEY) !== 'false')
   treeOptions = $state<TreeOptions>(readTreeOptions())
   recent = $state<string[]>(readRecent())
+  /** Not persisted: putting a file back only makes sense while it is fresh. */
+  undoable = $state<FileAction[]>([])
 
   private saveTimer: ReturnType<typeof setTimeout> | undefined
 
@@ -267,6 +275,7 @@ class Workspace {
     if (target === from || intoFolder.startsWith(from)) return
 
     await invoke('rename_note', { from, to: target })
+    this.recordFileAction({ kind:'move', from, to: target })
 
     for (const tab of this.tabs.filter((entry) => entry.path === from)) {
       tab.path = target
@@ -430,6 +439,7 @@ class Workspace {
     if (target === path) return
 
     await invoke('rename_note', { from: path, to: target })
+    this.recordFileAction({ kind:'rename', from: path, to: target })
 
     const tab = this.tabs.find((entry) => entry.path === path)
     if (tab) {
@@ -446,6 +456,7 @@ class Workspace {
     if (!isFolder) {
       const content = await invoke<string>('read_note', { path }).catch(() => '')
       if (content) await invoke('snapshot_note', { path, content }).catch(() => undefined)
+      this.recordFileAction({ kind:'delete', path, content })
     }
 
     await invoke(isFolder ? 'delete_folder' : 'delete_note', { path })
@@ -455,6 +466,50 @@ class Workspace {
     }
 
     await this.loadTree()
+  }
+
+  /** The last handful of file operations, newest last, so one can be taken back.
+   *  Deleting a folder is not among them: its contents are already gone. */
+  private recordFileAction(action: FileAction) {
+    this.undoable = [...this.undoable, action].slice(-UNDO_LIMIT)
+  }
+
+  /** Puts the last move, rename or deletion back. */
+  async undoFileAction() {
+    const action = this.undoable.at(-1)
+    if (!action) return
+
+    this.undoable = this.undoable.slice(0, -1)
+
+    try {
+      if (action.kind === 'delete') {
+        await invoke('write_note', { path: action.path, content: action.content })
+      } else {
+        await invoke('rename_note', { from: action.to, to: action.from })
+
+        for (const tab of this.tabs.filter((entry) => entry.path === action.to)) {
+          tab.path = action.from
+          tab.name = basename(action.from)
+        }
+      }
+    } catch {
+      // Something else has since changed the file; leave what is there alone.
+      return
+    }
+
+    await this.loadTree()
+    this.persist()
+  }
+
+  /** What undoing would do, phrased for a menu. Null when there is nothing. */
+  get undoLabel(): string | null {
+    const action = this.undoable.at(-1)
+    if (!action) return null
+
+    const name = basename(action.kind === 'delete' ? action.path : action.to)
+    return { move: `Undo moving ${name}`, rename: `Undo renaming ${name}`, delete: `Undo deleting ${name}` }[
+      action.kind
+    ]
   }
 
   async duplicate(path: string) {
