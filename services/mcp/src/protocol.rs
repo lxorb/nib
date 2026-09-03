@@ -107,7 +107,13 @@ fn tools(vault: &Vault) -> Vec<Value> {
 fn call(vault: &Vault, params: &Value) -> Result<Value, String> {
     let name = params.get("name").and_then(Value::as_str).unwrap_or("");
     let arguments = params.get("arguments").cloned().unwrap_or(json!({}));
-    let string = |key: &str| arguments.get(key).and_then(Value::as_str).unwrap_or("").to_string();
+    let string = |key: &str| {
+        arguments
+            .get(key)
+            .and_then(Value::as_str)
+            .unwrap_or("")
+            .to_string()
+    };
 
     Ok(match name {
         "list_notes" => {

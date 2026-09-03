@@ -13,3 +13,6 @@ Thumbs.db
 
 # Rust build output for the MCP connector
 services/mcp/target/
+
+# The MCP connector is staged here at build time
+apps/desktop/src-tauri/binaries/

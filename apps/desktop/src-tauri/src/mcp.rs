@@ -12,15 +12,22 @@ pub struct McpConfig {
     snippet: String,
 }
 
-/// Where `nib-mcp` lives: beside the app once installed, or in the Cargo
+/// Where `nib-mcp` lives: bundled with the app once installed, or in the Cargo
 /// target folder while developing.
 fn binary_path(app: &AppHandle) -> PathBuf {
-    let name = if cfg!(windows) { "nib-mcp.exe" } else { "nib-mcp" };
+    let name = if cfg!(windows) {
+        "nib-mcp.exe"
+    } else {
+        "nib-mcp"
+    };
 
-    if let Ok(dir) = app.path().resolve("", tauri::path::BaseDirectory::Resource) {
-        let beside = dir.join(name);
-        if beside.exists() {
-            return beside;
+    if let Ok(dir) = app
+        .path()
+        .resolve("binaries", tauri::path::BaseDirectory::Resource)
+    {
+        let bundled = dir.join(name);
+        if bundled.exists() {
+            return bundled;
         }
     }
 

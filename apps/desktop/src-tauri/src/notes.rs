@@ -28,7 +28,10 @@ pub fn write_note(path: String, content: String) -> Result<(), String> {
 
     let temp = parent.join(format!(
         ".{}.nib-tmp",
-        target.file_name().and_then(|n| n.to_str()).unwrap_or("note")
+        target
+            .file_name()
+            .and_then(|n| n.to_str())
+            .unwrap_or("note")
     ));
 
     fs::write(&temp, content).map_err(|e| e.to_string())?;
@@ -50,12 +53,26 @@ pub fn save_asset(note_path: String, name: String, bytes: Vec<u8>) -> Result<Str
 
     let safe: String = name
         .chars()
-        .map(|c| if c.is_alphanumeric() || c == '.' || c == '-' || c == '_' { c } else { '-' })
+        .map(|c| {
+            if c.is_alphanumeric() || c == '.' || c == '-' || c == '_' {
+                c
+            } else {
+                '-'
+            }
+        })
         .collect();
 
     // Never clobber an existing asset: add a counter until the name is free.
-    let stem = safe.rsplit_once('.').map(|(s, _)| s).unwrap_or(&safe).to_string();
-    let extension = safe.rsplit_once('.').map(|(_, e)| e).unwrap_or("png").to_string();
+    let stem = safe
+        .rsplit_once('.')
+        .map(|(s, _)| s)
+        .unwrap_or(&safe)
+        .to_string();
+    let extension = safe
+        .rsplit_once('.')
+        .map(|(_, e)| e)
+        .unwrap_or("png")
+        .to_string();
 
     let mut candidate = dir.join(&safe);
     let mut counter = 1;

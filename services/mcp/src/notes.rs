@@ -77,7 +77,9 @@ impl Vault {
         let mut matches = Vec::new();
 
         for relative in self.list() {
-            let Ok(body) = self.read(&relative) else { continue };
+            let Ok(body) = self.read(&relative) else {
+                continue;
+            };
 
             for (index, line) in body.lines().enumerate() {
                 if !line.to_lowercase().contains(&needle) {
@@ -108,7 +110,9 @@ fn is_markdown(path: &Path) -> bool {
 }
 
 fn walk(root: &Path, dir: &Path, out: &mut Vec<String>) {
-    let Ok(entries) = fs::read_dir(dir) else { return };
+    let Ok(entries) = fs::read_dir(dir) else {
+        return;
+    };
 
     for entry in entries.flatten() {
         let path = entry.path();
