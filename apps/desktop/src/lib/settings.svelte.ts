@@ -3,6 +3,14 @@ import { api, type DnsRecord, type RemoteSpace } from './api'
 import { account } from './account.svelte'
 import { DEFAULT_PAGE_SETUP, type PageSetup } from './page-setup'
 import { invoke, isDesktop } from './tauri'
+import {
+  currentVersion,
+  dueForCheck,
+  markChecked,
+  openRelease,
+  type Release,
+  updateAvailable,
+} from './update'
 import { sync } from './sync.svelte'
 import { workspace } from './workspace.svelte'
 
@@ -45,6 +53,9 @@ class Settings {
   /** Paper and running text for export. A note's front matter overrules it. */
   page = $state<PageSetup>({ ...DEFAULT_PAGE_SETUP })
 
+  /** A published release newer than the one running, once one is found. */
+  update = $state<Release | null>(null)
+
   busy = $state(false)
   error = $state<string | null>(null)
   dns = $state<DnsRecord[]>([])
@@ -83,6 +94,21 @@ class Settings {
     )
 
     void this.loadSnippets()
+    void this.checkForUpdate()
+  }
+
+  /** Looks for a newer release. Quiet on its own; a check the reader asked for
+   *  opens the release page when there is something to see. */
+  async checkForUpdate(options: { announce?: boolean } = {}) {
+    if (!isDesktop) return
+
+    const now = Date.now()
+    if (!options.announce && !dueForCheck(now)) return
+
+    markChecked(now)
+    this.update = await updateAvailable(await currentVersion())
+
+    if (options.announce && this.update) await openRelease(this.update)
   }
 
   setPage(patch: Partial<PageSetup>) {

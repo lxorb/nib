@@ -252,6 +252,13 @@ export function appCommands(view?: EditorView): Command[] {
     { id: 'snippets', label: t('Edit snippets'), run: () => void openSnippets() },
     { id: 'logs', label: t('Open the log file'), run: () => void openLog() },
     {
+      id: 'update',
+      label: settings.update
+        ? t('Version {version} is out', { version: settings.update.version })
+        : t('Check for updates'),
+      run: () => void settings.checkForUpdate({ announce: true }),
+    },
+    {
       id: 'sidebar',
       label: workspace.panel ? t('Hide sidebar') : t('Show sidebar'),
       hint: 'Ctrl Shift L',

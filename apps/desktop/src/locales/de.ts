@@ -102,6 +102,8 @@ export const de: Dictionary = {
   'Edit snippets': 'Textbausteine bearbeiten',
   'Reload themes and custom CSS': 'Designs und eigenes CSS neu laden',
   'Open the log file': 'Protokolldatei öffnen',
+  'Check for updates': 'Nach Updates suchen',
+  'Version {version} is out': 'Version {version} ist da',
   Language: 'Sprache',
   'Match the system': 'Wie das System',
 
