@@ -105,14 +105,10 @@ class Decorator {
         // so hiding `# ` does not indent the heading by one column.
         return this.conceal(node.from, this.eatSpace(node.to), lineRevealed(this.state, node.from))
       case 'CodeMark':
-        // A fence's ``` follows the caret's line; inline backticks follow the span.
-        return this.conceal(
-          node.from,
-          node.to,
-          node.parent?.name === 'FencedCode'
-            ? lineRevealed(this.state, node.from)
-            : revealed(this.state, node),
-        )
+        // Both of a fence's ``` show together whenever the caret is anywhere in
+        // the block, so its extent is never in doubt while it is being edited.
+        // Inline backticks follow their own span.
+        return this.conceal(node.from, node.to, revealed(this.state, node))
       case 'ListMark':
         return this.listMark(node)
       case 'TaskMarker':
@@ -131,7 +127,8 @@ class Decorator {
       case 'BlockMath':
         return this.blockMath(node)
       case 'CodeInfo':
-        return this.conceal(node.from, node.to, lineRevealed(this.state, node.from))
+        // Shown alongside the fences it belongs to, not on its own schedule.
+        return this.conceal(node.from, node.to, revealed(this.state, node))
       case 'TableDelimiter':
         return this.tableDelimiter(node)
       case 'Subscript':

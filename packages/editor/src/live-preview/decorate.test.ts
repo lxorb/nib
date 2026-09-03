@@ -115,8 +115,27 @@ describe('code', () => {
     expect(concealed('```js\nlet x\n```')).toEqual(['```', 'js', '```'])
   })
 
-  test('reveals only the fence marker whose line holds the caret', () => {
-    expect(revealedMeta('```js\nlet x\n```\n', 2)).toEqual(['```', 'js'])
+  // Both delimiters come back together, so the block's extent stays obvious
+  // wherever in it the caret happens to be.
+  test('reveals both fence markers when the caret is on the opening line', () => {
+    expect(revealedMeta('```js\nlet x\n```\n', 2)).toEqual(['```', 'js', '```'])
+  })
+
+  test('reveals both fence markers from inside the code', () => {
+    expect(concealed('```js\nlet x\n```\n', 8)).toEqual([])
+  })
+
+  test('reveals both fence markers from the closing line', () => {
+    expect(concealed('```js\nlet x\n```\n', 14)).toEqual([])
+  })
+
+  test('hides them again once the caret leaves the block', () => {
+    expect(concealed('```js\nlet x\n```')).toEqual(['```', 'js', '```'])
+  })
+
+  test('leaves a neighbouring fence hidden', () => {
+    const doc = '```js\na\n```\n\n```py\nb\n```\n'
+    expect(concealed(doc, 8)).toEqual(['```', 'py', '```'])
   })
 })
 

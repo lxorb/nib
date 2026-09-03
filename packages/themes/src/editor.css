@@ -193,9 +193,15 @@
   text-indent: -1.5em;
 }
 
+/* The span holds no text, so without a height it collapses onto the baseline
+   and the dot centres there instead of on the line. Giving it the line's own
+   height puts the dot level with the words beside it. */
 .nib-bullet {
   display: inline-block;
   width: 1em;
+  height: calc(1em * var(--leading-content));
+  height: 1lh;
+  vertical-align: top;
   text-indent: 0;
   position: relative;
 }
