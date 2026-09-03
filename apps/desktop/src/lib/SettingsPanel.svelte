@@ -72,24 +72,29 @@
           {#if account.signedIn}
             <p class="lead">{account.user?.email}</p>
 
-            {#if workspace.activeSpace}
-              {#if settings.remote}
-                <p class="note">
-                  <strong>{workspace.activeSpace.name}</strong>
-                  {t('syncs to your account.')}
-                  {#if sync.lastSyncedAt}
-                    {t('Last synced {time}.', {
-                      time: new Date(sync.lastSyncedAt).toLocaleTimeString(),
-                    })}
-                  {/if}
-                </p>
-              {:else}
-                <button class="primary" disabled={settings.busy} onclick={() => settings.startSyncing()}>
-                  {t('Sync {name}', { name: workspace.activeSpace.name })}
-                </button>
-              {/if}
+            <!-- One switch for everything: spaces are either all in the
+                 account or all on this machine. -->
+            <label class="switch">
+              <input
+                type="checkbox"
+                checked={sync.enabled}
+                disabled={settings.busy}
+                onchange={(event) => settings.setSyncing(event.currentTarget.checked)}
+              />
+              <span>{t('Keep my spaces in my account')}</span>
+            </label>
+
+            {#if sync.enabled}
+              <p class="note" transition:slide={{ duration: 180 }}>
+                {t('{count} spaces sync to your account.', { count: workspace.spaces.length })}
+                {#if sync.lastSyncedAt}
+                  {t('Last synced {time}.', {
+                    time: new Date(sync.lastSyncedAt).toLocaleTimeString(),
+                  })}
+                {/if}
+              </p>
             {:else}
-              <p class="note">{t('Open a folder to sync it.')}</p>
+              <p class="note">{t('Your notes stay on this computer.')}</p>
             {/if}
 
             <button class="quiet" onclick={() => account.signOut()}>{t('Sign out')}</button>
@@ -103,7 +108,7 @@
       {:else if settings.section === 'publish'}
         <div class="pane" in:fly={{ y: 8, duration: 180, easing: cubicOut }}>
           {#if !settings.remote}
-            <p class="note">{t('Sync this space first, from Account.')}</p>
+            <p class="note">{t('Turn on syncing first, from Account.')}</p>
           {:else}
             <!-- The consequence comes before the switch, not after it. -->
             <label class="danger-check">

@@ -25,17 +25,6 @@ interface McpConfig {
   snippet: string
 }
 
-/** Which local space is mirrored to which remote one. */
-const LINK_KEY = 'nib:links'
-
-function links(): Record<string, string> {
-  try {
-    return JSON.parse(localStorage.getItem(LINK_KEY) ?? '{}') as Record<string, string>
-  } catch {
-    return {}
-  }
-}
-
 class Settings {
   open = $state(false)
   section = $state<Section>('account')
@@ -67,12 +56,13 @@ class Settings {
     available: null,
   })
 
-  /** The remote space the open local space mirrors to, if any. */
+  /** The remote space the open one mirrors to. Publishing needs it, and it only
+   *  exists once syncing is on, since that is what creates the remote side. */
   readonly remote = $derived.by((): RemoteSpace | null => {
-    const local = workspace.activeSpaceId
-    if (!local) return null
+    const root = workspace.activeSpace?.root
+    if (!root) return null
 
-    const id = links()[local]
+    const id = sync.remoteIdFor(root)
     return account.spaces.find((space) => space.id === id) ?? null
   })
 
@@ -180,22 +170,17 @@ class Settings {
     }).catch(() => null)
   }
 
-  /** Creates a remote space for the open folder and starts mirroring it. */
-  async startSyncing() {
-    const local = workspace.activeSpace
-    if (!local || !account.token) return
+  /** Turns syncing on or off for everything at once. */
+  async setSyncing(on: boolean) {
+    if (!account.token) return
 
     this.busy = true
     this.error = null
 
     try {
-      const { space } = await api.createSpace(account.token, local.name)
-      localStorage.setItem(LINK_KEY, JSON.stringify({ ...links(), [local.id]: space.id }))
-
-      await account.loadSpaces()
-      await sync.link(space.id, local.root)
+      await sync.setEnabled(on)
     } catch (error) {
-      this.error = error instanceof Error ? error.message : 'could not start syncing'
+      this.error = error instanceof Error ? error.message : 'could not change syncing'
     } finally {
       this.busy = false
     }

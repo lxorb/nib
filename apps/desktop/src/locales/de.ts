@@ -143,7 +143,6 @@ export const de: Dictionary = {
   'Sign in': 'Anmelden',
   'Sign out': 'Abmelden',
   'Not signed in': 'Nicht angemeldet',
-  'Open a folder to sync it.': 'Öffne einen Ordner, um ihn zu synchronisieren.',
   'Email address': 'E-Mail-Adresse',
   Sending: 'Wird gesendet',
   Continue: 'Weiter',
@@ -151,15 +150,16 @@ export const de: Dictionary = {
   'Code sent to': 'Code gesendet an',
   'Digit {number}': 'Ziffer {number}',
   'Resend in {seconds}s': 'Erneut in {seconds}s',
-  'syncs to your account.': 'wird mit deinem Konto synchronisiert.',
   'Last synced {time}.': 'Zuletzt synchronisiert um {time}.',
-  'Sync {name}': '{name} synchronisieren',
+  'Keep my spaces in my account': 'Meine Bereiche in meinem Konto behalten',
+  '{count} spaces sync to your account.': '{count} Bereiche werden mit deinem Konto synchronisiert.',
+  'Your notes stay on this computer.': 'Deine Notizen bleiben auf diesem Computer.',
+  'Turn on syncing first, from Account.': 'Aktiviere die Synchronisierung zuerst unter Konto.',
   Update: 'Aktualisieren',
   'Live at': 'Erreichbar unter',
 
   // Publishing
   'Publish this space as a blog': 'Diesen Bereich als Blog veröffentlichen',
-  'Sync this space first, from Account.': 'Synchronisiere den Bereich zuerst unter Konto.',
   'Everything in this space becomes public.': 'Alles in diesem Bereich wird öffentlich.',
   'Every note, including drafts, is readable by anyone with the address.':
     'Jede Notiz, auch Entwürfe, ist für jeden mit der Adresse lesbar.',

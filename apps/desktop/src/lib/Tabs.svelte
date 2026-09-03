@@ -54,6 +54,10 @@
       </button>
     </div>
   {/each}
+
+  <button class="new" title={t('New note')} aria-label={t('New note')} onclick={() => workspace.openBlank()}>
+    <svg viewBox="0 0 12 12"><path d="M6 2v8M2 6h8" /></svg>
+  </button>
 </div>
 
 <style>
@@ -66,6 +70,32 @@
     padding: 0 var(--space-1);
     overflow-x: auto;
     scrollbar-width: none;
+  }
+
+  .new {
+    flex: none;
+    align-self: center;
+    width: 24px;
+    height: 24px;
+    display: grid;
+    place-items: center;
+    margin-left: 2px;
+    border-radius: var(--radius-sm);
+    color: var(--muted);
+  }
+
+  .new:hover {
+    background: var(--surface-2);
+    color: var(--text-strong);
+  }
+
+  .new svg {
+    width: 12px;
+    height: 12px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.4;
+    stroke-linecap: round;
   }
 
   .tab {

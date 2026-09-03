@@ -11,13 +11,6 @@
     return [...name.trim()][0]?.toUpperCase() ?? '·'
   }
 
-  /** The plus offers both things it could mean rather than guessing. */
-  function addMenu(event: MouseEvent) {
-    menu.show(event, [
-      { label: t('New note'), run: () => workspace.createNote() },
-      { label: t('New space'), run: () => void newSpace() },
-    ])
-  }
 </script>
 
 <nav>
@@ -44,7 +37,9 @@
       </button>
     {/each}
 
-    <button class="add" title={t('New')} aria-label={t('New')} onclick={addMenu}>
+    <!-- The rail is the list of spaces, so its plus makes one. New notes are
+         made from the plus beside the tabs. -->
+    <button class="add" title={t('New space')} aria-label={t('New space')} onclick={() => newSpace()}>
       <svg viewBox="0 0 12 12"><path d="M6 1v10M1 6h10" /></svg>
     </button>
   </div>

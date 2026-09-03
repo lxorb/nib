@@ -1,9 +1,10 @@
 import { api, ApiError } from './api'
 import { account } from './account.svelte'
 import { invoke } from './tauri'
-import type { Entry } from './workspace.svelte'
+import { type Entry, workspace } from './workspace.svelte'
 
 const STORAGE_KEY = 'nib:mirrors'
+const ENABLED_KEY = 'nib:sync-on'
 const POLL_INTERVAL = 20_000
 
 /** What the last sync left on disk, so local edits can be told apart from
@@ -14,6 +15,8 @@ interface Tracked {
   hash: string
 }
 
+/** One local space folder and the remote space it mirrors. Keyed by `root`,
+ *  because the folder is the thing that persists across launches. */
 interface Mirror {
   spaceId: string
   root: string
@@ -52,11 +55,32 @@ class Sync {
   private timer: ReturnType<typeof setInterval> | null = null
   private running = false
 
+  /** Syncing is all of your spaces or none of them. A per-space choice would
+   *  mean some notes are on this machine only and others are everywhere, with
+   *  nothing on screen to say which is which. */
+  enabled = $state(localStorage.getItem(ENABLED_KEY) === 'true')
+
+  async setEnabled(on: boolean) {
+    this.enabled = on
+    localStorage.setItem(ENABLED_KEY, String(on))
+
+    if (!on) {
+      this.mirrors = {}
+      this.save()
+      this.stop()
+      return
+    }
+
+    this.start()
+  }
+
   start() {
+    if (!this.enabled) return
+
     this.mirrors = this.load()
     if (this.timer) clearInterval(this.timer)
-    this.timer = setInterval(() => void this.run(), POLL_INTERVAL)
-    void this.run()
+    this.timer = setInterval(() => void this.tick(), POLL_INTERVAL)
+    void this.tick()
   }
 
   stop() {
@@ -65,20 +89,49 @@ class Sync {
     this.status = 'off'
   }
 
-  /** Starts mirroring a remote space into a local folder. */
-  async link(spaceId: string, root: string) {
-    this.mirrors[spaceId] = { spaceId, root, cursor: 0, notes: {} }
-    this.save()
+  /** Pairs every local space with a remote one, then syncs. Run before each
+   *  pass so a space made since the last one is picked up on its own. */
+  private async tick() {
+    await this.reconcile()
     await this.run()
   }
 
-  unlink(spaceId: string) {
-    delete this.mirrors[spaceId]
+  private async reconcile() {
+    const token = account.token
+    if (!token || !this.enabled) return
+
+    try {
+      await account.loadSpaces()
+    } catch {
+      return
+    }
+
+    const remoteByName = new Map(account.spaces.map((space) => [space.name, space]))
+    const roots = new Set<string>()
+
+    for (const space of workspace.spaces) {
+      roots.add(space.root)
+      if (this.mirrors[space.root]) continue
+
+      // A remote space of the same name is the same space — that is what makes
+      // a second machine adopt what the first one already uploaded.
+      const remote =
+        remoteByName.get(space.name) ?? (await api.createSpace(token, space.name)).space
+
+      this.mirrors[space.root] = { spaceId: remote.id, root: space.root, cursor: 0, notes: {} }
+    }
+
+    // A space deleted here stops being mirrored; the copy in the account stays.
+    for (const root of Object.keys(this.mirrors)) {
+      if (!roots.has(root)) delete this.mirrors[root]
+    }
+
     this.save()
   }
 
-  linked(spaceId: string): boolean {
-    return spaceId in this.mirrors
+  /** The remote space a local folder mirrors, if any. Publishing needs it. */
+  remoteIdFor(root: string): string | null {
+    return this.mirrors[root]?.spaceId ?? null
   }
 
   /** One full pass: take what the server has, then offer what we have. */
