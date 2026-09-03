@@ -6,7 +6,7 @@ import { bracketMatching, indentOnInput, syntaxHighlighting } from '@codemirror/
 import { highlightSelectionMatches, searchKeymap } from '@codemirror/search'
 import { EditorState } from '@codemirror/state'
 import { EditorView, drawSelection, dropCursor, highlightActiveLine, keymap } from '@codemirror/view'
-import { emojiCompletion } from './emoji'
+import { editorCompletion } from './emoji'
 import { imageHandling, imageResolver, type ImageSink } from './images'
 import { nibKeymap } from './keymap'
 import { richPaste } from './paste'
@@ -55,7 +55,7 @@ export function createEditor({
         }),
         syntaxHighlighting(nibHighlightStyle),
         modeExtensions(),
-        emojiCompletion(),
+        editorCompletion(),
         // Images are checked first, so a screenshot beats the HTML around it.
         ...(onImage ? [imageHandling(onImage)] : []),
         richPaste(),

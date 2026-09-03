@@ -363,6 +363,13 @@ class Workspace {
     tab.name = basename(path)
     tab.dirty = false
 
+    // Editing the config files in Nib should take effect on save.
+    if (/custom\.css$|snippets\.json$/.test(path)) {
+      const { settings } = await import('./settings.svelte')
+      const { theme } = await import('./theme.svelte')
+      await Promise.all([settings.loadSnippets(), theme.reload()])
+    }
+
     await this.loadTree()
     this.persist()
   }

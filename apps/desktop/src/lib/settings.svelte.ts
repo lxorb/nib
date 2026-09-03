@@ -1,3 +1,4 @@
+import { setSnippets } from '@nib/editor'
 import { api, type DnsRecord, type RemoteSpace } from './api'
 import { account } from './account.svelte'
 import { invoke, isDesktop } from './tauri'
@@ -66,6 +67,26 @@ class Settings {
     void import('./export').then(({ pandocAvailable }) =>
       pandocAvailable().then((found) => (this.pandoc = found)),
     )
+
+    void this.loadSnippets()
+  }
+
+  /** Reads `snippets.json` into the editor's completion source. */
+  async loadSnippets() {
+    if (!isDesktop) return
+
+    const raw = await invoke<string>('read_snippets').catch(() => '{}')
+    try {
+      const parsed = JSON.parse(raw) as Record<string, unknown>
+      const usable = Object.fromEntries(
+        Object.entries(parsed).filter(([, value]) => typeof value === 'string'),
+      ) as Record<string, string>
+
+      setSnippets(usable)
+    } catch {
+      // A malformed file simply means no snippets, not a broken editor.
+      setSnippets({})
+    }
   }
 
   show(section: Section = 'account') {

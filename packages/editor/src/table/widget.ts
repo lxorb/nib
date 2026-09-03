@@ -235,7 +235,14 @@ export class TableWidget extends WidgetType {
         ),
       )
 
-      th.append(controls)
+      // Markdown records no column widths, so a resize is a view-level nicety,
+      // exactly as it is in Typora.
+      const grip = document.createElement('span')
+      grip.className = 'nib-table-resize'
+      grip.contentEditable = 'false'
+      grip.addEventListener('mousedown', (event) => startColumnResize(event, th))
+
+      th.append(controls, grip)
       headRow.append(th)
     })
 
@@ -309,6 +316,28 @@ function restoreFocus(
   const selection = window.getSelection()
   selection?.removeAllRanges()
   selection?.addRange(range)
+}
+
+/** Drags the boundary between two columns. Width lives on the header cell, and
+ *  the rest of the column follows because the table is laid out from it. */
+function startColumnResize(event: MouseEvent, header: HTMLTableCellElement) {
+  event.preventDefault()
+  event.stopPropagation()
+
+  const startX = event.clientX
+  const startWidth = header.getBoundingClientRect().width
+
+  const move = (moved: MouseEvent) => {
+    header.style.width = `${Math.max(48, startWidth + (moved.clientX - startX))}px`
+  }
+
+  const finish = () => {
+    document.removeEventListener('mousemove', move)
+    document.removeEventListener('mouseup', finish)
+  }
+
+  document.addEventListener('mousemove', move)
+  document.addEventListener('mouseup', finish)
 }
 
 function focusCell(table: HTMLTableElement, row: number, column: number) {

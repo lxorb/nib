@@ -1,6 +1,7 @@
 import { autocompletion, type CompletionContext, type CompletionResult } from '@codemirror/autocomplete'
 import type { Extension } from '@codemirror/state'
 import { get, search } from 'node-emoji'
+import { snippetCompletions } from './snippets'
 
 /** `:smile:` → 😄, or null when the name is not one. */
 export function emojiFor(shortcode: string): string | null {
@@ -27,6 +28,7 @@ function completions(context: CompletionContext): CompletionResult | null {
   }
 }
 
-export function emojiCompletion(): Extension {
-  return autocompletion({ override: [completions], icons: false })
+/** Emoji shortcodes and user snippets share one popup. */
+export function editorCompletion(): Extension {
+  return autocompletion({ override: [completions, snippetCompletions], icons: false })
 }

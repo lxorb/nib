@@ -83,6 +83,36 @@ pub fn custom_css_path(app: AppHandle) -> Result<String, String> {
     Ok(path.to_string_lossy().to_string())
 }
 
+fn snippets_file(app: &AppHandle) -> Result<PathBuf, String> {
+    Ok(themes_root(app)?
+        .parent()
+        .unwrap_or(Path::new("."))
+        .join("snippets.json"))
+}
+
+/// Abbreviations the editor offers while typing, stored as plain JSON so they
+/// can be edited in Nib itself.
+#[tauri::command]
+pub fn snippets_path(app: AppHandle) -> Result<String, String> {
+    let path = snippets_file(&app)?;
+    if !path.exists() {
+        fs::write(
+            &path,
+            "{\n  \"todo\": \"- [ ] \",\n  \"note\": \"> [!NOTE]\\n> \"\n}\n",
+        )
+        .map_err(|e| e.to_string())?;
+    }
+    Ok(path.to_string_lossy().to_string())
+}
+
+#[tauri::command]
+pub fn read_snippets(app: AppHandle) -> String {
+    snippets_file(&app)
+        .ok()
+        .and_then(|path| fs::read_to_string(path).ok())
+        .unwrap_or_else(|| "{}".into())
+}
+
 #[tauri::command]
 pub fn read_custom_css(app: AppHandle) -> String {
     custom_css_file(&app)

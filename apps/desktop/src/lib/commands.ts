@@ -15,6 +15,14 @@ async function openCustomCss() {
   await workspace.open(path)
 }
 
+/** Opens `snippets.json`, and reloads it once the file is saved. */
+async function openSnippets() {
+  if (!isDesktop) return
+
+  const path = await invoke<string>('snippets_path')
+  await workspace.open(path)
+}
+
 /** Export entries. The pandoc formats only appear when pandoc is installed,
  *  so the list never offers something that cannot work. */
 function exportCommands(): Command[] {
@@ -173,6 +181,7 @@ export function appCommands(view?: EditorView): Command[] {
     })),
     { id: 'themes-folder', label: 'Open themes folder', run: () => void openThemesFolder() },
     { id: 'custom-css', label: 'Edit custom CSS', run: () => void openCustomCss() },
+    { id: 'snippets', label: 'Edit snippets', run: () => void openSnippets() },
     {
       id: 'sidebar',
       label: workspace.panel ? 'Hide sidebar' : 'Show sidebar',

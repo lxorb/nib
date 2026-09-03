@@ -16,6 +16,7 @@ export {
 export { nibHighlightStyle, nibTheme } from './theme'
 export { livePreview } from './live-preview'
 export { imageResolver, type ImageSink } from './images'
+export { setSnippets, snippets } from './snippets'
 export {
   setCodeLineNumbers,
   setFocusMode,
