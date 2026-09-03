@@ -3,6 +3,8 @@
   import { fade, fly, scale } from 'svelte/transition'
   import { cubicOut } from 'svelte/easing'
   import { account } from './account.svelte'
+  import { prompt } from './prompt.svelte'
+  import { workspace } from './workspace.svelte'
 
   const LENGTH = 6
 
@@ -35,7 +37,7 @@
 
     submitted = entered
     account.verify(entered).then((accepted) => {
-      if (accepted) return
+      if (accepted) return void settleLocalNotes()
 
       digits = Array(LENGTH).fill('')
       submitted = ''
@@ -69,6 +71,26 @@
     }
     if (event.key === 'ArrowLeft' && index > 0) boxes[index - 1]?.focus()
     if (event.key === 'ArrowRight' && index < LENGTH - 1) boxes[index + 1]?.focus()
+  }
+
+  /** Signing in on a machine that already holds notes needs an answer: they
+   *  either join the account or they go. Nothing is deleted without one. */
+  async function settleLocalNotes() {
+    if (!(await workspace.hasLocalContent())) return
+
+    const answer = await prompt.choose({
+      title: t('You already have notes on this computer.'),
+      detail: t(
+        'Keep them and they join your account. Erase them and only what your account already holds remains — this cannot be undone.',
+      ),
+      options: [
+        { id: 'keep', label: 'Keep them', primary: true },
+        { id: 'erase', label: 'Erase them', danger: true },
+      ],
+    })
+
+    // Dismissing the question keeps them, which is the answer that loses nothing.
+    if (answer === 'erase') await workspace.eraseLocalSpaces()
   }
 
   function close() {

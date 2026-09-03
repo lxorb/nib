@@ -323,6 +323,33 @@ class Workspace {
     this.persist()
   }
 
+  /** True as soon as one note on this machine has something written in it.
+   *  Stops at the first, so a large space costs no more than a small one. */
+  async hasLocalContent(): Promise<boolean> {
+    for (const note of this.notes) {
+      const doc = await invoke<string>('read_note', { path: note.path }).catch(() => '')
+      if (doc.trim()) return true
+    }
+
+    return false
+  }
+
+  /** Removes every space on this machine. Only ever called with an explicit
+   *  yes, since nothing here can be undone. */
+  async eraseLocalSpaces() {
+    for (const space of [...this.spaces]) {
+      await invoke('delete_space', { path: space.root }).catch(() => undefined)
+    }
+
+    for (const tab of [...this.tabs]) this.close(tab.id)
+
+    this.tree = null
+    this.activeSpaceId = null
+    await this.loadSpaces()
+    if (this.activeSpaceId) await this.loadTree()
+    this.persist()
+  }
+
   /** Deletes the space's folder. The app owns that folder, so dropping it from
    *  the list alone would only bring it back on the next launch. */
   async deleteSpace(id: string) {
