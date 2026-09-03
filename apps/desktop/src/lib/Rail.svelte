@@ -279,4 +279,29 @@
     stroke-width: 1.4;
     stroke-linecap: round;
   }
+
+  /* Touch: 30px squares are hard to hit with a thumb. */
+  @media (max-width: 720px) {
+    .space,
+    .add {
+      width: 42px;
+      height: 42px;
+    }
+
+    nav {
+      width: auto;
+      padding: var(--space-3) var(--space-2);
+      padding-bottom: calc(var(--space-3) + env(safe-area-inset-bottom));
+    }
+
+    svg {
+      width: 17px;
+      height: 17px;
+    }
+
+    /* No hover on a touch screen, so the label would never show. */
+    .name {
+      display: none;
+    }
+  }
 </style>

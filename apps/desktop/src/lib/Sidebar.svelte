@@ -437,4 +437,21 @@
     stroke-linecap: round;
     stroke-linejoin: round;
   }
+
+  @media (max-width: 720px) {
+    aside {
+      width: min(78vw, 20rem);
+    }
+
+    .switch button {
+      width: 40px;
+      height: 36px;
+    }
+
+    .row,
+    .hit {
+      padding-top: 10px;
+      padding-bottom: 10px;
+    }
+  }
 </style>

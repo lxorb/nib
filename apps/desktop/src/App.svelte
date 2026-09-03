@@ -271,10 +271,19 @@
      row sits beside them rather than above everything. -->
 <main class:focus={modes.focus}>
   <div class="middle">
-    <Rail />
+    <!-- Side by side on a desktop; a drawer over the document on a phone,
+         where there is no room for three columns at once. -->
+    <div class="panels" class:open={!!workspace.panel}>
+      <Rail />
+
+      {#if workspace.panel}
+        <Sidebar ongoto={goto} />
+      {/if}
+    </div>
 
     {#if workspace.panel}
-      <Sidebar ongoto={goto} />
+      <!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_static_element_interactions -->
+      <div class="scrim" onclick={() => workspace.showPanel(workspace.panel!)}></div>
     {/if}
 
     <div class="document">
@@ -311,7 +320,10 @@
   main {
     display: flex;
     flex-direction: column;
+    /* Dynamic units: a phone's address bar eats into the viewport as it
+       scrolls, and `vh` would leave the editor taller than the screen. */
     height: 100vh;
+    height: 100dvh;
     background: var(--bg);
     transition: background var(--dur-slow) var(--ease-out);
   }
@@ -320,6 +332,15 @@
     flex: 1;
     min-height: 0;
     display: flex;
+  }
+
+  .panels {
+    display: flex;
+    min-height: 0;
+  }
+
+  .scrim {
+    display: none;
   }
 
   .document {
@@ -334,5 +355,40 @@
     flex: 1;
     min-height: 0;
     display: flex;
+  }
+
+  /* ── Phones and narrow windows ─────────────────────────────────── */
+
+  @media (max-width: 720px) {
+    .panels {
+      position: fixed;
+      inset: 0 auto 0 0;
+      z-index: 30;
+      transform: translateX(-100%);
+      transition: transform var(--dur-base) var(--ease-out);
+      box-shadow: var(--shadow-lg);
+      /* Clear of a notch or a rounded corner. */
+      padding-left: env(safe-area-inset-left);
+    }
+
+    .panels.open {
+      transform: none;
+    }
+
+    .scrim {
+      display: block;
+      position: fixed;
+      inset: 0;
+      z-index: 29;
+      background: color-mix(in srgb, var(--bg) 55%, transparent);
+      backdrop-filter: blur(2px);
+      animation: scrim-in var(--dur-fast) var(--ease-out);
+    }
+
+    @keyframes scrim-in {
+      from {
+        opacity: 0;
+      }
+    }
   }
 </style>

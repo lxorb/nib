@@ -31,7 +31,13 @@
       return
     }
 
-    at = { x: (start.left + end.right) / 2, y: Math.min(start.top, end.top) }
+    // Kept clear of both edges: the bar is centred on the selection, but a
+    // selection near the margin would otherwise push it off screen.
+    const half = 150
+    const middle = (start.left + end.right) / 2
+    const x = Math.min(Math.max(middle, half), window.innerWidth - half)
+
+    at = { x, y: Math.min(start.top, end.top) }
   }
 
   function run(command: StateCommand) {

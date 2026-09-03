@@ -211,4 +211,17 @@
     background: var(--accent-hover);
     transform: translateY(-1px);
   }
+
+  @media (max-width: 720px) {
+    .sheet {
+      top: auto;
+      bottom: 0;
+      left: 0;
+      translate: none;
+      width: 100%;
+      max-height: 88dvh;
+      border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+      padding-bottom: calc(var(--space-4) + env(safe-area-inset-bottom));
+    }
+  }
 </style>
