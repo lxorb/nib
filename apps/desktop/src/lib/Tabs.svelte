@@ -1,15 +1,50 @@
 <script lang="ts">
   import { fly } from 'svelte/transition'
   import { cubicOut } from 'svelte/easing'
-  import { workspace } from './workspace.svelte'
+  import { DIVIDER, menu, type MenuEntry } from './menu.svelte'
+  import { workspace, type Tab } from './workspace.svelte'
 
   const stripped = (name: string) => name.replace(/\.(md|markdown|mdown|mkd)$/i, '')
+
+  function tabMenu(tab: Tab): MenuEntry[] {
+    return [
+      { label: 'Close', hint: 'Ctrl W', run: () => workspace.close(tab.id) },
+      {
+        label: 'Close others',
+        disabled: workspace.tabs.length < 2,
+        run: () => {
+          for (const other of workspace.tabs.filter((entry) => entry.id !== tab.id)) {
+            workspace.close(other.id)
+          }
+        },
+      },
+      DIVIDER,
+      {
+        label: 'Copy path',
+        disabled: !tab.path,
+        run: () => tab.path && navigator.clipboard.writeText(tab.path),
+      },
+      {
+        label: 'Reveal in Explorer',
+        disabled: !tab.path,
+        run: () => tab.path && workspace.reveal(tab.path),
+      },
+    ]
+  }
 </script>
 
 <div class="tabs">
   {#each workspace.tabs as tab (tab.id)}
-    <div class="tab" class:active={tab.id === workspace.activeTabId} transition:fly={{ y: -8, duration: 180, easing: cubicOut }}>
-      <button class="pick" onclick={() => workspace.activate(tab.id)}>
+    <div
+      class="tab"
+      class:active={tab.id === workspace.activeTabId}
+      transition:fly={{ y: -8, duration: 180, easing: cubicOut }}
+    >
+      <button
+        class="pick"
+        onclick={() => workspace.activate(tab.id)}
+        oncontextmenu={(event) => menu.show(event, tabMenu(tab))}
+      >
         {stripped(tab.name)}
         {#if tab.dirty}<span class="dot" aria-label="Unsaved"></span>{/if}
       </button>

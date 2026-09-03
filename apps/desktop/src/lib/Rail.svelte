@@ -1,5 +1,7 @@
 <script lang="ts">
   import { account } from './account.svelte'
+  import { DIVIDER, menu } from './menu.svelte'
+  import { settings } from './settings.svelte'
   import { workspace } from './workspace.svelte'
   import { theme } from './theme.svelte'
 
@@ -18,6 +20,17 @@
         aria-label={space.name}
         aria-current={space.id === workspace.activeSpaceId}
         onclick={() => workspace.selectSpace(space.id)}
+        oncontextmenu={(event) =>
+          menu.show(event, [
+            { label: 'Reveal in Explorer', run: () => workspace.reveal(space.root) },
+            { label: 'New note', run: () => workspace.createNote(space.root) },
+            DIVIDER,
+            {
+              label: 'Remove from Nib',
+              danger: true,
+              run: () => workspace.removeSpace(space.id),
+            },
+          ])}
       >
         {initial(space.name)}
         <span class="name">{space.name}</span>
@@ -30,6 +43,15 @@
   </div>
 
   <div class="foot">
+    <button class="add" title="Settings" aria-label="Settings" onclick={() => settings.show()}>
+      <svg viewBox="0 0 14 14">
+        <circle cx="7" cy="7" r="2.4" />
+        <path
+          d="M7 1v1.6M7 11.4V13M1 7h1.6M11.4 7H13M2.8 2.8l1.1 1.1M10.1 10.1l1.1 1.1M11.2 2.8l-1.1 1.1M3.9 10.1l-1.1 1.1"
+        />
+      </svg>
+    </button>
+
     <button
       class="add account"
       class:signed-in={account.signedIn}

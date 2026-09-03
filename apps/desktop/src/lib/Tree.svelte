@@ -1,6 +1,7 @@
 <script lang="ts">
   import { slide } from 'svelte/transition'
   import { cubicOut } from 'svelte/easing'
+  import { DIVIDER, menu, type MenuEntry } from './menu.svelte'
   import type { Entry } from './workspace.svelte'
   import { workspace } from './workspace.svelte'
   import Tree from './Tree.svelte'
@@ -8,17 +9,66 @@
   let { entries, depth = 0 }: { entries: Entry[]; depth?: number } = $props()
 
   let open = $state<Record<string, boolean>>({})
+
+  const stripped = (name: string) => name.replace(/\.(md|markdown|mdown|mkd)$/i, '')
+
+  function folderMenu(entry: Entry): MenuEntry[] {
+    return [
+      { label: 'New note', run: () => workspace.createNote(entry.path) },
+      { label: 'New folder', run: () => workspace.createFolder(entry.path) },
+      DIVIDER,
+      { label: 'Rename', run: () => (workspace.renaming = entry.path) },
+      { label: 'Reveal in Explorer', run: () => workspace.reveal(entry.path) },
+      DIVIDER,
+      { label: 'Delete', danger: true, run: () => workspace.remove(entry.path, true) },
+    ]
+  }
+
+  function noteMenu(entry: Entry): MenuEntry[] {
+    return [
+      { label: 'Open', run: () => workspace.open(entry.path) },
+      DIVIDER,
+      { label: 'Rename', run: () => (workspace.renaming = entry.path) },
+      { label: 'Duplicate', run: () => workspace.duplicate(entry.path) },
+      { label: 'Copy path', run: () => navigator.clipboard.writeText(entry.path) },
+      { label: 'Reveal in Explorer', run: () => workspace.reveal(entry.path) },
+      DIVIDER,
+      { label: 'Delete', danger: true, run: () => workspace.remove(entry.path, false) },
+    ]
+  }
+
+  function commit(path: string, value: string) {
+    workspace.renaming = null
+    void workspace.rename(path, value)
+  }
 </script>
 
 <ul>
   {#each entries as entry (entry.path)}
     <li>
-      {#if entry.is_dir}
+      {#if workspace.renaming === entry.path}
+        <!-- svelte-ignore a11y_autofocus -->
+        <input
+          class="rename"
+          style:padding-left="{depth * 12 + 8}px"
+          value={entry.is_dir ? entry.name : stripped(entry.name)}
+          autofocus
+          spellcheck="false"
+          onblur={(event) => commit(entry.path, fullName(entry, event.currentTarget.value))}
+          onkeydown={(event) => {
+            if (event.key === 'Enter') event.currentTarget.blur()
+            if (event.key === 'Escape') {
+              workspace.renaming = null
+            }
+          }}
+        />
+      {:else if entry.is_dir}
         <button
           class="row folder"
           style:padding-left="{depth * 12 + 8}px"
           aria-expanded={!!open[entry.path]}
           onclick={() => (open[entry.path] = !open[entry.path])}
+          oncontextmenu={(event) => menu.show(event, folderMenu(entry))}
         >
           <svg class="chevron" class:open={open[entry.path]} viewBox="0 0 8 8">
             <path d="M2 1l3 3-3 3" />
@@ -37,13 +87,23 @@
           class:active={workspace.active?.path === entry.path}
           style:padding-left="{depth * 12 + 20}px"
           onclick={() => workspace.open(entry.path)}
+          oncontextmenu={(event) => menu.show(event, noteMenu(entry))}
         >
-          <span class="label">{entry.name.replace(/\.(md|markdown|mdown|mkd)$/i, '')}</span>
+          <span class="label">{stripped(entry.name)}</span>
         </button>
       {/if}
     </li>
   {/each}
 </ul>
+
+<script module lang="ts">
+  /** Folders keep their name; notes keep their extension. */
+  function fullName(entry: { is_dir: boolean; name: string }, typed: string): string {
+    if (entry.is_dir) return typed
+    const extension = entry.name.match(/\.[^.]+$/)?.[0] ?? '.md'
+    return typed.endsWith(extension) ? typed : typed + extension
+  }
+</script>
 
 <style>
   ul {
@@ -95,6 +155,18 @@
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+  }
+
+  .rename {
+    width: 100%;
+    padding: 4px 8px;
+    border: 1px solid var(--accent);
+    border-radius: var(--radius-sm);
+    background: var(--bg);
+    color: var(--text-strong);
+    font-family: var(--font-ui);
+    font-size: var(--text-sm);
+    outline: none;
   }
 
   .chevron {

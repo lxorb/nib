@@ -1,10 +1,10 @@
-import type { Env } from './types'
+import type { EmailSender, Env } from './types'
 
 export interface Mailer {
   send(to: string, subject: string, body: { text: string; html: string }): Promise<void>
 }
 
-/** Without a provider key, codes go to the log — enough to develop against. */
+/** Without the binding — local dev and tests — codes go to the log. */
 function logging(): Mailer {
   return {
     async send(to, subject, body) {
@@ -13,28 +13,19 @@ function logging(): Mailer {
   }
 }
 
-function resend(apiKey: string, from: string): Mailer {
+/** Cloudflare Email Sending. No API key: the binding is the credential, and
+ *  SPF, DKIM and DMARC come from the enabled sending domain. */
+function cloudflare(sender: EmailSender, from: string): Mailer {
   return {
     async send(to, subject, body) {
-      const response = await fetch('https://api.resend.com/emails', {
-        method: 'POST',
-        headers: {
-          authorization: `Bearer ${apiKey}`,
-          'content-type': 'application/json',
-        },
-        body: JSON.stringify({ from, to, subject, text: body.text, html: body.html }),
-      })
-
-      if (!response.ok) {
-        throw new Error(`mail provider returned ${response.status}: ${await response.text()}`)
-      }
+      await sender.send({ from, to, subject, text: body.text, html: body.html })
     },
   }
 }
 
 export function mailer(env: Env): Mailer {
-  if (!env.RESEND_API_KEY) return logging()
-  return resend(env.RESEND_API_KEY, env.MAIL_FROM ?? 'Nib <nib@emilvinu.ch>')
+  if (!env.EMAIL || !env.MAIL_FROM) return logging()
+  return cloudflare(env.EMAIL, env.MAIL_FROM)
 }
 
 export function codeMessage(code: string) {

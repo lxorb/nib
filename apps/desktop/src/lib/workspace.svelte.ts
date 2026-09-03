@@ -1,5 +1,5 @@
 import { flushTableEdits } from '@nib/editor'
-import { invoke, isDesktop } from './tauri'
+import { folderOf, invoke, isDesktop, joinPath } from './tauri'
 
 export interface Entry {
   name: string
@@ -81,6 +81,8 @@ class Workspace {
   activeTabId = $state<string | null>(null)
   // Hidden until asked for, the way Typora starts.
   panel = $state<Panel | null>(null)
+  /** Path of the tree row currently being renamed in place. */
+  renaming = $state<string | null>(null)
 
   readonly activeSpace = $derived(this.spaces.find((space) => space.id === this.activeSpaceId) ?? null)
   readonly active = $derived(this.tabs.find((tab) => tab.id === this.activeTabId) ?? null)
@@ -128,8 +130,8 @@ class Workspace {
     }
 
     this.spaces = state.spaces ?? []
-    // `?? 'tree'` would resurrect a sidebar the reader deliberately closed.
-    this.panel = 'panel' in state ? state.panel : null
+    // Every launch starts on the document, never on the file list.
+    this.panel = null
     this.activeSpaceId = state.activeSpace ?? this.spaces[0]?.id ?? null
 
     if (this.activeSpaceId) await this.loadTree()
@@ -265,6 +267,73 @@ class Workspace {
 
     await this.loadTree()
     this.persist()
+  }
+
+  /** Creates `Untitled.md` in a folder, stepping the name until it is free. */
+  async createNote(folder?: string) {
+    const dir = folder ?? this.activeSpace?.root
+    if (!dir) return
+
+    const taken = new Set(this.notes.map((note) => note.path))
+    let name = 'Untitled.md'
+    let counter = 2
+    while (taken.has(joinPath(dir, name))) name = `Untitled ${counter++}.md`
+
+    const path = joinPath(dir, name)
+    await invoke('write_note', { path, content: '' })
+    await this.loadTree()
+    await this.open(path)
+  }
+
+  async createFolder(parent?: string) {
+    const dir = parent ?? this.activeSpace?.root
+    if (!dir) return
+
+    await invoke('create_folder', { path: joinPath(dir, 'New folder') })
+    await this.loadTree()
+  }
+
+  async rename(path: string, name: string) {
+    const clean = name.trim()
+    if (!clean || clean.includes('/') || clean.includes('\\')) return
+
+    const target = joinPath(folderOf(path), clean)
+    if (target === path) return
+
+    await invoke('rename_note', { from: path, to: target })
+
+    const tab = this.tabs.find((entry) => entry.path === path)
+    if (tab) {
+      tab.path = target
+      tab.name = basename(target)
+    }
+
+    await this.loadTree()
+    this.persist()
+  }
+
+  async remove(path: string, isFolder: boolean) {
+    await invoke(isFolder ? 'delete_folder' : 'delete_note', { path })
+
+    for (const tab of this.tabs.filter((entry) => entry.path?.startsWith(path))) {
+      this.close(tab.id)
+    }
+
+    await this.loadTree()
+  }
+
+  async duplicate(path: string) {
+    const content = await invoke<string>('read_note', { path })
+    const name = basename(path).replace(/(\.[^.]+)$/, ' copy$1')
+
+    await invoke('write_note', { path: joinPath(folderOf(path), name), content })
+    await this.loadTree()
+  }
+
+  async reveal(path: string) {
+    if (!isDesktop) return
+    const { revealItemInDir } = await import('@tauri-apps/plugin-opener')
+    await revealItemInDir(path)
   }
 
   showPanel(next: Panel) {

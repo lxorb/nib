@@ -6,9 +6,20 @@ export interface Env {
   BLOG_ROOT: string
   APP_ORIGIN: string
 
-  /** Set to send real sign-in codes; without it they are logged instead. */
-  RESEND_API_KEY?: string
+  /** Cloudflare Email Sending. Absent in tests, where codes are logged. */
+  EMAIL?: EmailSender
   MAIL_FROM?: string
+}
+
+/** The `send_email` binding's surface, which workers-types does not yet cover. */
+export interface EmailSender {
+  send(message: {
+    from: string
+    to: string | string[]
+    subject: string
+    text?: string
+    html?: string
+  }): Promise<{ messageId?: string }>
 }
 
 export interface User {

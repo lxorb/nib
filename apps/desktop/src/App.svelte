@@ -1,6 +1,20 @@
 <script lang="ts">
-  import { EditorView } from '@nib/editor'
+  import {
+    clearFormatting,
+    EditorView,
+    type StateCommand,
+    type Transaction,
+    insertCodeFence,
+    insertLink,
+    insertTable,
+    toggleBulletList,
+    toggleOrderedList,
+    toggleQuote,
+    toggleWrap,
+  } from '@nib/editor'
+  import ContextMenu from './lib/ContextMenu.svelte'
   import Editor from './lib/Editor.svelte'
+  import { DIVIDER, type MenuEntry, menu } from './lib/menu.svelte'
   import Palette from './lib/Palette.svelte'
   import Rail from './lib/Rail.svelte'
   import Sidebar from './lib/Sidebar.svelte'
@@ -57,6 +71,51 @@
       effects: EditorView.scrollIntoView(target.from, { y: 'start', yMargin: 72 }),
     })
     view.focus()
+  }
+
+  function runCommand(command: StateCommand) {
+    if (!view) return
+    command({ state: view.state, dispatch: (transaction: Transaction) => view!.dispatch(transaction) })
+    view.focus()
+  }
+
+  async function paste() {
+    if (!view) return
+    const text = await navigator.clipboard.readText().catch(() => '')
+    if (!text) return
+
+    const range = view.state.selection.main
+    view.dispatch({ changes: { from: range.from, to: range.to, insert: text } })
+    view.focus()
+  }
+
+  /** The editor's own menu, so the browser's never appears. */
+  function editorMenu(): MenuEntry[] {
+    const selected = !!view && !view.state.selection.main.empty
+
+    return [
+      { label: 'Cut', hint: 'Ctrl X', disabled: !selected, run: () => document.execCommand('cut') },
+      { label: 'Copy', hint: 'Ctrl C', disabled: !selected, run: () => document.execCommand('copy') },
+      { label: 'Paste', hint: 'Ctrl V', run: () => void paste() },
+      DIVIDER,
+      { label: 'Bold', hint: 'Ctrl B', run: () => runCommand(toggleWrap('**')) },
+      { label: 'Italic', hint: 'Ctrl I', run: () => runCommand(toggleWrap('*')) },
+      { label: 'Code', run: () => runCommand(toggleWrap('`')) },
+      { label: 'Link', hint: 'Ctrl K', run: () => runCommand(insertLink) },
+      { label: 'Clear formatting', hint: 'Ctrl \\', run: () => runCommand(clearFormatting) },
+      DIVIDER,
+      { label: 'Quote', run: () => runCommand(toggleQuote) },
+      { label: 'Bulleted list', run: () => runCommand(toggleBulletList) },
+      { label: 'Numbered list', run: () => runCommand(toggleOrderedList) },
+      { label: 'Table', hint: 'Ctrl T', run: () => runCommand(insertTable()) },
+      { label: 'Code block', run: () => runCommand(insertCodeFence) },
+      DIVIDER,
+      {
+        label: modes.source ? 'Leave source mode' : 'Source mode',
+        hint: 'Ctrl /',
+        run: () => modes.toggleSource(view),
+      },
+    ]
   }
 
   /** Pasted and dropped images are copied next to the note, keeping it portable. */
@@ -130,24 +189,28 @@
   }
 </script>
 
-<svelte:window onkeydown={onKeydown} />
+<!-- Nothing in the app ever shows the browser's own menu. -->
+<svelte:window onkeydown={onKeydown} oncontextmenu={(event) => event.preventDefault()} />
 
+<!-- The titlebar spans the whole window, so the rail, the sidebar and the
+     document all start on the same line. -->
 <main class:focus={modes.focus}>
-  <Rail />
+  <Titlebar {title} />
 
-  <div class="pane">
-    <Titlebar {title} />
+  <div class="middle">
+    <Rail />
 
-    <div class="middle">
-      {#if workspace.panel}
-        <Sidebar ongoto={goto} />
+    {#if workspace.panel}
+      <Sidebar ongoto={goto} />
+    {/if}
+
+    <div class="document">
+      {#if workspace.tabs.length > 1}
+        <Tabs />
       {/if}
 
-      <div class="document">
-        {#if workspace.tabs.length > 1}
-          <Tabs />
-        {/if}
-
+      <!-- svelte-ignore a11y_no_static_element_interactions -->
+      <div class="editor" oncontextmenu={(event) => menu.show(event, editorMenu())}>
         {#key workspace.activeTabId}
           <Editor
             bind:view
@@ -157,9 +220,9 @@
             resolveimage={resolveImage}
           />
         {/key}
-
-        <StatusBar doc={workspace.active?.doc ?? ''} />
       </div>
+
+      <StatusBar doc={workspace.active?.doc ?? ''} />
     </div>
   </div>
 </main>
@@ -167,20 +230,15 @@
 <Palette bind:open={palette} {view} />
 <SignIn />
 <SettingsPanel />
+<ContextMenu />
 
 <style>
   main {
     display: flex;
+    flex-direction: column;
     height: 100vh;
     background: var(--bg);
     transition: background var(--dur-slow) var(--ease-out);
-  }
-
-  .pane {
-    flex: 1;
-    min-width: 0;
-    display: flex;
-    flex-direction: column;
   }
 
   .middle {
@@ -190,9 +248,16 @@
   }
 
   .document {
+    position: relative;
     flex: 1;
     min-width: 0;
     display: flex;
     flex-direction: column;
+  }
+
+  .editor {
+    flex: 1;
+    min-height: 0;
+    display: flex;
   }
 </style>

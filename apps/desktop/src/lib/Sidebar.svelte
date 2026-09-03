@@ -1,6 +1,4 @@
 <script lang="ts">
-  import { fly } from 'svelte/transition'
-  import { cubicOut } from 'svelte/easing'
   import type { Panel } from './workspace.svelte'
   import { workspace } from './workspace.svelte'
   import Tree from './Tree.svelte'
@@ -16,7 +14,10 @@
   const stripped = (name: string) => name.replace(/\.(md|markdown|mdown|mkd)$/i, '')
 </script>
 
-<aside transition:fly={{ x: -20, duration: 220, easing: cubicOut, opacity: 0 }}>
+<!-- A CSS animation rather than a Svelte transition: transitions are driven by
+     requestAnimationFrame, which is paused in a backgrounded window, and a
+     stalled one would leave the sidebar invisible. -->
+<aside>
   <div class="switch">
     {#each PANELS as item (item.id)}
       <button
@@ -80,6 +81,14 @@
     min-height: 0;
     border-right: 1px solid var(--line);
     background: var(--side-bar-bg-color);
+    animation: reveal var(--dur-base) var(--ease-out);
+  }
+
+  @keyframes reveal {
+    from {
+      opacity: 0;
+      transform: translateX(-14px);
+    }
   }
 
   .switch {

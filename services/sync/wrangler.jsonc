@@ -17,9 +17,14 @@
 
   "r2_buckets": [{ "binding": "NOTES", "bucket_name": "nib-notes" }],
 
+  // Cloudflare Email Sending. `mail.emilvinu.ch` is enabled as a sending
+  // domain, so SPF, DKIM, DMARC and bounce handling are already in place.
+  "send_email": [{ "name": "EMAIL" }],
+
   "vars": {
     "BLOG_ROOT": "icinoxis.net",
-    "APP_ORIGIN": "https://markdown.emilvinu.ch"
+    "APP_ORIGIN": "https://markdown.emilvinu.ch",
+    "MAIL_FROM": "Nib <nib@mail.emilvinu.ch>"
   },
 
   "routes": [

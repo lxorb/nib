@@ -21,19 +21,22 @@
 </footer>
 
 <style>
-  /* Numbers only, and only when looked for. */
+  /* Numbers only, and only when looked for. Floated rather than laid out, so
+     an invisible bar never reserves a strip of empty space. */
   footer {
-    flex: none;
+    position: absolute;
+    right: 0;
+    bottom: 0;
     display: flex;
-    justify-content: flex-end;
     gap: var(--space-3);
-    padding: 3px var(--space-4);
+    padding: 4px var(--space-4);
     font-family: var(--font-mono);
     font-size: var(--text-xs);
     color: var(--muted);
     opacity: 0;
     transition: opacity var(--dur-slow) var(--ease-out);
     user-select: none;
+    pointer-events: auto;
   }
 
   footer:hover {
