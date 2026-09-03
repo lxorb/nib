@@ -1,0 +1,211 @@
+/* Editor-surface styles. Text appearance comes from the syntax highlighter;
+   these rules own block-level rhythm, backgrounds and rendered widgets. */
+
+.cm-editor .cm-line {
+  padding: 0;
+}
+
+.cm-editor #write {
+  max-width: var(--measure);
+  margin: 0 auto;
+  padding: var(--space-7) var(--space-5) 45vh;
+}
+
+/* ── Headings ────────────────────────────────────────────────────── */
+
+.cm-line[class*='nib-h'] {
+  font-family: var(--font-ui);
+  color: var(--text-strong);
+  letter-spacing: -0.014em;
+  line-height: 1.3;
+}
+
+.cm-line.nib-h1 {
+  margin: 0.85em 0 0.35em;
+  letter-spacing: -0.023em;
+}
+.cm-line.nib-h2 {
+  margin: 0.95em 0 0.35em;
+  letter-spacing: -0.018em;
+}
+.cm-line.nib-h3,
+.cm-line.nib-h4,
+.cm-line.nib-h5,
+.cm-line.nib-h6 {
+  margin: 1em 0 0.3em;
+}
+
+/* ── Blockquote ──────────────────────────────────────────────────── */
+
+.cm-line.nib-quote {
+  border-left: 2px solid var(--blockquote-border-color);
+  padding-left: 1.15em;
+  color: var(--muted-strong);
+  transition: border-color var(--dur-base) var(--ease-out);
+}
+
+.cm-line.nib-quote:hover {
+  border-left-color: var(--accent);
+}
+
+/* ── Code ────────────────────────────────────────────────────────── */
+
+.cm-line.nib-code {
+  font-family: var(--font-mono);
+  font-size: 0.86em;
+  line-height: 1.62;
+  background: var(--code-block-bg-color);
+  border-left: 1px solid var(--line);
+  border-right: 1px solid var(--line);
+  padding: 0 var(--space-4);
+}
+
+.cm-line.nib-code-open {
+  border-top: 1px solid var(--line);
+  border-radius: var(--radius-md) var(--radius-md) 0 0;
+  padding-top: var(--space-3);
+  margin-top: 1.1em;
+}
+
+.cm-line.nib-code-close {
+  border-bottom: 1px solid var(--line);
+  border-radius: 0 0 var(--radius-md) var(--radius-md);
+  padding-bottom: var(--space-3);
+  margin-bottom: 1.1em;
+}
+
+/* ── Lists ───────────────────────────────────────────────────────── */
+
+.cm-line.nib-li {
+  padding-left: 1.5em;
+  text-indent: -1.5em;
+}
+
+.nib-bullet {
+  display: inline-block;
+  width: 1em;
+  text-indent: 0;
+  position: relative;
+}
+
+.nib-bullet::before {
+  content: '';
+  position: absolute;
+  left: 0.16em;
+  top: 50%;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--muted);
+  transform: translateY(-50%);
+  transition:
+    background var(--dur-fast) var(--ease-out),
+    transform var(--dur-fast) var(--ease-spring);
+}
+
+.nib-bullet[data-depth='1']::before {
+  background: none;
+  box-shadow: inset 0 0 0 1.5px var(--muted);
+}
+
+.nib-bullet[data-depth='2']::before {
+  border-radius: 1px;
+}
+
+.cm-line:hover .nib-bullet::before {
+  background: var(--accent);
+  transform: translateY(-50%) scale(1.15);
+}
+
+.nib-ordered-mark {
+  color: var(--muted);
+}
+
+/* ── Task lists ──────────────────────────────────────────────────── */
+
+.nib-checkbox {
+  appearance: none;
+  width: 15px;
+  height: 15px;
+  margin: 0 0.45em 0 0;
+  vertical-align: -2px;
+  text-indent: 0;
+  border: 1.5px solid var(--line-strong);
+  border-radius: 4px;
+  background: transparent;
+  cursor: pointer;
+  position: relative;
+  transition:
+    border-color var(--dur-fast) var(--ease-out),
+    background var(--dur-fast) var(--ease-out),
+    transform var(--dur-fast) var(--ease-spring);
+}
+
+.nib-checkbox:hover {
+  border-color: var(--accent);
+  transform: scale(1.12);
+}
+
+.nib-checkbox:checked {
+  background: var(--accent);
+  border-color: var(--accent);
+}
+
+.nib-checkbox:checked::after {
+  content: '';
+  position: absolute;
+  left: 4px;
+  top: 0.5px;
+  width: 4px;
+  height: 8px;
+  border: solid #fff;
+  border-width: 0 2px 2px 0;
+  transform: rotate(43deg);
+  animation: check-draw var(--dur-base) var(--ease-spring);
+}
+
+.cm-line.nib-task-done {
+  color: var(--muted);
+  text-decoration: line-through;
+  text-decoration-color: var(--line-strong);
+}
+
+/* ── Rules ───────────────────────────────────────────────────────── */
+
+.nib-rule {
+  display: inline-block;
+  width: 100%;
+  height: 1px;
+  vertical-align: middle;
+  background: linear-gradient(to right, transparent, var(--line-strong) 12%, var(--line-strong) 88%, transparent);
+}
+
+/* ── Tables ──────────────────────────────────────────────────────── */
+
+.cm-line.nib-table {
+  font-family: var(--font-mono);
+  font-size: 0.88em;
+}
+
+.nib-table-pipe {
+  color: var(--line-strong);
+}
+
+/* ── Images ──────────────────────────────────────────────────────── */
+
+.nib-image {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  margin: 0.6em auto;
+  border-radius: var(--radius-md);
+  animation: develop var(--dur-slower) var(--ease-out);
+}
+
+@keyframes develop {
+  from {
+    opacity: 0;
+    filter: blur(6px);
+    transform: scale(0.99);
+  }
+}
