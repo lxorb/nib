@@ -1,4 +1,4 @@
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 use std::fs;
 use std::path::{Path, PathBuf};
 
@@ -9,7 +9,26 @@ pub struct Entry {
     name: String,
     path: String,
     is_dir: bool,
+    /// Milliseconds since the epoch, so the tree can sort by age.
+    modified: u64,
+    created: u64,
     children: Vec<Entry>,
+}
+
+#[derive(Deserialize, Default)]
+#[serde(rename_all = "camelCase", default)]
+pub struct TreeOptions {
+    /// Files and folders beginning with a dot.
+    pub show_hidden: bool,
+    /// `name`, `modified` or `created`.
+    pub sort: String,
+    pub descending: bool,
+}
+
+fn stamp(time: Option<std::time::SystemTime>) -> u64 {
+    time.and_then(|value| value.duration_since(std::time::UNIX_EPOCH).ok())
+        .map(|since| since.as_millis() as u64)
+        .unwrap_or(0)
 }
 
 #[tauri::command]
@@ -187,15 +206,15 @@ fn collect(dir: &Path, out: &mut Vec<PathBuf>) {
 }
 
 #[tauri::command]
-pub fn read_tree(root: String) -> Result<Entry, String> {
+pub fn read_tree(root: String, options: Option<TreeOptions>) -> Result<Entry, String> {
     let path = PathBuf::from(&root);
     if !path.is_dir() {
         return Err("root is not a directory".into());
     }
-    Ok(walk(&path))
+    Ok(walk(&path, &options.unwrap_or_default()))
 }
 
-fn walk(path: &Path) -> Entry {
+fn walk(path: &Path, options: &TreeOptions) -> Entry {
     let mut children = Vec::new();
 
     if let Ok(entries) = fs::read_dir(path) {
@@ -203,25 +222,29 @@ fn walk(path: &Path) -> Entry {
             let child = entry.path();
             let name = entry.file_name().to_string_lossy().to_string();
 
-            if name.starts_with('.') {
+            if name.starts_with('.') && !options.show_hidden {
                 continue;
             }
+
             if child.is_dir() {
-                children.push(walk(&child));
+                children.push(walk(&child, options));
             } else if is_markdown(&child) {
+                let meta = entry.metadata().ok();
                 children.push(Entry {
                     name,
                     path: child.to_string_lossy().to_string(),
                     is_dir: false,
+                    modified: stamp(meta.as_ref().and_then(|m| m.modified().ok())),
+                    created: stamp(meta.as_ref().and_then(|m| m.created().ok())),
                     children: Vec::new(),
                 });
             }
         }
     }
 
-    // Folders first, then notes, each alphabetical.
-    children.sort_by(|a, b| b.is_dir.cmp(&a.is_dir).then_with(|| a.name.cmp(&b.name)));
+    sort_children(&mut children, options);
 
+    let meta = fs::metadata(path).ok();
     Entry {
         name: path
             .file_name()
@@ -229,8 +252,32 @@ fn walk(path: &Path) -> Entry {
             .unwrap_or_else(|| path.to_string_lossy().to_string()),
         path: path.to_string_lossy().to_string(),
         is_dir: true,
+        modified: stamp(meta.as_ref().and_then(|m| m.modified().ok())),
+        created: stamp(meta.as_ref().and_then(|m| m.created().ok())),
         children,
     }
+}
+
+/// Folders always come first; the chosen key only orders within each group.
+fn sort_children(children: &mut [Entry], options: &TreeOptions) {
+    children.sort_by(|a, b| {
+        let grouped = b.is_dir.cmp(&a.is_dir);
+        if grouped != std::cmp::Ordering::Equal {
+            return grouped;
+        }
+
+        let order = match options.sort.as_str() {
+            "modified" => a.modified.cmp(&b.modified),
+            "created" => a.created.cmp(&b.created),
+            _ => a.name.to_lowercase().cmp(&b.name.to_lowercase()),
+        };
+
+        if options.descending {
+            order.reverse()
+        } else {
+            order
+        }
+    });
 }
 
 fn is_markdown(path: &Path) -> bool {

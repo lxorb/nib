@@ -1,5 +1,6 @@
 <script lang="ts">
-  import type { Hit, Panel } from './workspace.svelte'
+  import { DIVIDER, menu, type MenuEntry } from './menu.svelte'
+  import type { Hit, Panel, SortKey } from './workspace.svelte'
   import { workspace } from './workspace.svelte'
   import Tree from './Tree.svelte'
 
@@ -13,6 +14,27 @@
   ]
 
   const stripped = (name: string) => name.replace(/\.(md|markdown|mdown|mkd)$/i, '')
+
+  /** Right-clicking the Files tab is where a file list keeps its sorting. */
+  function sortMenu(): MenuEntry[] {
+    const options = workspace.treeOptions
+    const arrow = (key: SortKey) =>
+      options.sort === key ? (options.descending ? '↓' : '↑') : undefined
+
+    return [
+      { label: 'Sort by name', hint: arrow('name'), run: () => workspace.setSort('name') },
+      { label: 'Sort by modified', hint: arrow('modified'), run: () => workspace.setSort('modified') },
+      { label: 'Sort by created', hint: arrow('created'), run: () => workspace.setSort('created') },
+      DIVIDER,
+      {
+        label: options.showHidden ? 'Hide hidden files' : 'Show hidden files',
+        run: () => workspace.toggleHidden(),
+      },
+      DIVIDER,
+      { label: 'New note', run: () => workspace.createNote() },
+      { label: 'New folder', run: () => workspace.createFolder() },
+    ]
+  }
 
   let query = $state('')
   let hits = $state<Hit[]>([])
@@ -53,6 +75,7 @@
         aria-label={item.label}
         aria-current={workspace.panel === item.id}
         onclick={() => workspace.showPanel(item.id)}
+        oncontextmenu={(event) => item.id === 'tree' && menu.show(event, sortMenu())}
       >
         <svg viewBox="0 0 13 13"><path d={item.path} /></svg>
       </button>

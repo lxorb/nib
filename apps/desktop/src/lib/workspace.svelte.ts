@@ -5,7 +5,17 @@ export interface Entry {
   name: string
   path: string
   is_dir: boolean
+  modified: number
+  created: number
   children: Entry[]
+}
+
+export type SortKey = 'name' | 'modified' | 'created'
+
+export interface TreeOptions {
+  showHidden: boolean
+  sort: SortKey
+  descending: boolean
 }
 
 /** A space is a folder today and a synced collection once accounts land. */
@@ -40,6 +50,7 @@ export interface Heading {
 
 const STORAGE_KEY = 'nib:workspace'
 const AUTO_SAVE_KEY = 'nib:autosave'
+const TREE_KEY = 'nib:tree'
 const AUTO_SAVE_DELAY = 1200
 const UNTITLED = 'Untitled'
 
@@ -57,6 +68,16 @@ function basename(path: string): string {
 
 function identifier(): string {
   return Math.random().toString(36).slice(2, 10)
+}
+
+function readTreeOptions(): TreeOptions {
+  const fallback: TreeOptions = { showHidden: false, sort: 'name', descending: false }
+
+  try {
+    return { ...fallback, ...(JSON.parse(localStorage.getItem(TREE_KEY) ?? '{}') as TreeOptions) }
+  } catch {
+    return fallback
+  }
 }
 
 async function pickFolder(): Promise<string | null> {
@@ -93,6 +114,7 @@ class Workspace {
   /** Path of the tree row currently being renamed in place. */
   renaming = $state<string | null>(null)
   autoSave = $state(localStorage.getItem(AUTO_SAVE_KEY) !== 'false')
+  treeOptions = $state<TreeOptions>(readTreeOptions())
 
   private saveTimer: ReturnType<typeof setTimeout> | undefined
 
@@ -202,10 +224,45 @@ class Workspace {
     if (!root) return
 
     try {
-      this.tree = await invoke<Entry>('read_tree', { root })
+      this.tree = await invoke<Entry>('read_tree', { root, options: this.treeOptions })
     } catch {
       this.tree = null
     }
+  }
+
+  setSort(sort: SortKey) {
+    // Choosing the same key again flips the direction, as a file list should.
+    const descending = this.treeOptions.sort === sort ? !this.treeOptions.descending : false
+    this.treeOptions = { ...this.treeOptions, sort, descending }
+    this.persistTreeOptions()
+  }
+
+  toggleHidden() {
+    this.treeOptions = { ...this.treeOptions, showHidden: !this.treeOptions.showHidden }
+    this.persistTreeOptions()
+  }
+
+  private persistTreeOptions() {
+    localStorage.setItem(TREE_KEY, JSON.stringify(this.treeOptions))
+    void this.loadTree()
+  }
+
+  /** Moves a note or folder into another folder. */
+  async move(from: string, intoFolder: string) {
+    const name = basename(from)
+    const target = joinPath(intoFolder, name)
+
+    if (target === from || intoFolder.startsWith(from)) return
+
+    await invoke('rename_note', { from, to: target })
+
+    for (const tab of this.tabs.filter((entry) => entry.path === from)) {
+      tab.path = target
+      tab.name = name
+    }
+
+    await this.loadTree()
+    this.persist()
   }
 
   async open(path: string, options: { activate?: boolean } = {}) {

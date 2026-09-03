@@ -5,7 +5,13 @@ interface Entry {
   name: string
   path: string
   is_dir: boolean
+  modified: number
+  created: number
   children: Entry[]
+}
+
+function blank(name: string, path: string): Entry {
+  return { name, path, is_dir: false, modified: 0, created: 0, children: [] }
 }
 
 const ROOT = '/space'
@@ -54,7 +60,7 @@ graph LR
 
 /** Rebuilds the tree from the note map so writes and deletes show up. */
 function tree(): Entry {
-  const root: Entry = { name: 'space', path: ROOT, is_dir: true, children: [] }
+  const root: Entry = { ...blank('space', ROOT), is_dir: true }
 
   for (const path of [...NOTES.keys()].sort()) {
     const parts = path.slice(ROOT.length + 1).split('/')
@@ -65,13 +71,13 @@ function tree(): Entry {
       prefix += `/${part}`
 
       if (index === parts.length - 1) {
-        parent.children.push({ name: part, path: prefix, is_dir: false, children: [] })
+        parent.children.push({ ...blank(part, prefix), is_dir: false })
         break
       }
 
       let folder = parent.children.find((child) => child.is_dir && child.name === part)
       if (!folder) {
-        folder = { name: part, path: prefix, is_dir: true, children: [] }
+        folder = { ...blank(part, prefix), is_dir: true }
         parent.children.push(folder)
       }
       parent = folder

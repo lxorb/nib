@@ -9,6 +9,7 @@
   let { entries, depth = 0 }: { entries: Entry[]; depth?: number } = $props()
 
   let open = $state<Record<string, boolean>>({})
+  let dropTarget = $state<string | null>(null)
 
   const stripped = (name: string) => name.replace(/\.(md|markdown|mdown|mkd)$/i, '')
 
@@ -41,6 +42,27 @@
     workspace.renaming = null
     void workspace.rename(path, value)
   }
+
+  function startDrag(event: DragEvent, path: string) {
+    event.dataTransfer?.setData('text/nib-path', path)
+    if (event.dataTransfer) event.dataTransfer.effectAllowed = 'move'
+  }
+
+  function overFolder(event: DragEvent, path: string) {
+    if (!event.dataTransfer?.types.includes('text/nib-path')) return
+
+    event.preventDefault()
+    event.dataTransfer.dropEffect = 'move'
+    dropTarget = path
+  }
+
+  function drop(event: DragEvent, folder: string) {
+    event.preventDefault()
+    dropTarget = null
+
+    const from = event.dataTransfer?.getData('text/nib-path')
+    if (from) void workspace.move(from, folder)
+  }
 </script>
 
 <ul>
@@ -65,10 +87,16 @@
       {:else if entry.is_dir}
         <button
           class="row folder"
+          class:dropping={dropTarget === entry.path}
           style:padding-left="{depth * 12 + 8}px"
           aria-expanded={!!open[entry.path]}
+          draggable="true"
           onclick={() => (open[entry.path] = !open[entry.path])}
           oncontextmenu={(event) => menu.show(event, folderMenu(entry))}
+          ondragstart={(event) => startDrag(event, entry.path)}
+          ondragover={(event) => overFolder(event, entry.path)}
+          ondragleave={() => (dropTarget = null)}
+          ondrop={(event) => drop(event, entry.path)}
         >
           <svg class="chevron" class:open={open[entry.path]} viewBox="0 0 8 8">
             <path d="M2 1l3 3-3 3" />
@@ -86,8 +114,10 @@
           class="row note"
           class:active={workspace.active?.path === entry.path}
           style:padding-left="{depth * 12 + 20}px"
+          draggable="true"
           onclick={() => workspace.open(entry.path)}
           oncontextmenu={(event) => menu.show(event, noteMenu(entry))}
+          ondragstart={(event) => startDrag(event, entry.path)}
         >
           <span class="label">{stripped(entry.name)}</span>
         </button>
@@ -149,6 +179,12 @@
 
   .folder {
     color: var(--muted);
+  }
+
+  .row.dropping {
+    background: var(--accent-soft);
+    box-shadow: inset 0 0 0 1px var(--accent);
+    color: var(--text-strong);
   }
 
   .label {
