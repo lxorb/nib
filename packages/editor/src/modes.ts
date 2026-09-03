@@ -2,12 +2,14 @@ import { Compartment, type Extension } from '@codemirror/state'
 import { Decoration, type DecorationSet, EditorView, ViewPlugin, type ViewUpdate } from '@codemirror/view'
 import { syntaxTree } from '@codemirror/language'
 import { livePreview } from './live-preview'
+import { smartPunctuation } from './typography'
 
 /** Each mode lives in its own compartment so it can be swapped at runtime
  *  without rebuilding the editor state. */
 const preview = new Compartment()
 const focus = new Compartment()
 const typewriter = new Compartment()
+const punctuation = new Compartment()
 
 const dim = Decoration.line({ class: 'nib-dim' })
 
@@ -75,7 +77,12 @@ const typewriterPlugin = EditorView.updateListener.of((update) => {
 })
 
 export function modeExtensions(): Extension {
-  return [preview.of(livePreview()), focus.of([]), typewriter.of([])]
+  return [
+    preview.of(livePreview()),
+    focus.of([]),
+    typewriter.of([]),
+    punctuation.of(smartPunctuation()),
+  ]
 }
 
 /** Source mode shows the markdown as written, with no syntax hidden. */
@@ -92,4 +99,14 @@ export function setTypewriterMode(view: EditorView, on: boolean) {
   view.dispatch({ effects: typewriter.reconfigure(on ? typewriterPlugin : []) })
   // Extra room below the last line, so the caret can still reach the middle.
   view.dom.classList.toggle('nib-typewriter-mode', on)
+}
+
+/** Curly quotes, en and em dashes, ellipsis — on by default, like Typora. */
+export function setSmartPunctuation(view: EditorView, on: boolean) {
+  view.dispatch({ effects: punctuation.reconfigure(on ? smartPunctuation() : []) })
+}
+
+/** CSS counters number the headings; the document text stays untouched. */
+export function setHeadingNumbers(view: EditorView, on: boolean) {
+  view.dom.classList.toggle('nib-numbered', on)
 }

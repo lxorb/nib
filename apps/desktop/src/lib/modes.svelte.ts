@@ -1,4 +1,11 @@
-import { setFocusMode, setSourceMode, setTypewriterMode, type EditorView } from '@nib/editor'
+import {
+  setFocusMode,
+  setHeadingNumbers,
+  setSmartPunctuation,
+  setSourceMode,
+  setTypewriterMode,
+  type EditorView,
+} from '@nib/editor'
 
 const STORAGE_KEY = 'nib:modes'
 const ZOOM_STEPS = [0.8, 0.9, 1, 1.1, 1.25, 1.4, 1.6, 1.8, 2]
@@ -7,6 +14,8 @@ interface Saved {
   source: boolean
   focus: boolean
   typewriter: boolean
+  punctuation: boolean
+  numbers: boolean
   zoom: number
 }
 
@@ -14,6 +23,8 @@ class Modes {
   source = $state(false)
   focus = $state(false)
   typewriter = $state(false)
+  punctuation = $state(true)
+  numbers = $state(false)
   zoom = $state(1)
 
   restore() {
@@ -24,6 +35,8 @@ class Modes {
         this.source = !!state.source
         this.focus = !!state.focus
         this.typewriter = !!state.typewriter
+        this.punctuation = state.punctuation ?? true
+        this.numbers = !!state.numbers
         this.zoom = state.zoom || 1
       } catch {
         // A corrupt entry just means defaults.
@@ -37,6 +50,20 @@ class Modes {
     setSourceMode(view, this.source)
     setFocusMode(view, this.focus)
     setTypewriterMode(view, this.typewriter)
+    setSmartPunctuation(view, this.punctuation)
+    setHeadingNumbers(view, this.numbers)
+  }
+
+  togglePunctuation(view?: EditorView) {
+    this.punctuation = !this.punctuation
+    if (view) setSmartPunctuation(view, this.punctuation)
+    this.persist()
+  }
+
+  toggleNumbers(view?: EditorView) {
+    this.numbers = !this.numbers
+    if (view) setHeadingNumbers(view, this.numbers)
+    this.persist()
   }
 
   toggleSource(view?: EditorView) {
@@ -82,6 +109,8 @@ class Modes {
       source: this.source,
       focus: this.focus,
       typewriter: this.typewriter,
+      punctuation: this.punctuation,
+      numbers: this.numbers,
       zoom: this.zoom,
     }
     localStorage.setItem(STORAGE_KEY, JSON.stringify(state))

@@ -2,7 +2,13 @@ export { createEditor, type EditorOptions } from './editor'
 export { nibHighlightStyle, nibTheme } from './theme'
 export { livePreview } from './live-preview'
 export { imageResolver, type ImageSink } from './images'
-export { setFocusMode, setSourceMode, setTypewriterMode } from './modes'
+export {
+  setFocusMode,
+  setHeadingNumbers,
+  setSmartPunctuation,
+  setSourceMode,
+  setTypewriterMode,
+} from './modes'
 export { flushTableEdits } from './table/widget'
 export { EditorView } from '@codemirror/view'
 export { EditorState } from '@codemirror/state'

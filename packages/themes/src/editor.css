@@ -349,6 +349,98 @@
   padding-bottom: 55vh;
 }
 
+/* ── Table of contents ───────────────────────────────────────────── */
+
+.nib-toc {
+  display: block;
+  margin: 1.6em 0;
+  padding-left: 1.15em;
+  border-left: 2px solid var(--line);
+  font-family: var(--font-ui);
+  font-size: 0.94em;
+  animation: settle-in var(--dur-base) var(--ease-out);
+}
+
+.nib-toc a {
+  display: block;
+  padding: 0.16em 0;
+  color: var(--muted-strong);
+  text-decoration: none;
+  /* Themes underline links; a contents list reads better without. */
+  border-bottom: none;
+  transition:
+    color var(--dur-fast) var(--ease-out),
+    transform var(--dur-fast) var(--ease-out);
+}
+
+.nib-toc a:hover {
+  color: var(--accent);
+  transform: translateX(2px);
+}
+
+.nib-toc-empty::before {
+  content: '';
+  display: block;
+  height: 1.2em;
+}
+
+/* ── Heading numbers ─────────────────────────────────────────────── */
+
+.nib-numbered #write {
+  counter-reset: nib-h1 nib-h2 nib-h3 nib-h4 nib-h5 nib-h6;
+}
+
+.nib-numbered .cm-line.nib-h1 {
+  counter-increment: nib-h1;
+  counter-reset: nib-h2 nib-h3 nib-h4 nib-h5 nib-h6;
+}
+.nib-numbered .cm-line.nib-h2 {
+  counter-increment: nib-h2;
+  counter-reset: nib-h3 nib-h4 nib-h5 nib-h6;
+}
+.nib-numbered .cm-line.nib-h3 {
+  counter-increment: nib-h3;
+  counter-reset: nib-h4 nib-h5 nib-h6;
+}
+.nib-numbered .cm-line.nib-h4 {
+  counter-increment: nib-h4;
+  counter-reset: nib-h5 nib-h6;
+}
+.nib-numbered .cm-line.nib-h5 {
+  counter-increment: nib-h5;
+  counter-reset: nib-h6;
+}
+.nib-numbered .cm-line.nib-h6 {
+  counter-increment: nib-h6;
+}
+
+.nib-numbered .cm-line.nib-h1::before {
+  content: counter(nib-h1) '  ';
+  color: var(--muted);
+}
+.nib-numbered .cm-line.nib-h2::before {
+  content: counter(nib-h1) '.' counter(nib-h2) '  ';
+  color: var(--muted);
+}
+.nib-numbered .cm-line.nib-h3::before {
+  content: counter(nib-h1) '.' counter(nib-h2) '.' counter(nib-h3) '  ';
+  color: var(--muted);
+}
+.nib-numbered .cm-line.nib-h4::before {
+  content: counter(nib-h1) '.' counter(nib-h2) '.' counter(nib-h3) '.' counter(nib-h4) '  ';
+  color: var(--muted);
+}
+.nib-numbered .cm-line.nib-h5::before {
+  content: counter(nib-h1) '.' counter(nib-h2) '.' counter(nib-h3) '.' counter(nib-h4) '.'
+    counter(nib-h5) '  ';
+  color: var(--muted);
+}
+.nib-numbered .cm-line.nib-h6::before {
+  content: counter(nib-h1) '.' counter(nib-h2) '.' counter(nib-h3) '.' counter(nib-h4) '.'
+    counter(nib-h5) '.' counter(nib-h6) '  ';
+  color: var(--muted);
+}
+
 /* ── Subscript and superscript ───────────────────────────────────── */
 
 .nib-sub,

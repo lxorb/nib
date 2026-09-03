@@ -58,6 +58,17 @@ export function appCommands(view?: EditorView): Command[] {
       run: () => modes.toggleTypewriter(view),
     },
 
+    {
+      id: 'punctuation',
+      label: modes.punctuation ? 'Use straight quotes' : 'Use curly quotes',
+      run: () => modes.togglePunctuation(view),
+    },
+    {
+      id: 'numbers',
+      label: modes.numbers ? 'Stop numbering headings' : 'Number headings',
+      run: () => modes.toggleNumbers(view),
+    },
+
     { id: 'zoom-in', label: 'Zoom in', hint: 'Ctrl Shift =', run: () => modes.stepZoom(1) },
     { id: 'zoom-out', label: 'Zoom out', hint: 'Ctrl Shift -', run: () => modes.stepZoom(-1) },
     { id: 'zoom-reset', label: 'Actual size', hint: 'Ctrl Shift 0', run: () => modes.resetZoom() },

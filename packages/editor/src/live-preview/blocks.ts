@@ -2,8 +2,9 @@ import { syntaxTree } from '@codemirror/language'
 import { type EditorState, type Range, StateField } from '@codemirror/state'
 import { Decoration, type DecorationSet, EditorView } from '@codemirror/view'
 import { TableWidget } from '../table/widget'
-import { overlaps } from './reveal'
+import { lineRevealed, overlaps } from './reveal'
 import { DIAGRAM_LANGUAGES, DiagramWidget, MathWidget } from './render'
+import { headings, TocWidget } from './toc'
 
 /** CodeMirror only accepts block-level replacements from a state field, so the
  *  constructs that occupy whole lines live here rather than in the
@@ -47,6 +48,21 @@ export function buildBlockDecorations(state: EditorState): DecorationSet {
               widget: new DiagramWidget(text ? doc.sliceString(text.from, text.to) : '', language),
               block: true,
             }).range(span.from, span.to),
+          )
+          return false
+        }
+
+        case 'Paragraph': {
+          // `[toc]` on its own line renders the document's headings.
+          const line = doc.lineAt(node.from)
+          if (!/^\s*\[toc\]\s*$/i.test(line.text)) return true
+          if (lineRevealed(state, node.from)) return false
+
+          ranges.push(
+            Decoration.replace({ widget: new TocWidget(headings(state)), block: true }).range(
+              line.from,
+              line.to,
+            ),
           )
           return false
         }
