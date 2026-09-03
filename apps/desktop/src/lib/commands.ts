@@ -30,17 +30,20 @@ function exportCommands(): Command[] {
   const source = () => note()?.doc ?? ''
   const name = () => note()?.name ?? 'Untitled.md'
 
+  const page = () => ({ page: settings.page })
+
   const commands: Command[] = [
     {
       id: 'export-pdf',
       label: 'Export as PDF',
-      run: () => import('./export').then((m) => m.exportPdf(source(), name())),
+      run: () => import('./export').then((m) => m.exportPdf(source(), name(), page())),
     },
     {
       id: 'export-html',
       label: 'Export as HTML',
-      run: () => void import('./export').then((m) => m.exportHtml(source(), name())),
+      run: () => void import('./export').then((m) => m.exportHtml(source(), name(), page())),
     },
+    { id: 'page-setup', label: 'Page setup for export', run: () => settings.show('export') },
     {
       id: 'export-html-bare',
       label: 'Export as HTML without styles',

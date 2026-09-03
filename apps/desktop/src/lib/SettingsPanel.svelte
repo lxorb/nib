@@ -2,6 +2,7 @@
   import { fade, fly, scale, slide } from 'svelte/transition'
   import { cubicOut } from 'svelte/easing'
   import { account } from './account.svelte'
+  import { ORIENTATIONS, PAPER_SIZES } from './page-setup'
   import { settings, type Section } from './settings.svelte'
   import { sync } from './sync.svelte'
   import { theme } from './theme.svelte'
@@ -12,6 +13,7 @@
     { id: 'publish', label: 'Publish' },
     { id: 'llm', label: 'LLM access' },
     { id: 'appearance', label: 'Appearance' },
+    { id: 'export', label: 'Export' },
   ]
 
   let subdomain = $state('')
@@ -199,6 +201,70 @@
               <button class="primary" onclick={copySnippet}>{copied ? 'Copied' : 'Copy'}</button>
             </div>
           {/if}
+        </div>
+      {:else if settings.section === 'export'}
+        <div class="pane" in:fly={{ y: 8, duration: 180, easing: cubicOut }}>
+          <div class="row">
+            <label class="field">
+              <span class="label">Paper</span>
+              <select
+                value={settings.page.paper}
+                onchange={(event) => settings.setPage({ paper: event.currentTarget.value as never })}
+              >
+                {#each PAPER_SIZES as size (size)}
+                  <option value={size}>{size}</option>
+                {/each}
+              </select>
+            </label>
+
+            <label class="field">
+              <span class="label">Orientation</span>
+              <select
+                value={settings.page.orientation}
+                onchange={(event) =>
+                  settings.setPage({ orientation: event.currentTarget.value as never })}
+              >
+                {#each ORIENTATIONS as option (option)}
+                  <option value={option}>{option}</option>
+                {/each}
+              </select>
+            </label>
+
+            <label class="field">
+              <span class="label">Margin</span>
+              <input
+                value={settings.page.margin}
+                oninput={(event) => settings.setPage({ margin: event.currentTarget.value })}
+                spellcheck="false"
+              />
+            </label>
+          </div>
+
+          <label class="field">
+            <span class="label">Header</span>
+            <input
+              value={settings.page.header}
+              oninput={(event) => settings.setPage({ header: event.currentTarget.value })}
+              placeholder={'${title}'}
+              spellcheck="false"
+            />
+          </label>
+
+          <label class="field">
+            <span class="label">Footer</span>
+            <input
+              value={settings.page.footer}
+              oninput={(event) => settings.setPage({ footer: event.currentTarget.value })}
+              placeholder={'${date}'}
+              spellcheck="false"
+            />
+          </label>
+
+          <p class="hint">
+            <code>{'${title}'}</code>, <code>{'${date}'}</code> and <code>{'${year}'}</code> are filled
+            in. Page numbers come from the print dialog. A note can override all of this from its front
+            matter under <code>export:</code>.
+          </p>
         </div>
       {:else}
         <div class="pane" in:fly={{ y: 8, duration: 180, easing: cubicOut }}>
@@ -430,6 +496,17 @@
     display: flex;
     align-items: center;
     gap: var(--space-2);
+  }
+
+  .field select {
+    padding: 9px 11px;
+    border: 1px solid var(--line-strong);
+    border-radius: var(--radius-md);
+    background: var(--bg);
+    color: var(--text-strong);
+    font-family: var(--font-ui);
+    font-size: var(--text-sm);
+    outline: none;
   }
 
   .row input,

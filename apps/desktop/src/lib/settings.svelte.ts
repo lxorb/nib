@@ -1,13 +1,15 @@
 import { setSnippets } from '@nib/editor'
 import { api, type DnsRecord, type RemoteSpace } from './api'
 import { account } from './account.svelte'
+import { DEFAULT_PAGE_SETUP, type PageSetup } from './page-setup'
 import { invoke, isDesktop } from './tauri'
 import { sync } from './sync.svelte'
 import { workspace } from './workspace.svelte'
 
 const STORAGE_KEY = 'nib:llm'
+const PAGE_KEY = 'nib:page'
 
-export type Section = 'account' | 'publish' | 'llm' | 'appearance'
+export type Section = 'account' | 'publish' | 'llm' | 'appearance' | 'export'
 
 interface McpConfig {
   binary: string
@@ -40,6 +42,9 @@ class Settings {
   /** Whether pandoc is on this machine, which decides the export list. */
   pandoc = $state(false)
 
+  /** Paper and running text for export. A note's front matter overrules it. */
+  page = $state<PageSetup>({ ...DEFAULT_PAGE_SETUP })
+
   busy = $state(false)
   error = $state<string | null>(null)
   dns = $state<DnsRecord[]>([])
@@ -66,11 +71,23 @@ class Settings {
       // Defaults are the safe ones.
     }
 
+    try {
+      const saved = JSON.parse(localStorage.getItem(PAGE_KEY) ?? '{}')
+      this.page = { ...DEFAULT_PAGE_SETUP, ...saved }
+    } catch {
+      // Defaults are the safe ones.
+    }
+
     void import('./export').then(({ pandocAvailable }) =>
       pandocAvailable().then((found) => (this.pandoc = found)),
     )
 
     void this.loadSnippets()
+  }
+
+  setPage(patch: Partial<PageSetup>) {
+    this.page = { ...this.page, ...patch }
+    localStorage.setItem(PAGE_KEY, JSON.stringify(this.page))
   }
 
   /** Reads `snippets.json` into the editor's completion source. */

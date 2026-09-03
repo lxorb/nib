@@ -1,5 +1,6 @@
 import { documentTitle, renderMarkdown } from '@nib/markdown'
 import { katexCss, themeCss } from '@nib/themes/raw'
+import { DEFAULT_PAGE_SETUP, type PageSetup, pageCss, pageSetupFor, runningMarkup } from './page-setup'
 import { invoke, isDesktop } from './tauri'
 import { theme } from './theme.svelte'
 
@@ -31,11 +32,15 @@ export interface HtmlOptions {
   bare?: boolean
   /** Which theme to bake in. Defaults to the one on screen. */
   theme?: string
+  /** Paper and running text. The note's own front matter wins over this. */
+  page?: PageSetup
+  /** The date the running text prints. Passed in so a build is reproducible. */
+  date?: string
 }
 
 /** A standalone page: the note, the active theme, and nothing else. */
 export function buildHtml(source: string, name: string, options: HtmlOptions = {}): string {
-  const title = documentTitle(source) ?? name
+  const title = documentTitle(source) ?? name.replace(/\.[^.]+$/, '')
   const body = renderMarkdown(source, { footnotes: true })
 
   if (options.bare) {
@@ -43,6 +48,8 @@ export function buildHtml(source: string, name: string, options: HtmlOptions = {
   }
 
   const scheme = options.theme ?? (theme.active.path ? theme.active.scheme : theme.id)
+  const setup = pageSetupFor(source, options.page ?? DEFAULT_PAGE_SETUP)
+  const date = options.date ?? new Date().toISOString().slice(0, 10)
 
   return `<!doctype html>
 <html lang="en" data-theme="${scheme}">
@@ -56,14 +63,29 @@ ${themeCss}
 /* Exported pages have no editor around them, so the writing surface is the page. */
 body { margin: 0; overflow: auto; }
 #write { padding: 3rem 1.5rem 6rem; }
+${pageCss(setup, title, date)}
 @media print {
   html, body { background: #fff; color: #000; }
   #write { max-width: none; padding: 0; }
   a { color: inherit; }
+  /* Chromium repeats a fixed element on every sheet, which is the running text. */
+  .nib-running-header, .nib-running-footer {
+    position: fixed;
+    left: 0;
+    right: 0;
+    font-size: 9pt;
+    color: #666;
+    text-align: center;
+  }
+  .nib-running-header { top: 0; }
+  .nib-running-footer { bottom: 0; }
 }
+.nib-running-header, .nib-running-footer { display: none; }
+@media print { .nib-running-header, .nib-running-footer { display: block; } }
 </style>
 </head>
 <body>
+${runningMarkup(setup)}
 <div id="write">
 ${body}</div>
 </body>
@@ -90,7 +112,7 @@ export async function exportHtml(source: string, name: string, options: HtmlOpti
 }
 
 /** Prints the rendered note. The print dialog is where "Save as PDF" lives. */
-export function exportPdf(source: string, name: string) {
+export function exportPdf(source: string, name: string, options: HtmlOptions = {}) {
   const frame = document.createElement('iframe')
   frame.setAttribute('aria-hidden', 'true')
   frame.style.cssText = 'position:fixed;right:0;bottom:0;width:0;height:0;border:0;'
@@ -100,7 +122,7 @@ export function exportPdf(source: string, name: string) {
   if (!doc) return
 
   doc.open()
-  doc.write(buildHtml(source, name))
+  doc.write(buildHtml(source, name, options))
   doc.close()
 
   // Give the fonts and any maths a moment before the dialog freezes the page.
