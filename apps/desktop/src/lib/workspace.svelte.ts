@@ -33,6 +33,10 @@ export interface Tab {
   name: string
   doc: string
   dirty: boolean
+  /** Offset of the caret and pixels scrolled, so a note reopens where it was
+   *  left rather than at the top. */
+  cursor?: number
+  scroll?: number
 }
 
 export type Panel = 'tree' | 'outline' | 'search'
@@ -69,14 +73,33 @@ const UNDO_LIMIT = 20
 const PINNED_KEY = 'nib:pinned'
 const ICONS_KEY = 'nib:icons'
 const AUTO_SAVE_DELAY = 1200
+// Short enough that a crash costs a moment's typing, long enough that the strip
+// is not serialised on every keystroke.
+const SESSION_DELAY = 400
 const UNTITLED = 'Untitled'
 const MARKDOWN = /\.(md|markdown|mdown|mkd)$/i
+
+/** One tab as it is written down: enough to put it back exactly, including
+ *  work that never reached the disk. */
+interface Draft {
+  path: string | null
+  name: string
+  doc: string
+  dirty: boolean
+  cursor: number
+  scroll: number
+}
 
 interface Persisted {
   spaces: Space[]
   activeSpace: string | null
-  openPaths: string[]
-  activePath: string | null
+  tabs?: Draft[]
+  /** Index into `tabs`, not an id: ids are handed out fresh on every run. */
+  active?: number
+  /** Written by versions before drafts existed. Still read, so an update
+   *  arrives with the same notes open. */
+  openPaths?: string[]
+  activePath?: string | null
   panel: Panel | null
 }
 
@@ -175,6 +198,7 @@ class Workspace {
   icons = $state<Record<string, string>>(readIcons())
 
   private saveTimer: ReturnType<typeof setTimeout> | undefined
+  private sessionTimer: ReturnType<typeof setTimeout> | undefined
 
   readonly activeSpace = $derived(this.spaces.find((space) => space.id === this.activeSpaceId) ?? null)
   readonly active = $derived(this.tabs.find((tab) => tab.id === this.activeTabId) ?? null)
@@ -247,22 +271,111 @@ class Workspace {
 
     if (this.activeSpaceId) await this.loadTree()
 
-    for (const path of state.openPaths ?? []) {
-      await this.open(path, { activate: path === state.activePath })
+    if (state.tabs?.length) await this.restoreTabs(state.tabs, state.active ?? 0)
+    else {
+      for (const path of state.openPaths ?? []) {
+        await this.open(path, { activate: path === state.activePath })
+      }
     }
 
     if (!this.tabs.length) this.openBlank()
   }
 
+  /** Puts the strip back as it was. A note that was clean is re-read from disk,
+   *  so an edit made elsewhere shows up; a note that was not is restored from
+   *  its draft and stays dirty. Replacing someone's unsaved work with what
+   *  happens to be on disk is the one thing this must never do. */
+  private async restoreTabs(drafts: Draft[], active: number) {
+    const restored: Tab[] = []
+
+    for (const draft of drafts) {
+      let doc = draft.doc
+
+      if (draft.path && !draft.dirty) {
+        try {
+          doc = await invoke<string>('read_note', { path: draft.path })
+        } catch {
+          // Deleted or moved while Nib was away, and nothing unsaved to keep.
+          continue
+        }
+      }
+
+      restored.push({
+        id: identifier(),
+        path: draft.path,
+        name: draft.name,
+        doc,
+        dirty: draft.dirty,
+        cursor: draft.cursor,
+        scroll: draft.scroll,
+      })
+    }
+
+    this.tabs = restored
+    this.activeTabId = (restored[active] ?? restored[0])?.id ?? null
+  }
+
   private persist() {
+    clearTimeout(this.sessionTimer)
+
     const state: Persisted = {
       spaces: this.spaces,
       activeSpace: this.activeSpaceId,
-      openPaths: this.tabs.map((tab) => tab.path).filter((path): path is string => !!path),
-      activePath: this.active?.path ?? null,
+      tabs: this.tabs.map((tab) => ({
+        path: tab.path,
+        name: tab.name,
+        doc: tab.doc,
+        dirty: tab.dirty,
+        cursor: tab.cursor ?? 0,
+        scroll: tab.scroll ?? 0,
+      })),
+      active: Math.max(0, this.tabs.findIndex((tab) => tab.id === this.activeTabId)),
       panel: this.panel,
     }
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(state))
+
+    this.write(state)
+  }
+
+  /** Storage is finite. Unsaved work is what has to survive a full one, so the
+   *  saved notes give up their copies first - they are still on disk, and get
+   *  re-read on the way back in. */
+  private write(state: Persisted) {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state))
+      return
+    } catch {
+      // Out of room. Try again with less.
+    }
+
+    const lean = {
+      ...state,
+      tabs: state.tabs?.map((draft) => (draft.dirty ? draft : { ...draft, doc: '' })),
+    }
+
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(lean))
+    } catch {
+      // Nothing left to give up. The previous entry stays, which is still a
+      // better place to come back to than none at all.
+    }
+  }
+
+  /** Writes the session soon rather than now, so a burst of typing costs one
+   *  write instead of one per keystroke. */
+  private scheduleSession() {
+    clearTimeout(this.sessionTimer)
+    this.sessionTimer = setTimeout(() => this.persist(), SESSION_DELAY)
+  }
+
+  /** Where the caret and the scroll are. Recorded as they move, because after
+   *  a crash there is no chance to write them down on the way out. */
+  noteView(id: string, cursor: number, scroll: number) {
+    const tab = this.tabs.find((one) => one.id === id)
+    if (!tab || (tab.cursor === cursor && tab.scroll === scroll)) return
+
+    tab.cursor = cursor
+    tab.scroll = scroll
+    this.scheduleSession()
   }
 
   openBlank(name = UNTITLED, doc = '') {
@@ -561,6 +674,9 @@ class Workspace {
     if (this.previewTabId === tab.id) this.previewTabId = null
 
     this.scheduleSave()
+    // Auto-save may be off, or the note may have nowhere to be saved to yet.
+    // Either way the words themselves are written down.
+    this.scheduleSession()
   }
 
   /** Typora saves as you pause; so does this, but only for notes that already

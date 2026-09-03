@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { untrack } from 'svelte'
   import { i18n, t } from './lib/i18n.svelte'
   import {
     clearFormatting,
@@ -73,6 +74,43 @@
   // A new view starts with no modes applied, so re-apply on every swap.
   $effect(() => {
     if (view) modes.apply(view)
+  })
+
+  /** The tab whose caret and scroll have been put back. Nothing is recorded
+   *  before that, or the fresh view's caret at 0 would overwrite the real one. */
+  let placed = $state<string | null>(null)
+
+  // Reopening a note lands where it was left, and keeps saying where that is,
+  // because a crash gives no chance to write it down on the way out.
+  $effect(() => {
+    const current = view
+    const id = workspace.activeTabId
+    if (!current || !id) return
+
+    const tab = untrack(() => workspace.tabs.find((one) => one.id === id))
+    const at = Math.min(untrack(() => tab?.cursor ?? 0), current.state.doc.length)
+    const top = untrack(() => tab?.scroll ?? 0)
+
+    // After a frame, or the scroll offset has nothing laid out to apply to.
+    const frame = requestAnimationFrame(() => {
+      current.dispatch({ selection: { anchor: at } })
+      current.scrollDOM.scrollTop = top
+      placed = id
+    })
+
+    const remember = () => {
+      if (placed !== id) return
+      workspace.noteView(id, current.state.selection.main.head, current.scrollDOM.scrollTop)
+    }
+
+    current.scrollDOM.addEventListener('scroll', remember, { passive: true })
+
+    return () => {
+      cancelAnimationFrame(frame)
+      current.scrollDOM.removeEventListener('scroll', remember)
+      remember()
+      placed = null
+    }
   })
 
   // Syncing only runs while there is an account behind it.
@@ -304,7 +342,12 @@
             onchange={(value) => workspace.edit(value)}
             onimage={saveImage}
             resolveimage={resolveImage}
-            onselection={(current) => formatBar?.follow(current)}
+            onselection={(current) => {
+              formatBar?.follow(current)
+              if (placed && placed === workspace.activeTabId) {
+                workspace.noteView(placed, current.state.selection.main.head, current.scrollDOM.scrollTop)
+              }
+            }}
           />
         {/key}
       </div>
