@@ -34,7 +34,7 @@ export interface Tab {
   dirty: boolean
 }
 
-export type Panel = 'tree' | 'outline' | 'articles' | 'search'
+export type Panel = 'tree' | 'search'
 
 /** A file operation that can be put back. */
 export type FileAction =

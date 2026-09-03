@@ -44,8 +44,6 @@ export const de: Dictionary = {
 
   // Panels and navigation
   Files: 'Dateien',
-  Notes: 'Notizen',
-  Outline: 'Gliederung',
   Search: 'Suche',
   'Search this space': 'In diesem Bereich suchen',
   'Nothing found': 'Nichts gefunden',

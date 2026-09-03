@@ -237,8 +237,6 @@
     if (!shift) return
 
     if (key === 'l') return act(event, () => workspace.toggleSidebar())
-    if (key === '1') return act(event, () => workspace.showPanel('outline'))
-    if (key === '2') return act(event, () => workspace.showPanel('articles'))
     if (key === '3') return act(event, () => workspace.showPanel('tree'))
     if (key === 'f') return act(event, () => workspace.showPanel('search'))
     if (key === '0') return act(event, () => modes.resetZoom())

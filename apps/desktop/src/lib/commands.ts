@@ -271,8 +271,6 @@ export function appCommands(view?: EditorView): Command[] {
       hint: 'Ctrl Shift L',
       run: () => workspace.toggleSidebar(),
     },
-    { id: 'outline', label: t('Outline'), hint: 'Ctrl Shift 1', run: () => workspace.showPanel('outline') },
-    { id: 'articles', label: t('Notes'), hint: 'Ctrl Shift 2', run: () => workspace.showPanel('articles') },
     { id: 'files', label: t('Files'), hint: 'Ctrl Shift 3', run: () => workspace.showPanel('tree') },
     {
       id: 'search-space',
