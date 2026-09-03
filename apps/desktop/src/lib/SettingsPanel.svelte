@@ -43,6 +43,8 @@
     checkTimer = setTimeout(() => settings.checkSubdomain(subdomain), 260)
   }
 
+  const isWindows = navigator.userAgent.includes('Windows')
+
   async function copySnippet() {
     if (!settings.mcp) return
     await navigator.clipboard.writeText(settings.mcp.snippet)
@@ -310,6 +312,17 @@
           </label>
 
           <button class="quiet" onclick={() => theme.reload()}>{t('Reload themes and custom CSS')}</button>
+
+          {#if isWindows}
+            <label class="switch">
+              <input
+                type="checkbox"
+                checked={settings.newMenu}
+                onchange={(event) => settings.setNewMenu(event.currentTarget.checked)}
+              />
+              <span>{t('Offer a markdown document in Explorer’s New menu')}</span>
+            </label>
+          {/if}
         </div>
       {/if}
 

@@ -220,11 +220,11 @@ Legend: `[x]` done · `[~]` partial · `[ ]` todo · `[-]` deliberately skipped
 - [x] Taskbar Jump List — opened notes go to the shell's own recent documents
 - [x] Application logs
 - [x] UI translations (English, German; falls back to English)
+- [x] "New Markdown" in Explorer's New menu — a per-user registry entry, added
+      and removed from Appearance settings
 - [~] Auto-update — checks GitHub daily and offers the release. Signed
       background install needs a Tauri updater keypair; the private half is a
       release secret, so generating it is the maintainer's call.
-- [ ] "New Markdown" in Explorer context menu — needs a registry entry written
-      by the installer, which the current bundle does not do.
 
 ## 17. Beyond Typora
 

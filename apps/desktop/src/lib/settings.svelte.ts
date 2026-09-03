@@ -56,6 +56,9 @@ class Settings {
   /** A published release newer than the one running, once one is found. */
   update = $state<Release | null>(null)
 
+  /** Whether Explorer's "New" menu offers a markdown document. Windows only. */
+  newMenu = $state(false)
+
   busy = $state(false)
   error = $state<string | null>(null)
   dns = $state<DnsRecord[]>([])
@@ -95,6 +98,25 @@ class Settings {
 
     void this.loadSnippets()
     void this.checkForUpdate()
+
+    if (isDesktop) {
+      void invoke<boolean>('new_menu_registered')
+        .then((on) => (this.newMenu = on))
+        .catch(() => undefined)
+    }
+  }
+
+  /** Adds or removes Explorer's "New ▸ Markdown Document" entry. */
+  async setNewMenu(enabled: boolean) {
+    if (!isDesktop) return
+
+    this.error = null
+    try {
+      await invoke('set_new_menu', { enabled })
+      this.newMenu = enabled
+    } catch (error) {
+      this.error = error instanceof Error ? error.message : String(error)
+    }
   }
 
   /** Looks for a newer release. Quiet on its own; a check the reader asked for

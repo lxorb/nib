@@ -116,6 +116,8 @@ export const de: Dictionary = {
   'Edit custom CSS': 'Eigenes CSS bearbeiten',
   'Edit snippets': 'Textbausteine bearbeiten',
   'Reload themes and custom CSS': 'Designs und eigenes CSS neu laden',
+  'Offer a markdown document in Explorer’s New menu':
+    'Markdown-Dokument im „Neu“-Menü des Explorers anbieten',
   'Open the log file': 'Protokolldatei öffnen',
   'Check for updates': 'Nach Updates suchen',
   'Version {version} is out': 'Version {version} ist da',
