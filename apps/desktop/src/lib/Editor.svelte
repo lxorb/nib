@@ -2,10 +2,17 @@
   import { untrack } from 'svelte'
   import { createEditor, type EditorView } from '@nib/editor'
 
-  let { doc = '', onchange }: { doc?: string; onchange?: (value: string) => void } = $props()
+  let {
+    doc = '',
+    onchange,
+    view = $bindable(),
+  }: {
+    doc?: string
+    onchange?: (value: string) => void
+    view?: EditorView
+  } = $props()
 
   let host: HTMLDivElement
-  let view = $state<EditorView | undefined>()
 
   // Built once. Reading `doc` reactively here would tear the editor down and
   // rebuild it on every keystroke, losing the caret each time.
@@ -13,10 +20,14 @@
     const created = createEditor({ parent: host, doc: untrack(() => doc), onChange: onchange })
     view = created
     if (import.meta.env.DEV) Object.assign(window, { nib: created })
-    return () => created.destroy()
+
+    return () => {
+      created.destroy()
+      view = undefined
+    }
   })
 
-  // Pushes externally loaded documents in without recreating the view.
+  // Pushes externally loaded content in without recreating the view.
   $effect(() => {
     const incoming = doc
     if (!view) return
@@ -35,13 +46,13 @@
     flex: 1;
     min-height: 0;
     overflow: hidden;
-    animation: rise var(--dur-slower) var(--ease-out);
+    animation: rise var(--dur-slow) var(--ease-out);
   }
 
   @keyframes rise {
     from {
       opacity: 0;
-      transform: translateY(6px);
+      transform: translateY(5px);
     }
   }
 </style>

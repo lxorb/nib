@@ -1,89 +1,121 @@
 <script lang="ts">
-  import { flushTableEdits } from '@nib/editor'
+  import { EditorView } from '@nib/editor'
   import Editor from './lib/Editor.svelte'
+  import Rail from './lib/Rail.svelte'
+  import Sidebar from './lib/Sidebar.svelte'
+  import StatusBar from './lib/StatusBar.svelte'
+  import Tabs from './lib/Tabs.svelte'
   import Titlebar from './lib/Titlebar.svelte'
   import { theme } from './lib/theme.svelte'
-  import { invoke, isDesktop } from './lib/tauri'
+  import { workspace } from './lib/workspace.svelte'
 
-  const WELCOME = `# Nib
-
-Markdown, and nothing else.
-
-Put your cursor on this line and the **syntax** bleeds back in.
-
-- [ ] open a file with \`Ctrl+O\`
-- [ ] save with \`Ctrl+S\`
-`
-
-  let path = $state<string | null>(null)
-  let doc = $state(WELCOME)
-  let dirty = $state(false)
+  let view = $state<EditorView>()
 
   const title = $derived(
-    path ? `${path.split(/[\\/]/).pop()}${dirty ? ' ·' : ''}` : 'Untitled'
+    workspace.active
+      ? `${workspace.active.name.replace(/\.(md|markdown|mdown|mkd)$/i, '')}${workspace.active.dirty ? ' ·' : ''}`
+      : '',
   )
 
   theme.init()
+  void workspace.restore()
 
-  async function open() {
-    const { open: pick } = await import('@tauri-apps/plugin-dialog')
-    const picked = await pick({
-      filters: [{ name: 'Markdown', extensions: ['md', 'markdown', 'mdown', 'mkd'] }],
+  function goto(line: number) {
+    if (!view) return
+
+    const target = view.state.doc.line(Math.min(line + 1, view.state.doc.lines))
+    view.dispatch({
+      selection: { anchor: target.from },
+      effects: EditorView.scrollIntoView(target.from, { y: 'start', yMargin: 72 }),
     })
-    if (typeof picked !== 'string') return
-    doc = await invoke<string>('read_note', { path: picked })
-    path = picked
-    dirty = false
-  }
-
-  async function save() {
-    // A cell being edited holds its text until it loses focus, so make sure it
-    // has reached the document before anything is written to disk.
-    flushTableEdits()
-
-    if (!path) {
-      const { save: pick } = await import('@tauri-apps/plugin-dialog')
-      const picked = await pick({ defaultPath: 'untitled.md' })
-      if (!picked) return
-      path = picked
-    }
-    await invoke('write_note', { path, content: doc })
-    dirty = false
+    view.focus()
   }
 
   function onKeydown(event: KeyboardEvent) {
     if (!event.ctrlKey && !event.metaKey) return
-    const key = event.key.toLowerCase()
 
-    if (key === 'o' && isDesktop) {
-      event.preventDefault()
-      open()
-    } else if (key === 's' && isDesktop) {
-      event.preventDefault()
-      save()
+    const key = event.key.toLowerCase()
+    const shift = event.shiftKey
+
+    const handlers: Record<string, () => void> = {
+      s: () => void workspace.save(),
+      n: () => workspace.openBlank(),
+      w: () => workspace.activeTabId && workspace.close(workspace.activeTabId),
+      o: () => void workspace.addSpace(),
+      l: () => shift && workspace.toggleSidebar(),
+      '1': () => shift && workspace.showPanel('outline'),
+      '2': () => shift && workspace.showPanel('articles'),
+      '3': () => shift && workspace.showPanel('tree'),
     }
+
+    const handler = handlers[key]
+    if (!handler) return
+
+    // Shift-qualified bindings must not swallow their unshifted counterparts.
+    if ((key === 'l' || key === '1' || key === '2' || key === '3') && !shift) return
+
+    event.preventDefault()
+    handler()
   }
 </script>
 
 <svelte:window onkeydown={onKeydown} />
 
 <main>
-  <Titlebar {title} />
-  <Editor
-    {doc}
-    onchange={(value) => {
-      doc = value
-      dirty = true
-    }}
-  />
+  <Rail />
+
+  <div class="pane">
+    <Titlebar {title} />
+
+    <div class="middle">
+      {#if workspace.panel}
+        <Sidebar ongoto={goto} />
+      {/if}
+
+      <div class="document">
+        {#if workspace.tabs.length > 1}
+          <Tabs />
+        {/if}
+
+        {#key workspace.activeTabId}
+          <Editor
+            bind:view
+            doc={workspace.active?.doc ?? ''}
+            onchange={(value) => workspace.edit(value)}
+          />
+        {/key}
+
+        <StatusBar doc={workspace.active?.doc ?? ''} />
+      </div>
+    </div>
+  </div>
 </main>
 
 <style>
   main {
     display: flex;
-    flex-direction: column;
     height: 100vh;
     background: var(--bg);
     transition: background var(--dur-slow) var(--ease-out);
+  }
+
+  .pane {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .middle {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+  }
+
+  .document {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
   }
 </style>

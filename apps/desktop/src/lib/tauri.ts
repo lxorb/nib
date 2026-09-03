@@ -4,7 +4,12 @@
 export const isDesktop = '__TAURI_INTERNALS__' in window
 
 export async function invoke<T>(command: string, args?: Record<string, unknown>): Promise<T> {
-  if (!isDesktop) throw new Error(`${command} is unavailable outside the desktop app`)
+  if (!isDesktop) {
+    if (!import.meta.env.DEV) throw new Error(`${command} needs the desktop app`)
+    const { fixtureInvoke } = await import('./dev-fixture')
+    return fixtureInvoke<T>(command, args)
+  }
+
   const { invoke } = await import('@tauri-apps/api/core')
   return invoke<T>(command, args)
 }
