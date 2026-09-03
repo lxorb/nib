@@ -29,7 +29,7 @@ async function openSnippets() {
 
 /** Export entries. The pandoc formats only appear when pandoc is installed,
  *  so the list never offers something that cannot work. */
-function exportCommands(): Command[] {
+export function exportCommands(): Command[] {
   const note = () => workspace.active
   const source = () => note()?.doc ?? ''
   const name = () => note()?.name ?? 'Untitled.md'

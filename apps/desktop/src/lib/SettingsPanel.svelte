@@ -4,6 +4,7 @@
   import { CODE_PALETTES, type EditorView } from '@nib/editor'
   import { MCP_URL } from './api'
   import { account } from './account.svelte'
+  import { exportCommands } from './commands'
   import { i18n, LANGUAGES, t } from './i18n.svelte'
   import { modes } from './modes.svelte'
   import { ORIENTATIONS, PAPER_SIZES } from './page-setup'
@@ -48,6 +49,10 @@
   }
 
   const isWindows = navigator.userAgent.includes('Windows')
+
+  /** Page setup is only worth anything next to the buttons that use it. */
+  const exportActions = () =>
+    exportCommands().filter((command) => command.id !== 'page-setup' && command.id !== 'import')
 
   const stripped = (name: string) => name.replace(/\.(md|markdown|mdown|mkd)$/i, '')
 
@@ -307,31 +312,15 @@
             </label>
           </div>
 
-          <label class="field">
-            <span class="label">{t('Header')}</span>
-            <input
-              value={settings.page.header}
-              oninput={(event) => settings.setPage({ header: event.currentTarget.value })}
-              placeholder={'${title}'}
-              spellcheck="false"
-            />
-          </label>
-
-          <label class="field">
-            <span class="label">{t('Footer')}</span>
-            <input
-              value={settings.page.footer}
-              oninput={(event) => settings.setPage({ footer: event.currentTarget.value })}
-              placeholder={'${date}'}
-              spellcheck="false"
-            />
-          </label>
-
-          <p class="hint">
-            <code>{'${title}'}</code>, <code>{'${date}'}</code> and <code>{'${year}'}</code> are filled
-            in. Page numbers come from the print dialog. A note can override all of this from its front
-            matter under <code>export:</code>.
-          </p>
+          <!-- The settings above only matter once something is exported, so
+               the ways of doing it belong here rather than in the palette. -->
+          <div class="exports">
+            {#each exportActions() as action (action.id)}
+              <button class="quiet" disabled={action.disabled} onclick={action.run}>
+                {action.label}
+              </button>
+            {/each}
+          </div>
         </div>
       {:else}
         <div class="pane" in:fly={{ y: 8, duration: 180, easing: cubicOut }}>
@@ -612,6 +601,16 @@
     display: flex;
     align-items: center;
     gap: var(--space-2);
+  }
+
+  .exports {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .exports button {
+    flex: none;
   }
 
   .accents {
