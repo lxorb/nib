@@ -6,6 +6,7 @@ mod mcp;
 mod notes;
 mod recent;
 mod shell_menu;
+mod spaces;
 mod themes;
 
 use launch::{markdown_paths, Pending};
@@ -66,6 +67,11 @@ pub fn run() {
             recent::remember_recent,
             shell_menu::new_menu_registered,
             shell_menu::set_new_menu,
+            spaces::spaces_root,
+            spaces::list_spaces,
+            spaces::create_space,
+            spaces::rename_space,
+            spaces::delete_space,
         ])
         .setup(|app| {
             let files = markdown_paths(std::env::args());

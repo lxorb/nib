@@ -2,12 +2,21 @@
   import { account } from './account.svelte'
   import { t } from './i18n.svelte'
   import { DIVIDER, menu } from './menu.svelte'
+  import { deleteSpace, newSpace, renameSpace } from './space-actions'
   import { settings } from './settings.svelte'
   import { workspace } from './workspace.svelte'
   import { theme } from './theme.svelte'
 
   function initial(name: string): string {
     return [...name.trim()][0]?.toUpperCase() ?? '·'
+  }
+
+  /** The plus offers both things it could mean rather than guessing. */
+  function addMenu(event: MouseEvent) {
+    menu.show(event, [
+      { label: t('New note'), run: () => workspace.createNote() },
+      { label: t('New space'), run: () => void newSpace() },
+    ])
   }
 </script>
 
@@ -23,14 +32,11 @@
         onclick={() => workspace.selectSpace(space.id)}
         oncontextmenu={(event) =>
           menu.show(event, [
-            { label: t('Reveal in Explorer'), run: () => workspace.reveal(space.root) },
             { label: t('New note'), run: () => workspace.createNote(space.root) },
+            { label: t('Rename'), run: () => void renameSpace(space) },
+            { label: t('Reveal in Explorer'), run: () => workspace.reveal(space.root) },
             DIVIDER,
-            {
-              label: t('Remove from Nib'),
-              danger: true,
-              run: () => workspace.removeSpace(space.id),
-            },
+            { label: t('Delete space'), danger: true, run: () => void deleteSpace(space) },
           ])}
       >
         {initial(space.name)}
@@ -38,7 +44,7 @@
       </button>
     {/each}
 
-    <button class="add" title={t('Add a space')} aria-label={t('Add a space')} onclick={() => workspace.addSpace()}>
+    <button class="add" title={t('New')} aria-label={t('New')} onclick={addMenu}>
       <svg viewBox="0 0 12 12"><path d="M6 1v10M1 6h10" /></svg>
     </button>
   </div>

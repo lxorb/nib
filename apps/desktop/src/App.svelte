@@ -21,6 +21,7 @@
   import History from './lib/History.svelte'
   import { DIVIDER, type MenuEntry, menu } from './lib/menu.svelte'
   import Palette from './lib/Palette.svelte'
+  import PromptSheet from './lib/PromptSheet.svelte'
   import Rail from './lib/Rail.svelte'
   import Sidebar from './lib/Sidebar.svelte'
   import SettingsPanel from './lib/SettingsPanel.svelte'
@@ -33,6 +34,7 @@
   import { modes } from './lib/modes.svelte'
   import { imageUrl } from './lib/images'
   import { collectErrors } from './lib/log'
+  import { newSpace } from './lib/space-actions'
   import { currentWindow, invoke, isDesktop } from './lib/tauri'
   import { theme } from './lib/theme.svelte'
   import { workspace } from './lib/workspace.svelte'
@@ -196,7 +198,7 @@
     if (key === '/') return act(event, () => modes.toggleSource(view))
     if (key === 's' && !shift) return act(event, () => void workspace.save())
     if (key === 'n' && !shift) return act(event, () => workspace.openBlank())
-    if (key === 'o' && !shift) return act(event, () => void workspace.addSpace())
+    if (key === 'o' && !shift) return act(event, () => void newSpace())
     if (key === 'w') return act(event, () => workspace.activeTabId && workspace.close(workspace.activeTabId))
     if (key === 'tab') return act(event, () => cycleTab(shift ? -1 : 1))
 
@@ -260,6 +262,7 @@
 <SettingsPanel {view} />
 <FormatBar bind:this={formatBar} {view} />
 <History bind:open={settings.historyOpen} />
+<PromptSheet />
 <ContextMenu />
 
 <style>

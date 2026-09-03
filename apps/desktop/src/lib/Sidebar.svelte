@@ -1,5 +1,6 @@
 <script lang="ts">
   import { t } from './i18n.svelte'
+  import { newSpace } from './space-actions'
   import { DIVIDER, menu, type MenuEntry } from './menu.svelte'
   import type { Entry, Hit, Panel, SortKey } from './workspace.svelte'
   import { workspace } from './workspace.svelte'
@@ -135,7 +136,7 @@
 
         <Tree entries={workspace.tree.children} />
       {:else}
-        <button class="empty" onclick={() => workspace.addSpace()}>{t('Open a folder')}</button>
+        <button class="empty" onclick={() => newSpace()}>{t('Create a space')}</button>
       {/if}
     {:else if workspace.panel === 'articles'}
       <ul>

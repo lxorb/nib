@@ -113,18 +113,6 @@ function readTreeOptions(): TreeOptions {
   }
 }
 
-async function pickFolder(): Promise<string | null> {
-  if (isDesktop) {
-    const { open } = await import('@tauri-apps/plugin-dialog')
-    const picked = await open({ directory: true })
-    return typeof picked === 'string' ? picked : null
-  }
-
-  if (!import.meta.env.DEV) return null
-  const { FIXTURE_SPACE } = await import('./dev-fixture')
-  return FIXTURE_SPACE.root
-}
-
 async function pickSavePath(): Promise<string | null> {
   if (!isDesktop) return null
 
@@ -206,6 +194,9 @@ class Workspace {
     this.panel = null
     this.activeSpaceId = state.activeSpace ?? this.spaces[0]?.id ?? null
 
+    // The folder wins over what was remembered, so the two cannot drift apart.
+    await this.loadSpaces()
+
     if (this.activeSpaceId) await this.loadTree()
 
     for (const path of state.openPaths ?? []) {
@@ -232,13 +223,63 @@ class Workspace {
     this.activeTabId = tab.id
   }
 
-  async addSpace() {
-    const picked = await pickFolder()
-    if (!picked) return
+  /** Reads the spaces folder. It is the source of truth, so a space added or
+   *  removed outside the app simply shows up that way. */
+  async loadSpaces() {
+    if (!isDesktop) return
 
-    const space: Space = { id: identifier(), name: basename(picked), root: picked }
+    const found = await invoke<{ name: string; path: string }[]>('list_spaces').catch(() => [])
+
+    // Ids are kept across a reload so the selected space survives one.
+    const byRoot = new Map(this.spaces.map((space) => [space.root, space]))
+    this.spaces = found.map(
+      (entry) => byRoot.get(entry.path) ?? { id: identifier(), name: entry.name, root: entry.path },
+    )
+
+    if (!this.spaces.some((space) => space.id === this.activeSpaceId)) {
+      this.activeSpaceId = this.spaces[0]?.id ?? null
+    }
+  }
+
+  /** Creates a space folder under the one the app owns. The name is the only
+   *  thing asked for; where it lives is not a decision worth making. */
+  async addSpace(name: string) {
+    if (!isDesktop || !name.trim()) return
+
+    const created = await invoke<{ name: string; path: string }>('create_space', {
+      name: name.trim(),
+    }).catch(() => null)
+
+    if (!created) return
+
+    const space: Space = { id: identifier(), name: created.name, root: created.path }
     this.spaces = [...this.spaces, space]
     await this.selectSpace(space.id)
+    return space
+  }
+
+  async renameSpace(id: string, name: string) {
+    const space = this.spaces.find((entry) => entry.id === id)
+    if (!isDesktop || !space || !name.trim()) return
+
+    const renamed = await invoke<{ name: string; path: string }>('rename_space', {
+      from: space.root,
+      name: name.trim(),
+    }).catch(() => null)
+
+    if (!renamed) return
+
+    // Open notes point into the old folder, so move them with it.
+    for (const tab of this.tabs) {
+      if (tab.path?.startsWith(space.root)) {
+        tab.path = renamed.path + tab.path.slice(space.root.length)
+      }
+    }
+
+    space.name = renamed.name
+    space.root = renamed.path
+    if (this.activeSpaceId === id) await this.loadTree()
+    this.persist()
   }
 
   async selectSpace(id: string) {
@@ -247,13 +288,30 @@ class Workspace {
     this.persist()
   }
 
-  removeSpace(id: string) {
-    this.spaces = this.spaces.filter((space) => space.id !== id)
+  /** Deletes the space's folder. The app owns that folder, so dropping it from
+   *  the list alone would only bring it back on the next launch. */
+  async deleteSpace(id: string) {
+    const space = this.spaces.find((entry) => entry.id === id)
+    if (!space) return
+
+    if (isDesktop) {
+      const gone = await invoke('delete_space', { path: space.root })
+        .then(() => true)
+        .catch(() => false)
+
+      if (!gone) return
+    }
+
+    for (const tab of this.tabs.filter((tab) => tab.path?.startsWith(space.root))) {
+      this.close(tab.id)
+    }
+
+    this.spaces = this.spaces.filter((entry) => entry.id !== id)
     if (this.activeSpaceId !== id) return this.persist()
 
     this.activeSpaceId = this.spaces[0]?.id ?? null
     this.tree = null
-    if (this.activeSpaceId) void this.selectSpace(this.activeSpaceId)
+    if (this.activeSpaceId) await this.selectSpace(this.activeSpaceId)
     else this.persist()
   }
 

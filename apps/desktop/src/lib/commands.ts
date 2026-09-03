@@ -3,6 +3,7 @@ import { account } from './account.svelte'
 import { t } from './i18n.svelte'
 import { PANDOC_FORMATS } from './export'
 import { imagePath, imageUrl } from './images'
+import { newSpace } from './space-actions'
 import { modes } from './modes.svelte'
 import { settings } from './settings.svelte'
 import { invoke, isDesktop } from './tauri'
@@ -123,7 +124,7 @@ export function appCommands(view?: EditorView): Command[] {
       hint: 'Ctrl W',
       run: () => workspace.activeTabId && workspace.close(workspace.activeTabId),
     },
-    { id: 'space', label: t('Add a space'), run: () => void workspace.addSpace() },
+    { id: 'space', label: t('New space'), run: () => void newSpace() },
     {
       id: 'new-window',
       label: t('New window'),
