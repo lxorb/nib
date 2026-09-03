@@ -6,7 +6,7 @@
   import { DIVIDER, menu, revealEntry } from './menu.svelte'
   import { deleteSpace, moveSpace, newSpace, renameSpace } from './space-actions'
   import { settings } from './settings.svelte'
-  import { workspace } from './workspace.svelte'
+  import { type Space, workspace } from './workspace.svelte'
   import { theme } from './theme.svelte'
 
   let picker = $state<IconPicker>()
@@ -17,6 +17,8 @@
    *  gap under the last space, which is where a drop past the end lands. */
   let dragging = $state<string | null>(null)
   let gap = $state<string | null | undefined>(undefined)
+  /** The space a note from the explorer is being held over. */
+  let receiving = $state<string | null>(null)
 
   function start(event: DragEvent, id: string) {
     dragging = id
@@ -27,8 +29,16 @@
     event.dataTransfer.setData('text/plain', id)
   }
 
-  /** Above the middle of a space means in front of it, below means after. */
+  /** Two drags land here. A note from the explorer goes into a space; a space
+   *  goes beside one, in front of it above the middle and after it below. */
   function over(event: DragEvent, id: string, next: string | null) {
+    if (event.dataTransfer?.types.includes('text/nib-path')) {
+      event.preventDefault()
+      event.dataTransfer.dropEffect = 'move'
+      receiving = id
+      return
+    }
+
     if (!dragging) return
 
     event.preventDefault()
@@ -38,15 +48,20 @@
     gap = event.clientY < box.top + box.height / 2 ? id : next
   }
 
-  function drop(event: DragEvent) {
+  function drop(event: DragEvent, space: Space) {
     event.preventDefault()
-    if (dragging && gap !== undefined) void moveSpace(dragging, gap)
+
+    const note = event.dataTransfer?.getData('text/nib-path')
+    if (note) void workspace.move(note, space.root)
+    else if (dragging && gap !== undefined) void moveSpace(dragging, gap)
+
     stop()
   }
 
   function stop() {
     dragging = null
     gap = undefined
+    receiving = null
   }
 
   function initial(name: string): string {
@@ -76,13 +91,15 @@
         class:dragging={space.id === dragging}
         class:before={gap === space.id}
         class:after={gap === null && index === workspace.spaces.length - 1}
+        class:receiving={receiving === space.id}
         title={space.name}
         aria-label={space.name}
         aria-current={space.id === workspace.activeSpaceId}
         draggable="true"
         ondragstart={(event) => start(event, space.id)}
         ondragover={(event) => over(event, space.id, workspace.spaces[index + 1]?.id ?? null)}
-        ondrop={drop}
+        ondragleave={() => (receiving = null)}
+        ondrop={(event) => drop(event, space)}
         ondragend={stop}
         onclick={() => workspace.selectSpace(space.id)}
         oncontextmenu={(event) =>
@@ -245,6 +262,15 @@
 
   .space.after::after {
     bottom: -4px;
+  }
+
+  /* A note held over a space: the whole square lights up, because the note
+     goes into it rather than beside it. */
+  .space.receiving {
+    background: var(--accent-soft);
+    box-shadow: inset 0 0 0 1px var(--accent);
+    color: var(--text-strong);
+    transform: scale(1.08);
   }
 
   /* The active space grows a marker rather than announcing itself in words. */
