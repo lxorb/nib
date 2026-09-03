@@ -3,6 +3,7 @@
   import { cubicOut } from 'svelte/easing'
   import { CODE_PALETTES, type EditorView } from '@nib/editor'
   import { account } from './account.svelte'
+  import { i18n, LANGUAGES, t } from './i18n.svelte'
   import { modes } from './modes.svelte'
   import { ORIENTATIONS, PAPER_SIZES } from './page-setup'
   import { settings, type Section } from './settings.svelte'
@@ -11,11 +12,11 @@
   import { workspace } from './workspace.svelte'
 
   const SECTIONS: { id: Section; label: string }[] = [
-    { id: 'account', label: 'Account' },
-    { id: 'publish', label: 'Publish' },
-    { id: 'llm', label: 'LLM access' },
-    { id: 'appearance', label: 'Appearance' },
-    { id: 'export', label: 'Export' },
+    { id: 'account', label: t('Account') },
+    { id: 'publish', label: t('Publish') },
+    { id: 'llm', label: t('LLM access') },
+    { id: 'appearance', label: t('Appearance') },
+    { id: 'export', label: t('Export') },
   ]
 
   let { view }: { view?: EditorView } = $props()
@@ -72,45 +73,48 @@
             {#if workspace.activeSpace}
               {#if settings.remote}
                 <p class="note">
-                  <strong>{workspace.activeSpace.name}</strong> syncs to your account.
+                  <strong>{workspace.activeSpace.name}</strong>
+                  {t('syncs to your account.')}
                   {#if sync.lastSyncedAt}
-                    Last synced {new Date(sync.lastSyncedAt).toLocaleTimeString()}.
+                    {t('Last synced {time}.', {
+                      time: new Date(sync.lastSyncedAt).toLocaleTimeString(),
+                    })}
                   {/if}
                 </p>
               {:else}
                 <button class="primary" disabled={settings.busy} onclick={() => settings.startSyncing()}>
-                  Sync {workspace.activeSpace.name}
+                  {t('Sync {name}', { name: workspace.activeSpace.name })}
                 </button>
               {/if}
             {:else}
-              <p class="note">Open a folder to sync it.</p>
+              <p class="note">{t('Open a folder to sync it.')}</p>
             {/if}
 
-            <button class="quiet" onclick={() => account.signOut()}>Sign out</button>
+            <button class="quiet" onclick={() => account.signOut()}>{t('Sign out')}</button>
           {:else}
-            <p class="lead">Not signed in</p>
+            <p class="lead">{t('Not signed in')}</p>
             <button class="primary" onclick={() => { settings.open = false; account.open = true }}>
-              Sign in
+              {t('Sign in')}
             </button>
           {/if}
         </div>
       {:else if settings.section === 'publish'}
         <div class="pane" in:fly={{ y: 8, duration: 180, easing: cubicOut }}>
           {#if !settings.remote}
-            <p class="note">Sync this space first, from Account.</p>
+            <p class="note">{t('Sync this space first, from Account.')}</p>
           {:else}
             <!-- The consequence comes before the switch, not after it. -->
             <label class="danger-check">
               <input type="checkbox" bind:checked={confirmPublic} disabled={published} />
               <span>
-                <strong>Everything in this space becomes public.</strong>
-                Every note, including drafts, is readable by anyone with the address.
+                <strong>{t('Everything in this space becomes public.')}</strong>
+                {t('Every note, including drafts, is readable by anyone with the address.')}
               </span>
             </label>
 
             <fieldset disabled={!confirmPublic}>
               <label class="field">
-                <span class="label">Address</span>
+                <span class="label">{t('Address')}</span>
                 <div class="row">
                   <input
                     value={subdomain}
@@ -121,22 +125,22 @@
                   <span class="suffix">.icinoxis.net</span>
                 </div>
                 {#if settings.availability.checking}
-                  <span class="hint">checking…</span>
+                  <span class="hint">{t('checking…')}</span>
                 {:else if settings.availability.available === true}
-                  <span class="hint ok">available</span>
+                  <span class="hint ok">{t('available')}</span>
                 {:else if settings.availability.available === false}
                   <span class="hint bad">{settings.availability.reason}</span>
                 {/if}
               </label>
 
               <details>
-                <summary>Use a domain you own</summary>
+                <summary>{t('Use a domain you own')}</summary>
                 <div class="field" transition:slide={{ duration: 180 }}>
                   <input bind:value={domain} placeholder="notes.example.com" spellcheck="false" />
                   {#if settings.dns.length}
                     <table class="dns">
                       <thead>
-                        <tr><th>Type</th><th>Name</th><th>Value</th></tr>
+                        <tr><th>{t('Type')}</th><th>{t('Name')}</th><th>{t('Value')}</th></tr>
                       </thead>
                       <tbody>
                         {#each settings.dns as record (record.name + record.type)}
@@ -148,7 +152,7 @@
                         {/each}
                       </tbody>
                     </table>
-                    <span class="hint">Add this at your registrar, then reload the page.</span>
+                    <span class="hint">{t('Add this at your registrar, then reload the page.')}</span>
                   {/if}
                 </div>
               </details>
@@ -158,18 +162,18 @@
                 disabled={settings.busy || !subdomain}
                 onclick={() => settings.publish({ subdomain, domain: domain || undefined })}
               >
-                {published ? 'Update' : 'Publish'}
+                {published ? t('Update') : t('Publish')}
               </button>
             </fieldset>
 
             {#if published}
               <p class="note" transition:slide={{ duration: 180 }}>
-                Live at
+                {t('Live at')}
                 <a href="https://{blog?.subdomain}.icinoxis.net" target="_blank" rel="noreferrer">
                   {blog?.subdomain}.icinoxis.net
                 </a>
               </p>
-              <button class="quiet danger" onclick={() => settings.unpublish()}>Stop publishing</button>
+              <button class="quiet danger" onclick={() => settings.unpublish()}>{t('Stop publishing')}</button>
             {/if}
           {/if}
         </div>
@@ -181,7 +185,7 @@
               checked={settings.llmEnabled}
               onchange={(event) => settings.setLlm(event.currentTarget.checked, settings.llmReadOnly)}
             />
-            <span>Let an LLM read this space</span>
+            <span>{t('Let an LLM read this space')}</span>
           </label>
 
           <label class="switch">
@@ -191,18 +195,18 @@
               disabled={!settings.llmEnabled}
               onchange={(event) => settings.setLlm(settings.llmEnabled, !event.currentTarget.checked)}
             />
-            <span>…and write to it</span>
+            <span>{t('…and write to it')}</span>
           </label>
 
           {#if settings.llmEnabled}
             <div transition:slide={{ duration: 200 }}>
               {#if settings.mcp?.installed === false}
-                <p class="hint bad">The connector is not built yet — run the desktop build once.</p>
+                <p class="hint bad">{t('The connector is not built yet — run the desktop build once.')}</p>
               {/if}
 
-              <p class="note">Paste this into your LLM client's MCP settings.</p>
+              <p class="note">{t("Paste this into your LLM client's MCP settings.")}</p>
               <pre>{settings.mcp?.snippet ?? '…'}</pre>
-              <button class="primary" onclick={copySnippet}>{copied ? 'Copied' : 'Copy'}</button>
+              <button class="primary" onclick={copySnippet}>{copied ? t('Copied') : t('Copy')}</button>
             </div>
           {/if}
         </div>
@@ -210,7 +214,7 @@
         <div class="pane" in:fly={{ y: 8, duration: 180, easing: cubicOut }}>
           <div class="row">
             <label class="field">
-              <span class="label">Paper</span>
+              <span class="label">{t('Paper')}</span>
               <select
                 value={settings.page.paper}
                 onchange={(event) => settings.setPage({ paper: event.currentTarget.value as never })}
@@ -222,20 +226,20 @@
             </label>
 
             <label class="field">
-              <span class="label">Orientation</span>
+              <span class="label">{t('Orientation')}</span>
               <select
                 value={settings.page.orientation}
                 onchange={(event) =>
                   settings.setPage({ orientation: event.currentTarget.value as never })}
               >
                 {#each ORIENTATIONS as option (option)}
-                  <option value={option}>{option}</option>
+                  <option value={option}>{t(option)}</option>
                 {/each}
               </select>
             </label>
 
             <label class="field">
-              <span class="label">Margin</span>
+              <span class="label">{t('Margin')}</span>
               <input
                 value={settings.page.margin}
                 oninput={(event) => settings.setPage({ margin: event.currentTarget.value })}
@@ -245,7 +249,7 @@
           </div>
 
           <label class="field">
-            <span class="label">Header</span>
+            <span class="label">{t('Header')}</span>
             <input
               value={settings.page.header}
               oninput={(event) => settings.setPage({ header: event.currentTarget.value })}
@@ -255,7 +259,7 @@
           </label>
 
           <label class="field">
-            <span class="label">Footer</span>
+            <span class="label">{t('Footer')}</span>
             <input
               value={settings.page.footer}
               oninput={(event) => settings.setPage({ footer: event.currentTarget.value })}
@@ -285,7 +289,16 @@
             {/each}
           </div>
           <label class="field">
-            <span class="label">Code</span>
+            <span class="label">{t('Language')}</span>
+            <select value={i18n.choice} onchange={(event) => i18n.select(event.currentTarget.value)}>
+              {#each LANGUAGES as language (language.id)}
+                <option value={language.id}>{t(language.name)}</option>
+              {/each}
+            </select>
+          </label>
+
+          <label class="field">
+            <span class="label">{t('Code')}</span>
             <select
               value={modes.codeTheme}
               onchange={(event) => modes.setCodeTheme(event.currentTarget.value, view)}
@@ -296,7 +309,7 @@
             </select>
           </label>
 
-          <button class="quiet" onclick={() => theme.reload()}>Reload themes and custom CSS</button>
+          <button class="quiet" onclick={() => theme.reload()}>{t('Reload themes and custom CSS')}</button>
         </div>
       {/if}
 

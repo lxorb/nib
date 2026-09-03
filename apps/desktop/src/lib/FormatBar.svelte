@@ -9,6 +9,7 @@
     type StateCommand,
     type Transaction,
   } from '@nib/editor'
+  import { t } from './i18n.svelte'
 
   let { view }: { view?: EditorView } = $props()
 
@@ -40,15 +41,15 @@
   }
 
   const ACTIONS: { label: string; title: string; command: StateCommand }[] = [
-    { label: 'B', title: 'Bold', command: toggleWrap('**') },
-    { label: 'I', title: 'Italic', command: toggleWrap('*') },
-    { label: 'S', title: 'Strikethrough', command: toggleWrap('~~') },
-    { label: 'M', title: 'Highlight', command: toggleWrap('==') },
-    { label: '<>', title: 'Code', command: toggleWrap('`') },
-    { label: 'H', title: 'Heading', command: setHeading(2) },
-    { label: '"', title: 'Quote', command: toggleQuote },
-    { label: '#', title: 'Link', command: insertLink },
-    { label: '×', title: 'Clear formatting', command: clearFormatting },
+    { label: 'B', title: t('Bold'), command: toggleWrap('**') },
+    { label: 'I', title: t('Italic'), command: toggleWrap('*') },
+    { label: 'S', title: t('Strikethrough'), command: toggleWrap('~~') },
+    { label: 'M', title: t('Highlight'), command: toggleWrap('==') },
+    { label: '<>', title: t('Code'), command: toggleWrap('`') },
+    { label: 'H', title: t('Heading'), command: setHeading(2) },
+    { label: '"', title: t('Quote'), command: toggleQuote },
+    { label: '#', title: t('Link'), command: insertLink },
+    { label: '×', title: t('Clear formatting'), command: clearFormatting },
   ]
 </script>
 

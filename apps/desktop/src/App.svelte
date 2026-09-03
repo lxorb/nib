@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { i18n, t } from './lib/i18n.svelte'
   import {
     clearFormatting,
     EditorView,
@@ -48,6 +49,7 @@
   )
 
   collectErrors()
+  i18n.restore()
   theme.init()
   modes.restore()
   settings.restore()
@@ -116,26 +118,26 @@
     const selected = !!view && !view.state.selection.main.empty
 
     return [
-      { label: 'Cut', hint: 'Ctrl X', disabled: !selected, run: () => document.execCommand('cut') },
-      { label: 'Copy', hint: 'Ctrl C', disabled: !selected, run: () => document.execCommand('copy') },
-      { label: 'Paste', hint: 'Ctrl V', run: () => void paste() },
+      { label: t('Cut'), hint: 'Ctrl X', disabled: !selected, run: () => document.execCommand('cut') },
+      { label: t('Copy'), hint: 'Ctrl C', disabled: !selected, run: () => document.execCommand('copy') },
+      { label: t('Paste'), hint: 'Ctrl V', run: () => void paste() },
       DIVIDER,
-      { label: 'Bold', hint: 'Ctrl B', run: () => runCommand(toggleWrap('**')) },
-      { label: 'Italic', hint: 'Ctrl I', run: () => runCommand(toggleWrap('*')) },
-      { label: 'Code', run: () => runCommand(toggleWrap('`')) },
-      { label: 'Link', hint: 'Ctrl K', run: () => runCommand(insertLink) },
-      { label: 'Clear formatting', hint: 'Ctrl \\', run: () => runCommand(clearFormatting) },
+      { label: t('Bold'), hint: 'Ctrl B', run: () => runCommand(toggleWrap('**')) },
+      { label: t('Italic'), hint: 'Ctrl I', run: () => runCommand(toggleWrap('*')) },
+      { label: t('Code'), run: () => runCommand(toggleWrap('`')) },
+      { label: t('Link'), hint: 'Ctrl K', run: () => runCommand(insertLink) },
+      { label: t('Clear formatting'), hint: 'Ctrl \\', run: () => runCommand(clearFormatting) },
       DIVIDER,
-      { label: 'Quote', run: () => runCommand(toggleQuote) },
-      { label: 'Bulleted list', run: () => runCommand(toggleBulletList) },
-      { label: 'Numbered list', run: () => runCommand(toggleOrderedList) },
-      { label: 'Table', hint: 'Ctrl T', run: () => runCommand(insertTable()) },
-      { label: 'Code block', run: () => runCommand(insertCodeFence) },
-      { label: 'Horizontal rule', run: () => runCommand(insertHorizontalRule) },
-      { label: 'Page break', run: () => runCommand(insertPageBreak) },
+      { label: t('Quote'), run: () => runCommand(toggleQuote) },
+      { label: t('Bulleted list'), run: () => runCommand(toggleBulletList) },
+      { label: t('Numbered list'), run: () => runCommand(toggleOrderedList) },
+      { label: t('Table'), hint: 'Ctrl T', run: () => runCommand(insertTable()) },
+      { label: t('Code block'), run: () => runCommand(insertCodeFence) },
+      { label: t('Horizontal rule'), run: () => runCommand(insertHorizontalRule) },
+      { label: t('Page break'), run: () => runCommand(insertPageBreak) },
       DIVIDER,
       {
-        label: modes.source ? 'Leave source mode' : 'Source mode',
+        label: modes.source ? t('Leave source mode') : t('Source mode'),
         hint: 'Ctrl /',
         run: () => modes.toggleSource(view),
       },

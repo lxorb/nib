@@ -1,5 +1,6 @@
 <script lang="ts">
   import { account } from './account.svelte'
+  import { t } from './i18n.svelte'
   import { DIVIDER, menu } from './menu.svelte'
   import { settings } from './settings.svelte'
   import { workspace } from './workspace.svelte'
@@ -22,11 +23,11 @@
         onclick={() => workspace.selectSpace(space.id)}
         oncontextmenu={(event) =>
           menu.show(event, [
-            { label: 'Reveal in Explorer', run: () => workspace.reveal(space.root) },
-            { label: 'New note', run: () => workspace.createNote(space.root) },
+            { label: t('Reveal in Explorer'), run: () => workspace.reveal(space.root) },
+            { label: t('New note'), run: () => workspace.createNote(space.root) },
             DIVIDER,
             {
-              label: 'Remove from Nib',
+              label: t('Remove from Nib'),
               danger: true,
               run: () => workspace.removeSpace(space.id),
             },
@@ -37,13 +38,13 @@
       </button>
     {/each}
 
-    <button class="add" title="Add a space" aria-label="Add a space" onclick={() => workspace.addSpace()}>
+    <button class="add" title={t('Add a space')} aria-label={t('Add a space')} onclick={() => workspace.addSpace()}>
       <svg viewBox="0 0 12 12"><path d="M6 1v10M1 6h10" /></svg>
     </button>
   </div>
 
   <div class="foot">
-    <button class="add" title="Settings" aria-label="Settings" onclick={() => settings.show()}>
+    <button class="add" title={t('Settings')} aria-label={t('Settings')} onclick={() => settings.show()}>
       <svg viewBox="0 0 14 14">
         <circle cx="7" cy="7" r="2.4" />
         <path
@@ -55,8 +56,8 @@
     <button
       class="add account"
       class:signed-in={account.signedIn}
-      title={account.user?.email ?? 'Sign in'}
-      aria-label={account.user?.email ?? 'Sign in'}
+      title={account.user?.email ?? t('Sign in')}
+      aria-label={account.user?.email ?? t('Sign in')}
       onclick={() => (account.open = true)}
     >
       {#if account.signedIn}
@@ -68,8 +69,8 @@
 
     <button
       class="add"
-      title={theme.current === 'dark' ? 'Light' : 'Dark'}
-      aria-label="Switch theme"
+      title={theme.current === 'dark' ? t('Light') : t('Dark')}
+      aria-label={t('Switch theme')}
       onclick={() => theme.toggle()}
     >
     {#if theme.current === 'dark'}

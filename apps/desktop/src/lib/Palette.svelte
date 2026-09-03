@@ -3,6 +3,7 @@
   import { cubicOut } from 'svelte/easing'
   import type { EditorView } from '@nib/editor'
   import { appCommands, type Command } from './commands'
+  import { t } from './i18n.svelte'
   import { rank } from './fuzzy'
   import { workspace, type Entry } from './workspace.svelte'
 
@@ -79,9 +80,9 @@
       bind:this={input}
       bind:value={query}
       onkeydown={onKeydown}
-      placeholder="Go to note, or > for commands"
+      placeholder={t('Go to note, or > for commands')}
       spellcheck="false"
-      aria-label="Search notes and commands"
+      aria-label={t('Search notes and commands')}
     />
 
     {#if results.length}

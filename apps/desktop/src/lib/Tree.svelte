@@ -1,6 +1,7 @@
 <script lang="ts">
   import { slide } from 'svelte/transition'
   import { cubicOut } from 'svelte/easing'
+  import { t } from './i18n.svelte'
   import { DIVIDER, menu, type MenuEntry } from './menu.svelte'
   import type { Entry } from './workspace.svelte'
   import { workspace } from './workspace.svelte'
@@ -15,19 +16,19 @@
 
   function folderMenu(entry: Entry): MenuEntry[] {
     return [
-      { label: 'New note', run: () => workspace.createNote(entry.path) },
-      { label: 'New folder', run: () => workspace.createFolder(entry.path) },
+      { label: t('New note'), run: () => workspace.createNote(entry.path) },
+      { label: t('New folder'), run: () => workspace.createFolder(entry.path) },
       DIVIDER,
-      { label: 'Rename', run: () => (workspace.renaming = entry.path) },
+      { label: t('Rename'), run: () => (workspace.renaming = entry.path) },
       { label: pinLabel(entry.path), run: () => workspace.togglePin(entry.path) },
-      { label: 'Reveal in Explorer', run: () => workspace.reveal(entry.path) },
+      { label: t('Reveal in Explorer'), run: () => workspace.reveal(entry.path) },
       DIVIDER,
-      { label: 'Delete', danger: true, run: () => workspace.remove(entry.path, true) },
+      { label: t('Delete'), danger: true, run: () => workspace.remove(entry.path, true) },
       ...undoEntry(),
     ]
   }
 
-  const pinLabel = (path: string) => (workspace.isPinned(path) ? 'Unpin' : 'Pin to the top')
+  const pinLabel = (path: string) => (workspace.isPinned(path) ? t('Unpin') : t('Pin to the top'))
 
   /** Only offered once there is something to take back. */
   function undoEntry(): MenuEntry[] {
@@ -37,15 +38,15 @@
 
   function noteMenu(entry: Entry): MenuEntry[] {
     return [
-      { label: 'Open', run: () => workspace.open(entry.path) },
+      { label: t('Open'), run: () => workspace.open(entry.path) },
       DIVIDER,
-      { label: 'Rename', run: () => (workspace.renaming = entry.path) },
+      { label: t('Rename'), run: () => (workspace.renaming = entry.path) },
       { label: pinLabel(entry.path), run: () => workspace.togglePin(entry.path) },
-      { label: 'Duplicate', run: () => workspace.duplicate(entry.path) },
-      { label: 'Copy path', run: () => navigator.clipboard.writeText(entry.path) },
-      { label: 'Reveal in Explorer', run: () => workspace.reveal(entry.path) },
+      { label: t('Duplicate'), run: () => workspace.duplicate(entry.path) },
+      { label: t('Copy path'), run: () => navigator.clipboard.writeText(entry.path) },
+      { label: t('Reveal in Explorer'), run: () => workspace.reveal(entry.path) },
       DIVIDER,
-      { label: 'Delete', danger: true, run: () => workspace.remove(entry.path, false) },
+      { label: t('Delete'), danger: true, run: () => workspace.remove(entry.path, false) },
       ...undoEntry(),
     ]
   }

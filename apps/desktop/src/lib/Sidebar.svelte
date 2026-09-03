@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { t } from './i18n.svelte'
   import { DIVIDER, menu, type MenuEntry } from './menu.svelte'
   import type { Entry, Hit, Panel, SortKey } from './workspace.svelte'
   import { workspace } from './workspace.svelte'
@@ -7,10 +8,10 @@
   let { ongoto }: { ongoto?: (line: number) => void } = $props()
 
   const PANELS: { id: Panel; label: string; path: string }[] = [
-    { id: 'tree', label: 'Files', path: 'M1 3.5h4l1 1.5h6v6.5H1z' },
-    { id: 'articles', label: 'Notes', path: 'M2 2.5h9M2 6.5h9M2 10.5h6' },
-    { id: 'outline', label: 'Outline', path: 'M2 2.5h9M4 6.5h7M6 10.5h5' },
-    { id: 'search', label: 'Search', path: 'M5.5 1.5a4 4 0 1 0 0 8 4 4 0 0 0 0-8zM8.6 8.6l3 3' },
+    { id: 'tree', label: t('Files'), path: 'M1 3.5h4l1 1.5h6v6.5H1z' },
+    { id: 'articles', label: t('Notes'), path: 'M2 2.5h9M2 6.5h9M2 10.5h6' },
+    { id: 'outline', label: t('Outline'), path: 'M2 2.5h9M4 6.5h7M6 10.5h5' },
+    { id: 'search', label: t('Search'), path: 'M5.5 1.5a4 4 0 1 0 0 8 4 4 0 0 0 0-8zM8.6 8.6l3 3' },
   ]
 
   const stripped = (name: string) => name.replace(/\.(md|markdown|mdown|mkd)$/i, '')
@@ -22,17 +23,17 @@
       options.sort === key ? (options.descending ? '↓' : '↑') : undefined
 
     return [
-      { label: 'Sort by name', hint: arrow('name'), run: () => workspace.setSort('name') },
-      { label: 'Sort by modified', hint: arrow('modified'), run: () => workspace.setSort('modified') },
-      { label: 'Sort by created', hint: arrow('created'), run: () => workspace.setSort('created') },
+      { label: t('Sort by name'), hint: arrow('name'), run: () => workspace.setSort('name') },
+      { label: t('Sort by modified'), hint: arrow('modified'), run: () => workspace.setSort('modified') },
+      { label: t('Sort by created'), hint: arrow('created'), run: () => workspace.setSort('created') },
       DIVIDER,
       {
-        label: options.showHidden ? 'Hide hidden files' : 'Show hidden files',
+        label: options.showHidden ? t('Hide hidden files') : t('Show hidden files'),
         run: () => workspace.toggleHidden(),
       },
       DIVIDER,
-      { label: 'New note', run: () => workspace.createNote() },
-      { label: 'New folder', run: () => workspace.createFolder() },
+      { label: t('New note'), run: () => workspace.createNote() },
+      { label: t('New folder'), run: () => workspace.createFolder() },
     ]
   }
 
@@ -122,7 +123,7 @@
                   onclick={() => !entry.is_dir && workspace.open(entry.path)}
                   oncontextmenu={(event) =>
                     menu.show(event, [
-                      { label: 'Unpin', run: () => workspace.togglePin(entry.path) },
+                      { label: t('Unpin'), run: () => workspace.togglePin(entry.path) },
                     ])}
                 >
                   {entry.is_dir ? entry.name : stripped(entry.name)}
@@ -134,7 +135,7 @@
 
         <Tree entries={workspace.tree.children} />
       {:else}
-        <button class="empty" onclick={() => workspace.addSpace()}>Open a folder</button>
+        <button class="empty" onclick={() => workspace.addSpace()}>{t('Open a folder')}</button>
       {/if}
     {:else if workspace.panel === 'articles'}
       <ul>
@@ -156,7 +157,7 @@
         class="query"
         value={query}
         oninput={(event) => onQuery(event.currentTarget.value)}
-        placeholder="Search this space"
+        placeholder={t('Search this space')}
         spellcheck="false"
         autofocus
       />
@@ -183,7 +184,7 @@
           {/each}
         </ul>
       {:else if query.trim().length >= 2 && !searching}
-        <p class="empty-text">Nothing found</p>
+        <p class="empty-text">{t('Nothing found')}</p>
       {/if}
     {:else if workspace.panel === 'outline'}
       <ul>

@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { t } from './i18n.svelte'
   import { fade, fly, scale } from 'svelte/transition'
   import { cubicOut } from 'svelte/easing'
   import { account } from './account.svelte'
@@ -96,17 +97,17 @@
           type="email"
           autocomplete="email"
           placeholder="you@example.com"
-          aria-label="Email address"
+          aria-label={t('Email address')}
           spellcheck="false"
           required
         />
         <button type="submit" disabled={account.busy}>
-          {account.busy ? 'Sending' : 'Continue'}
+          {account.busy ? t('Sending') : t('Continue')}
         </button>
       </form>
     {:else}
       <div class="code" in:fly={{ x: 14, duration: 200, easing: cubicOut }}>
-        <p class="sent">Code sent to <strong>{account.email}</strong></p>
+        <p class="sent">{t('Code sent to')} <strong>{account.email}</strong></p>
 
         <div class="digits">
           {#each digits as digit, index (index)}
@@ -118,7 +119,7 @@
               inputmode="numeric"
               autocomplete={index === 0 ? 'one-time-code' : 'off'}
               maxlength="6"
-              aria-label="Digit {index + 1}"
+              aria-label={t('Digit {number}', { number: index + 1 })}
               style:animation-delay="{index * 32}ms"
             />
           {/each}
@@ -130,7 +131,9 @@
           disabled={account.resendIn > 0 || account.busy}
           onclick={() => account.requestCode()}
         >
-          {account.resendIn > 0 ? `Resend in ${account.resendIn}s` : 'Send a new code'}
+          {account.resendIn > 0
+            ? t('Resend in {seconds}s', { seconds: account.resendIn })
+            : t('Send a new code')}
         </button>
       </div>
     {/if}

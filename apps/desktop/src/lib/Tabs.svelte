@@ -1,6 +1,7 @@
 <script lang="ts">
   import { fly } from 'svelte/transition'
   import { cubicOut } from 'svelte/easing'
+  import { t } from './i18n.svelte'
   import { DIVIDER, menu, type MenuEntry } from './menu.svelte'
   import { workspace, type Tab } from './workspace.svelte'
 
@@ -8,9 +9,9 @@
 
   function tabMenu(tab: Tab): MenuEntry[] {
     return [
-      { label: 'Close', hint: 'Ctrl W', run: () => workspace.close(tab.id) },
+      { label: t('Close'), hint: 'Ctrl W', run: () => workspace.close(tab.id) },
       {
-        label: 'Close others',
+        label: t('Close others'),
         disabled: workspace.tabs.length < 2,
         run: () => {
           for (const other of workspace.tabs.filter((entry) => entry.id !== tab.id)) {
@@ -20,12 +21,12 @@
       },
       DIVIDER,
       {
-        label: 'Copy path',
+        label: t('Copy path'),
         disabled: !tab.path,
         run: () => tab.path && navigator.clipboard.writeText(tab.path),
       },
       {
-        label: 'Reveal in Explorer',
+        label: t('Reveal in Explorer'),
         disabled: !tab.path,
         run: () => tab.path && workspace.reveal(tab.path),
       },
@@ -46,9 +47,9 @@
         oncontextmenu={(event) => menu.show(event, tabMenu(tab))}
       >
         {stripped(tab.name)}
-        {#if tab.dirty}<span class="dot" aria-label="Unsaved"></span>{/if}
+        {#if tab.dirty}<span class="dot" aria-label={t('Unsaved')}></span>{/if}
       </button>
-      <button class="shut" title="Close" aria-label="Close" onclick={() => workspace.close(tab.id)}>
+      <button class="shut" title={t('Close')} aria-label={t('Close')} onclick={() => workspace.close(tab.id)}>
         <svg viewBox="0 0 8 8"><path d="M1 1l6 6M7 1L1 7" /></svg>
       </button>
     </div>

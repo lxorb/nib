@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { t } from './i18n.svelte'
   import { fade, scale } from 'svelte/transition'
   import { cubicOut } from 'svelte/easing'
   import { invoke } from './tauri'
@@ -66,9 +67,9 @@
 
   <div class="sheet" transition:scale={{ duration: 200, start: 0.97, easing: cubicOut }}>
     {#if !workspace.active?.path}
-      <p class="empty">Save this note first; there is nothing to compare against yet.</p>
+      <p class="empty">{t('Save this note first; there is nothing to compare against yet.')}</p>
     {:else if !snapshots.length}
-      <p class="empty">No earlier versions yet. One is kept each time you save.</p>
+      <p class="empty">{t('No earlier versions yet. One is kept each time you save.')}</p>
     {:else}
       <ul class="versions">
         {#each snapshots as snapshot (snapshot.path)}
@@ -83,7 +84,7 @@
 
       <div class="preview">
         <pre>{preview}</pre>
-        <button class="primary" onclick={restore}>Restore this version</button>
+        <button class="primary" onclick={restore}>{t('Restore this version')}</button>
       </div>
     {/if}
   </div>

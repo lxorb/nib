@@ -1,4 +1,5 @@
 import { flushTableEdits } from '@nib/editor'
+import { t } from './i18n.svelte'
 import { folderOf, invoke, isDesktop, joinPath } from './tauri'
 
 export interface Entry {
@@ -545,9 +546,11 @@ class Workspace {
     if (!action) return null
 
     const name = basename(action.kind === 'delete' ? action.path : action.to)
-    return { move: `Undo moving ${name}`, rename: `Undo renaming ${name}`, delete: `Undo deleting ${name}` }[
-      action.kind
-    ]
+    return {
+      move: t('Undo moving {name}', { name }),
+      rename: t('Undo renaming {name}', { name }),
+      delete: t('Undo deleting {name}', { name }),
+    }[action.kind]
   }
 
   async duplicate(path: string) {

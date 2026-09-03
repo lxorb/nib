@@ -1,5 +1,6 @@
 import { CODE_PALETTES, type EditorView, reformatDocument, type Transaction } from '@nib/editor'
 import { account } from './account.svelte'
+import { t } from './i18n.svelte'
 import { PANDOC_FORMATS } from './export'
 import { imagePath, imageUrl } from './images'
 import { modes } from './modes.svelte'
@@ -45,18 +46,18 @@ function exportCommands(): Command[] {
   const commands: Command[] = [
     {
       id: 'export-pdf',
-      label: 'Export as PDF',
+      label: t('Export as PDF'),
       run: () => import('./export').then((m) => m.exportPdf(source(), name(), forPrint())),
     },
     {
       id: 'export-html',
-      label: 'Export as HTML',
+      label: t('Export as HTML'),
       run: () => void import('./export').then((m) => m.exportHtml(source(), name(), forFile())),
     },
-    { id: 'page-setup', label: 'Page setup for export', run: () => settings.show('export') },
+    { id: 'page-setup', label: t('Page setup for export'), run: () => settings.show('export') },
     {
       id: 'export-html-bare',
-      label: 'Export as HTML without styles',
+      label: t('Export as HTML without styles'),
       run: () => void import('./export').then((m) => m.exportHtml(source(), name(), { bare: true })),
     },
   ]
@@ -65,7 +66,7 @@ function exportCommands(): Command[] {
 
   commands.push({
     id: 'import',
-    label: 'Import a document',
+    label: t('Import a document'),
     run: () =>
       void import('./export').then(async (m) => {
         const imported = await m.importDocument()
@@ -76,7 +77,7 @@ function exportCommands(): Command[] {
   for (const format of PANDOC_FORMATS) {
     commands.push({
       id: `export-${format.id}`,
-      label: `Export as ${format.label}`,
+      label: t('Export as {format}', { format: format.label }),
       run: () => void import('./export').then((m) => m.exportPandoc(source(), name(), format.id)),
     })
   }
@@ -114,30 +115,30 @@ export interface Command {
 /** Everything the palette can do. Labels read as the action, not the setting. */
 export function appCommands(view?: EditorView): Command[] {
   return [
-    { id: 'save', label: 'Save', hint: 'Ctrl S', run: () => void workspace.save() },
-    { id: 'new', label: 'New note', hint: 'Ctrl N', run: () => workspace.openBlank() },
+    { id: 'save', label: t('Save'), hint: 'Ctrl S', run: () => void workspace.save() },
+    { id: 'new', label: t('New note'), hint: 'Ctrl N', run: () => workspace.openBlank() },
     {
       id: 'close',
-      label: 'Close note',
+      label: t('Close note'),
       hint: 'Ctrl W',
       run: () => workspace.activeTabId && workspace.close(workspace.activeTabId),
     },
-    { id: 'space', label: 'Add a space', run: () => void workspace.addSpace() },
+    { id: 'space', label: t('Add a space'), run: () => void workspace.addSpace() },
     {
       id: 'undo-file',
-      label: workspace.undoLabel ?? 'Undo the last file change',
+      label: workspace.undoLabel ?? t('Undo the last file change'),
       disabled: !workspace.undoLabel,
       run: () => void workspace.undoFileAction(),
     },
     {
       id: 'autosave',
-      label: workspace.autoSave ? 'Turn off auto-save' : 'Turn on auto-save',
+      label: workspace.autoSave ? t('Turn off auto-save') : t('Turn on auto-save'),
       run: () => workspace.setAutoSave(!workspace.autoSave),
     },
-    { id: 'settings', label: 'Settings', hint: 'Ctrl ,', run: () => settings.show() },
+    { id: 'settings', label: t('Settings'), hint: 'Ctrl ,', run: () => settings.show() },
     {
       id: 'history',
-      label: 'Version history',
+      label: t('Version history'),
       disabled: !workspace.active?.path,
       run: () => (settings.historyOpen = true),
     },
@@ -152,16 +153,20 @@ export function appCommands(view?: EditorView): Command[] {
       })),
 
     ...exportCommands(),
-    { id: 'publish', label: 'Publish this space as a blog', run: () => settings.show('publish') },
-    { id: 'llm', label: 'Connect an LLM to this space', run: () => settings.show('llm') },
+    { id: 'publish', label: t('Publish this space as a blog'), run: () => settings.show('publish') },
+    { id: 'llm', label: t('Connect an LLM to this space'), run: () => settings.show('llm') },
 
     account.signedIn
-      ? { id: 'signout', label: `Sign out ${account.user?.email ?? ''}`.trim(), run: () => void account.signOut() }
-      : { id: 'signin', label: 'Sign in', run: () => (account.open = true) },
+      ? {
+          id: 'signout',
+          label: `${t('Sign out')} ${account.user?.email ?? ''}`.trim(),
+          run: () => void account.signOut(),
+        }
+      : { id: 'signin', label: t('Sign in'), run: () => (account.open = true) },
 
     {
       id: 'reformat',
-      label: 'Tidy up this note',
+      label: t('Tidy up this note'),
       disabled: !view,
       run: () =>
         view &&
@@ -173,62 +178,62 @@ export function appCommands(view?: EditorView): Command[] {
 
     {
       id: 'source',
-      label: modes.source ? 'Leave source mode' : 'Source mode',
+      label: modes.source ? t('Leave source mode') : t('Source mode'),
       hint: 'Ctrl /',
       run: () => modes.toggleSource(view),
     },
     {
       id: 'focus',
-      label: modes.focus ? 'Leave focus mode' : 'Focus mode',
+      label: modes.focus ? t('Leave focus mode') : t('Focus mode'),
       hint: 'F8',
       run: () => modes.toggleFocus(view),
     },
     {
       id: 'typewriter',
-      label: modes.typewriter ? 'Leave typewriter mode' : 'Typewriter mode',
+      label: modes.typewriter ? t('Leave typewriter mode') : t('Typewriter mode'),
       hint: 'F9',
       run: () => modes.toggleTypewriter(view),
     },
 
     {
       id: 'punctuation',
-      label: modes.punctuation ? 'Use straight quotes' : 'Use curly quotes',
+      label: modes.punctuation ? t('Use straight quotes') : t('Use curly quotes'),
       run: () => modes.togglePunctuation(view),
     },
     {
       id: 'numbers',
-      label: modes.numbers ? 'Stop numbering headings' : 'Number headings',
+      label: modes.numbers ? t('Stop numbering headings') : t('Number headings'),
       run: () => modes.toggleNumbers(view),
     },
 
     {
       id: 'line-numbers',
-      label: modes.lineNumbers ? 'Hide code line numbers' : 'Show code line numbers',
+      label: modes.lineNumbers ? t('Hide code line numbers') : t('Show code line numbers'),
       run: () => modes.toggleLineNumbers(view),
     },
     {
       id: 'rtl',
-      label: modes.rtl ? 'Write left to right' : 'Write right to left',
+      label: modes.rtl ? t('Write left to right') : t('Write right to left'),
       run: () => modes.toggleRightToLeft(view),
     },
     {
       id: 'strict',
-      label: modes.strict ? 'Allow extended markdown' : 'Strict CommonMark only',
+      label: modes.strict ? t('Allow extended markdown') : t('Strict CommonMark only'),
       run: () => modes.toggleStrict(view),
     },
     {
       id: 'equation-numbers',
-      label: modes.equationNumbers ? 'Stop numbering equations' : 'Number equations',
+      label: modes.equationNumbers ? t('Stop numbering equations') : t('Number equations'),
       run: () => modes.toggleEquationNumbers(view),
     },
-    { id: 'wider', label: 'Wider writing area', run: () => modes.stepWidth(1, view) },
-    { id: 'narrower', label: 'Narrower writing area', run: () => modes.stepWidth(-1, view) },
-    { id: 'looser', label: 'Looser line spacing', run: () => modes.stepLineHeight(1, view) },
-    { id: 'tighter', label: 'Tighter line spacing', run: () => modes.stepLineHeight(-1, view) },
+    { id: 'wider', label: t('Wider writing area'), run: () => modes.stepWidth(1, view) },
+    { id: 'narrower', label: t('Narrower writing area'), run: () => modes.stepWidth(-1, view) },
+    { id: 'looser', label: t('Looser line spacing'), run: () => modes.stepLineHeight(1, view) },
+    { id: 'tighter', label: t('Tighter line spacing'), run: () => modes.stepLineHeight(-1, view) },
 
-    { id: 'zoom-in', label: 'Zoom in', hint: 'Ctrl Shift =', run: () => modes.stepZoom(1) },
-    { id: 'zoom-out', label: 'Zoom out', hint: 'Ctrl Shift -', run: () => modes.stepZoom(-1) },
-    { id: 'zoom-reset', label: 'Actual size', hint: 'Ctrl Shift 0', run: () => modes.resetZoom() },
+    { id: 'zoom-in', label: t('Zoom in'), hint: 'Ctrl Shift =', run: () => modes.stepZoom(1) },
+    { id: 'zoom-out', label: t('Zoom out'), hint: 'Ctrl Shift -', run: () => modes.stepZoom(-1) },
+    { id: 'zoom-reset', label: t('Actual size'), hint: 'Ctrl Shift 0', run: () => modes.resetZoom() },
 
     ...theme.all.map((item) => ({
       id: `theme:${item.id}`,
@@ -242,22 +247,22 @@ export function appCommands(view?: EditorView): Command[] {
       hint: palette.id === modes.codeTheme ? 'current' : undefined,
       run: () => modes.setCodeTheme(palette.id, view),
     })),
-    { id: 'themes-folder', label: 'Open themes folder', run: () => void openThemesFolder() },
-    { id: 'custom-css', label: 'Edit custom CSS', run: () => void openCustomCss() },
-    { id: 'snippets', label: 'Edit snippets', run: () => void openSnippets() },
-    { id: 'logs', label: 'Open the log file', run: () => void openLog() },
+    { id: 'themes-folder', label: t('Open themes folder'), run: () => void openThemesFolder() },
+    { id: 'custom-css', label: t('Edit custom CSS'), run: () => void openCustomCss() },
+    { id: 'snippets', label: t('Edit snippets'), run: () => void openSnippets() },
+    { id: 'logs', label: t('Open the log file'), run: () => void openLog() },
     {
       id: 'sidebar',
-      label: workspace.panel ? 'Hide sidebar' : 'Show sidebar',
+      label: workspace.panel ? t('Hide sidebar') : t('Show sidebar'),
       hint: 'Ctrl Shift L',
       run: () => workspace.toggleSidebar(),
     },
-    { id: 'outline', label: 'Outline', hint: 'Ctrl Shift 1', run: () => workspace.showPanel('outline') },
-    { id: 'articles', label: 'Notes', hint: 'Ctrl Shift 2', run: () => workspace.showPanel('articles') },
-    { id: 'files', label: 'Files', hint: 'Ctrl Shift 3', run: () => workspace.showPanel('tree') },
+    { id: 'outline', label: t('Outline'), hint: 'Ctrl Shift 1', run: () => workspace.showPanel('outline') },
+    { id: 'articles', label: t('Notes'), hint: 'Ctrl Shift 2', run: () => workspace.showPanel('articles') },
+    { id: 'files', label: t('Files'), hint: 'Ctrl Shift 3', run: () => workspace.showPanel('tree') },
     {
       id: 'search-space',
-      label: 'Search this space',
+      label: t('Search this space'),
       hint: 'Ctrl Shift F',
       run: () => workspace.showPanel('search'),
     },
