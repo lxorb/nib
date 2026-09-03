@@ -37,6 +37,16 @@
     ]
   }
 
+  /** What the space itself offers, wherever in the panel you ask for it. */
+  function spaceMenu(): MenuEntry[] {
+    return [
+      { label: t('New note'), run: () => workspace.createNote() },
+      { label: t('New folder'), run: () => workspace.createFolder() },
+      DIVIDER,
+      { label: t('Reveal in Explorer'), run: () => workspace.reveal(workspace.activeSpace!.root) },
+    ]
+  }
+
   let query = $state('')
   let hits = $state<Hit[]>([])
   let searching = $state(false)
@@ -134,6 +144,15 @@
         {/if}
 
         <Tree entries={workspace.tree.children} />
+
+        <!-- The space below the last row still belongs to the space, so it
+             takes the same menu instead of swallowing the click. -->
+        <!-- svelte-ignore a11y_no_static_element_interactions, a11y_click_events_have_key_events -->
+        <div
+          class="rest"
+          oncontextmenu={(event) => menu.show(event, spaceMenu())}
+          onclick={() => (workspace.renaming = null)}
+        ></div>
       {:else}
         <button class="empty" onclick={() => newSpace()}>{t('Create a space')}</button>
       {/if}
@@ -231,9 +250,12 @@
     outline-offset: -1px;
   }
 
+  /* A column so the filler below the tree can take the leftover height. */
   .body {
     flex: 1;
     min-height: 0;
+    display: flex;
+    flex-direction: column;
     overflow-y: auto;
     padding: var(--space-1) var(--space-2) var(--space-4);
     scrollbar-width: thin;
@@ -329,6 +351,12 @@
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+  }
+
+  /* Fills whatever is left, so the whole panel responds. */
+  .rest {
+    flex: 1;
+    min-height: var(--space-6);
   }
 
   .pinned {
