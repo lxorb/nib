@@ -443,19 +443,19 @@
 }
 
 .cm-line.nib-callout-note {
-  --callout-accent: #4a8df6;
+  --callout-accent: var(--callout-note);
 }
 .cm-line.nib-callout-tip {
-  --callout-accent: var(--success);
+  --callout-accent: var(--callout-tip);
 }
 .cm-line.nib-callout-important {
-  --callout-accent: var(--accent);
+  --callout-accent: var(--callout-important);
 }
 .cm-line.nib-callout-warning {
-  --callout-accent: #e0a233;
+  --callout-accent: var(--callout-warning);
 }
 .cm-line.nib-callout-caution {
-  --callout-accent: var(--danger);
+  --callout-accent: var(--callout-caution);
 }
 
 .nib-callout-label {

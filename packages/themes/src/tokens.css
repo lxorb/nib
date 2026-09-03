@@ -119,6 +119,13 @@
   --code-block-bg-color: var(--surface);
   --table-border-color: var(--line-strong);
   --blockquote-border-color: var(--line-strong);
+
+  /* Callout kinds, so a theme can restate them like any other colour. */
+  --callout-note: #4a8df6;
+  --callout-tip: var(--success);
+  --callout-important: var(--accent);
+  --callout-warning: #e0a233;
+  --callout-caution: var(--danger);
 }
 
 @media (prefers-reduced-motion: reduce) {

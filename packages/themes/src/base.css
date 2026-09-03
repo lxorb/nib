@@ -445,19 +445,19 @@ body {
 }
 
 #write .callout[data-kind='note'] {
-  --callout-accent: #4a8df6;
+  --callout-accent: var(--callout-note);
 }
 #write .callout[data-kind='tip'] {
-  --callout-accent: var(--success);
+  --callout-accent: var(--callout-tip);
 }
 #write .callout[data-kind='important'] {
-  --callout-accent: var(--accent);
+  --callout-accent: var(--callout-important);
 }
 #write .callout[data-kind='warning'] {
-  --callout-accent: #e0a233;
+  --callout-accent: var(--callout-warning);
 }
 #write .callout[data-kind='caution'] {
-  --callout-accent: var(--danger);
+  --callout-accent: var(--callout-caution);
 }
 
 /* ── Focus mode ──────────────────────────────────────────────────── */

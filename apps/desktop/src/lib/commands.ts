@@ -1,7 +1,18 @@
 import type { EditorView } from '@nib/editor'
 import { modes } from './modes.svelte'
+import { invoke, isDesktop } from './tauri'
 import { theme } from './theme.svelte'
 import { workspace } from './workspace.svelte'
+
+/** Reveals the folder a `.css` theme should be dropped into. */
+async function openThemesFolder() {
+  if (!isDesktop) return
+
+  const dir = await invoke<string>('theme_dir')
+  const { revealItemInDir } = await import('@tauri-apps/plugin-opener')
+  await revealItemInDir(dir)
+  await theme.reload()
+}
 
 export interface Command {
   id: string
@@ -46,11 +57,13 @@ export function appCommands(view?: EditorView): Command[] {
     { id: 'zoom-out', label: 'Zoom out', hint: 'Ctrl Shift -', run: () => modes.stepZoom(-1) },
     { id: 'zoom-reset', label: 'Actual size', hint: 'Ctrl Shift 0', run: () => modes.resetZoom() },
 
-    {
-      id: 'theme',
-      label: theme.current === 'dark' ? 'Light theme' : 'Dark theme',
-      run: () => theme.toggle(),
-    },
+    ...theme.all.map((item) => ({
+      id: `theme:${item.id}`,
+      label: `Theme: ${item.name}`,
+      hint: item.id === theme.id ? 'current' : undefined,
+      run: () => theme.select(item.id),
+    })),
+    { id: 'themes-folder', label: 'Open themes folder', run: () => void openThemesFolder() },
     {
       id: 'sidebar',
       label: workspace.panel ? 'Hide sidebar' : 'Show sidebar',

@@ -1,4 +1,5 @@
 mod notes;
+mod themes;
 
 use tauri::Manager;
 
@@ -11,6 +12,9 @@ pub fn run() {
             notes::read_note,
             notes::write_note,
             notes::read_tree,
+            themes::theme_dir,
+            themes::list_themes,
+            themes::read_theme,
         ])
         .setup(|app| {
             if let Some(window) = app.get_webview_window("main") {
