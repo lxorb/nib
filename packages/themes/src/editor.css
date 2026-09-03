@@ -333,6 +333,22 @@
   stroke-linecap: round;
 }
 
+/* ── Modes ───────────────────────────────────────────────────────── */
+
+.cm-line.nib-dim {
+  opacity: 0.26;
+  transition: opacity var(--dur-slow) var(--ease-out);
+}
+
+.nib-focus-mode .cm-line:not(.nib-dim) {
+  transition: opacity var(--dur-slow) var(--ease-out);
+}
+
+/* Room below the last line so the caret can still reach the middle. */
+.nib-typewriter-mode #write {
+  padding-bottom: 55vh;
+}
+
 /* ── Subscript and superscript ───────────────────────────────────── */
 
 .nib-sub,

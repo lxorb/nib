@@ -1,6 +1,7 @@
 export { createEditor, type EditorOptions } from './editor'
 export { nibHighlightStyle, nibTheme } from './theme'
 export { livePreview } from './live-preview'
+export { setFocusMode, setSourceMode, setTypewriterMode } from './modes'
 export { flushTableEdits } from './table/widget'
 export { EditorView } from '@codemirror/view'
 export { EditorState } from '@codemirror/state'

@@ -1,0 +1,95 @@
+import { Compartment, type Extension } from '@codemirror/state'
+import { Decoration, type DecorationSet, EditorView, ViewPlugin, type ViewUpdate } from '@codemirror/view'
+import { syntaxTree } from '@codemirror/language'
+import { livePreview } from './live-preview'
+
+/** Each mode lives in its own compartment so it can be swapped at runtime
+ *  without rebuilding the editor state. */
+const preview = new Compartment()
+const focus = new Compartment()
+const typewriter = new Compartment()
+
+const dim = Decoration.line({ class: 'nib-dim' })
+
+/** Dims every block except the one holding the caret. */
+const focusPlugin = ViewPlugin.fromClass(
+  class {
+    decorations: DecorationSet
+
+    constructor(view: EditorView) {
+      this.decorations = this.build(view)
+    }
+
+    update(update: ViewUpdate) {
+      if (update.docChanged || update.selectionSet || update.viewportChanged) {
+        this.decorations = this.build(update.view)
+      }
+    }
+
+    private build(view: EditorView): DecorationSet {
+      const { state } = view
+      const head = state.selection.main.head
+      const block = enclosingBlock(state, head)
+      const ranges = []
+
+      for (const { from, to } of view.visibleRanges) {
+        for (let pos = from; pos <= to; ) {
+          const line = state.doc.lineAt(pos)
+          if (line.to < block.from || line.from > block.to) ranges.push(dim.range(line.from))
+          if (line.to >= state.doc.length) break
+          pos = line.to + 1
+        }
+      }
+
+      return Decoration.set(ranges, true)
+    }
+  },
+  { decorations: (plugin) => plugin.decorations },
+)
+
+/** The paragraph, list or fence the caret sits in — Typora dims by block, not line. */
+function enclosingBlock(state: EditorView['state'], pos: number) {
+  let node = syntaxTree(state).resolveInner(pos, -1)
+
+  while (node.parent && node.parent.name !== 'Document') node = node.parent
+  if (node.name === 'Document') {
+    const line = state.doc.lineAt(pos)
+    return { from: line.from, to: line.to }
+  }
+
+  return { from: node.from, to: node.to }
+}
+
+/** Keeps the caret's line parked in the middle of the viewport. */
+const typewriterPlugin = EditorView.updateListener.of((update) => {
+  if (!update.docChanged && !update.selectionSet) return
+
+  const view = update.view
+  const head = view.state.selection.main.head
+  const block = view.lineBlockAt(head)
+  const middle = view.scrollDOM.clientHeight / 2
+  const offset = block.top - view.scrollDOM.scrollTop - middle + block.height / 2
+
+  if (Math.abs(offset) < 1) return
+  view.scrollDOM.scrollTop += offset
+})
+
+export function modeExtensions(): Extension {
+  return [preview.of(livePreview()), focus.of([]), typewriter.of([])]
+}
+
+/** Source mode shows the markdown as written, with no syntax hidden. */
+export function setSourceMode(view: EditorView, on: boolean) {
+  view.dispatch({ effects: preview.reconfigure(on ? [] : livePreview()) })
+}
+
+export function setFocusMode(view: EditorView, on: boolean) {
+  view.dispatch({ effects: focus.reconfigure(on ? focusPlugin : []) })
+  view.dom.classList.toggle('nib-focus-mode', on)
+}
+
+export function setTypewriterMode(view: EditorView, on: boolean) {
+  view.dispatch({ effects: typewriter.reconfigure(on ? typewriterPlugin : []) })
+  // Extra room below the last line, so the caret can still reach the middle.
+  view.dom.classList.toggle('nib-typewriter-mode', on)
+}

@@ -6,8 +6,9 @@ import { bracketMatching, indentOnInput, syntaxHighlighting } from '@codemirror/
 import { highlightSelectionMatches, searchKeymap } from '@codemirror/search'
 import { EditorState } from '@codemirror/state'
 import { EditorView, drawSelection, dropCursor, highlightActiveLine, keymap } from '@codemirror/view'
-import { livePreview } from './live-preview'
+import { nibKeymap } from './keymap'
 import { nibMarkdownExtensions } from './markdown/extensions'
+import { modeExtensions } from './modes'
 import { nibHighlightStyle, nibTheme } from './theme'
 
 export interface EditorOptions {
@@ -40,9 +41,11 @@ export function createEditor({ parent, doc = '', onChange }: EditorOptions): Edi
           extensions: nibMarkdownExtensions,
         }),
         syntaxHighlighting(nibHighlightStyle),
-        livePreview(),
+        modeExtensions(),
         nibTheme,
         keymap.of([
+          // Markdown bindings come first so they win over the defaults.
+          ...nibKeymap,
           ...closeBracketsKeymap,
           ...defaultKeymap,
           ...historyKeymap,
