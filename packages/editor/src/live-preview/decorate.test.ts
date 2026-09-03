@@ -156,6 +156,15 @@ describe('images', () => {
     expect(concealed('![alt](pic.png)', 3)).toEqual([])
     expect(revealedMeta('![alt](pic.png)', 3)).toEqual(['![', ']', '(', 'pic.png', ')'])
   })
+
+  test('renders a resized image written as an img tag', () => {
+    const tag = '<img src="pic.png" alt="a" style="zoom:60%" />'
+    expect(concealed(`text ${tag} more`)).toEqual([tag])
+  })
+
+  test('leaves other inline HTML alone', () => {
+    expect(concealed('text <u>underlined</u> more')).toEqual([])
+  })
 })
 
 describe('extensions', () => {

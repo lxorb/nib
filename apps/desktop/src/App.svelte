@@ -12,6 +12,7 @@
     toggleQuote,
     toggleWrap,
   } from '@nib/editor'
+  import { frontMatter } from '@nib/markdown'
   import ContextMenu from './lib/ContextMenu.svelte'
   import Editor from './lib/Editor.svelte'
   import { DIVIDER, type MenuEntry, menu } from './lib/menu.svelte'
@@ -134,6 +135,16 @@
 
     const path = workspace.active?.path
     if (!path) return src
+
+    // `typora-root-url` in the front matter re-bases absolute-looking paths,
+    // which is how Typora makes a note portable between a vault and a site.
+    const root = /^\s*typora-root-url\s*:\s*(.+)$/m.exec(
+      frontMatter(workspace.active?.doc ?? '') ?? '',
+    )?.[1]
+
+    if (root && src.startsWith('/')) {
+      return assetUrl(joinPath(root.trim().replace(/["']/g, ''), src.slice(1)))
+    }
 
     return assetUrl(joinPath(folderOf(path), src))
   }

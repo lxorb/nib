@@ -116,6 +116,9 @@ class Decorator {
         return this.inlineWidget(node, new RuleWidget(), lineRevealed(this.state, node.from))
       case 'Image':
         return this.image(node)
+      case 'HTMLTag':
+      case 'HTMLBlock':
+        return this.htmlImage(node)
       case 'Emoji':
         return this.emoji(node)
       case 'InlineMath':
@@ -265,8 +268,37 @@ class Decorator {
     const close = open?.nextSibling
     const alt = open && close ? this.state.doc.sliceString(open.to, close.from) : ''
 
-    this.inlineWidget(node, new ImageWidget(src, alt), false)
+    this.inlineWidget(
+      node,
+      new ImageWidget({ src, alt, zoom: 100, from: node.from, to: node.to }),
+      false,
+    )
     // Its marks live inside the replacement now; decorating them would overlap.
+    return false
+  }
+
+  /** A resized image is stored as an `<img>` tag, so those render as pictures too. */
+  private htmlImage(node: SyntaxNode): boolean | void {
+    if (revealed(this.state, node)) return
+
+    const tag = this.state.doc.sliceString(node.from, node.to)
+    const src = /\bsrc\s*=\s*["']([^"']+)["']/i.exec(tag)
+    if (!src) return
+
+    const alt = /\balt\s*=\s*["']([^"']*)["']/i.exec(tag)
+    const zoom = /zoom\s*:\s*(\d+(?:\.\d+)?)\s*%/i.exec(tag)
+
+    this.inlineWidget(
+      node,
+      new ImageWidget({
+        src: src[1],
+        alt: (alt?.[1] ?? '').replace(/&quot;/g, '"'),
+        zoom: zoom ? Number(zoom[1]) : 100,
+        from: node.from,
+        to: node.to,
+      }),
+      false,
+    )
     return false
   }
 

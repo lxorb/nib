@@ -788,13 +788,67 @@
 
 /* ── Images ──────────────────────────────────────────────────────── */
 
+.nib-image-frame {
+  position: relative;
+  display: inline-block;
+  max-width: 100%;
+}
+
 .nib-image {
   display: block;
   max-width: 100%;
   height: auto;
   margin: 0.6em auto;
   border-radius: var(--radius-md);
+  cursor: zoom-in;
   animation: develop var(--dur-slower) var(--ease-out);
+}
+
+/* A corner grip, out of the way until the image is pointed at. */
+.nib-image-handle {
+  position: absolute;
+  right: -3px;
+  bottom: 3px;
+  width: 14px;
+  height: 14px;
+  border: 2px solid var(--accent);
+  border-top: none;
+  border-left: none;
+  border-radius: 0 0 var(--radius-sm) 0;
+  cursor: nwse-resize;
+  opacity: 0;
+  transition: opacity var(--dur-fast) var(--ease-out);
+}
+
+.nib-image-frame:hover .nib-image-handle {
+  opacity: 1;
+}
+
+.nib-lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: 70;
+  display: grid;
+  place-items: center;
+  padding: 4vh 4vw;
+  background: color-mix(in srgb, var(--bg) 88%, transparent);
+  backdrop-filter: blur(6px);
+  cursor: zoom-out;
+  animation: fade-in var(--dur-base) var(--ease-out);
+}
+
+.nib-lightbox img {
+  max-width: 100%;
+  max-height: 92vh;
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
+  animation: settle-in var(--dur-base) var(--ease-out);
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
 }
 
 @keyframes develop {
