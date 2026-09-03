@@ -1,0 +1,12 @@
+{
+  "name": "@nib/themes",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.css",
+    "./tokens.css": "./src/tokens.css",
+    "./base.css": "./src/base.css",
+    "./*": "./src/*"
+  }
+}

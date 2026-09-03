@@ -1,0 +1,12 @@
+node_modules/
+dist/
+target/
+src-tauri/gen/
+.svelte-kit/
+.wrangler/
+*.log
+.env
+.env.*
+!.env.example
+.DS_Store
+Thumbs.db

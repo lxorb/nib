@@ -1,0 +1,130 @@
+/* Nib design tokens.
+   Direction: ink on glass. Cool, optical, instrument-like — not warm paper.
+   Typora theme variables are aliased at the bottom so Typora themes drop in. */
+
+:root {
+  --font-ui: 'Geist', ui-sans-serif, system-ui, 'Segoe UI', sans-serif;
+  --font-content: 'iA Writer Quattro', ui-sans-serif, system-ui, 'Segoe UI', sans-serif;
+  --font-mono: 'iA Writer Mono S', ui-monospace, 'Cascadia Code', 'Consolas', monospace;
+
+  --text-xs: 11px;
+  --text-sm: 12.5px;
+  --text-base: 15px;
+  --text-content: 16.5px;
+  --leading-content: 1.72;
+
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 48px;
+
+  --radius-sm: 5px;
+  --radius-md: 9px;
+  --radius-lg: 14px;
+
+  --rail-width: 46px;
+  --sidebar-width: 244px;
+  --titlebar-height: 38px;
+  --measure: 42rem;
+
+  /* Motion. Everything that can move, moves — but on a shared vocabulary
+     so the whole app feels like one object rather than many effects. */
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --dur-instant: 70ms;
+  --dur-fast: 130ms;
+  --dur-base: 210ms;
+  --dur-slow: 340ms;
+  --dur-slower: 520ms;
+}
+
+:root,
+[data-theme='dark'] {
+  color-scheme: dark;
+
+  --bg: #0e1013;
+  --surface: #14171c;
+  --surface-2: #1a1e25;
+  --surface-3: #222831;
+  --line: #232830;
+  --line-strong: #2f3641;
+  --muted: #767e8c;
+  --muted-strong: #9aa3b2;
+  --text: #dde2ea;
+  --text-strong: #f4f7fb;
+  --accent: #7c6bf5;
+  --accent-hover: #8d7ef7;
+  --accent-soft: rgb(124 107 245 / 0.15);
+  --accent-line: rgb(124 107 245 / 0.42);
+  --danger: #f2555a;
+  --success: #3fcf8e;
+  --selection: rgb(124 107 245 / 0.28);
+  --shadow-sm: 0 1px 2px rgb(0 0 0 / 0.4);
+  --shadow-md: 0 8px 24px -6px rgb(0 0 0 / 0.55);
+  --shadow-lg: 0 24px 64px -12px rgb(0 0 0 / 0.7);
+}
+
+[data-theme='light'] {
+  color-scheme: light;
+
+  --bg: #fbfcfd;
+  --surface: #f3f5f8;
+  --surface-2: #eaeef3;
+  --surface-3: #dfe5ec;
+  --line: #e1e6ed;
+  --line-strong: #ccd4de;
+  --muted: #8a93a2;
+  --muted-strong: #646d7c;
+  --text: #1a1d23;
+  --text-strong: #0b0d10;
+  --accent: #5b4be0;
+  --accent-hover: #4e3ed6;
+  --accent-soft: rgb(91 75 224 / 0.1);
+  --accent-line: rgb(91 75 224 / 0.38);
+  --danger: #d92b34;
+  --success: #16a06a;
+  --selection: rgb(91 75 224 / 0.18);
+  --shadow-sm: 0 1px 2px rgb(16 24 40 / 0.06);
+  --shadow-md: 0 8px 24px -6px rgb(16 24 40 / 0.12);
+  --shadow-lg: 0 24px 64px -12px rgb(16 24 40 / 0.18);
+}
+
+/* Typora theme compatibility layer. A Typora theme sets these; ours read from
+   them, so dropping a .css file into the themes folder just works. */
+:root {
+  --bg-color: var(--bg);
+  --text-color: var(--text);
+  --primary-color: var(--accent);
+  --md-char-color: var(--muted);
+  --heading-char-color: var(--muted);
+  --meta-content-color: var(--muted-strong);
+  --monospace: var(--font-mono);
+  --side-bar-bg-color: var(--surface);
+  --control-text-color: var(--muted-strong);
+  --item-hover-bg-color: var(--surface-2);
+  --item-hover-text-color: var(--text-strong);
+  --active-file-bg-color: var(--accent-soft);
+  --active-file-text-color: var(--text-strong);
+  --active-file-border-color: var(--accent);
+  --window-border: var(--line);
+  --select-text-bg-color: var(--selection);
+  --search-select-bg-color: var(--accent);
+  --search-select-text-color: #ffffff;
+  --code-block-bg-color: var(--surface);
+  --table-border-color: var(--line-strong);
+  --blockquote-border-color: var(--line-strong);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --dur-instant: 0ms;
+    --dur-fast: 0ms;
+    --dur-base: 0ms;
+    --dur-slow: 0ms;
+    --dur-slower: 0ms;
+  }
+}

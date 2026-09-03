@@ -1,0 +1,472 @@
+/* Content styles for the writing surface.
+   Structure mirrors Typora (#write container, .md-meta syntax spans) so themes port over. */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  height: 100%;
+  margin: 0;
+  overflow: hidden;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-ui);
+  font-size: var(--text-base);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+::selection {
+  background: var(--selection);
+}
+
+/* ── Writing surface ─────────────────────────────────────────────── */
+
+#write {
+  max-width: var(--measure);
+  margin: 0 auto;
+  padding: var(--space-7) var(--space-5) 45vh;
+  font-family: var(--font-content);
+  font-size: var(--text-content);
+  line-height: var(--leading-content);
+  color: var(--text);
+  word-wrap: break-word;
+}
+
+#write > *:first-child {
+  margin-top: 0;
+}
+
+/* ── The signature: syntax characters bleeding in like ink ───────── */
+
+.md-meta,
+.cm-formatting {
+  color: var(--md-char-color);
+  font-weight: 400;
+  animation: ink-bleed var(--dur-base) var(--ease-out);
+}
+
+@keyframes ink-bleed {
+  from {
+    opacity: 0;
+    filter: blur(2.5px);
+    transform: translateY(0.5px);
+  }
+  to {
+    opacity: 1;
+    filter: blur(0);
+    transform: none;
+  }
+}
+
+/* ── Headings ────────────────────────────────────────────────────── */
+
+#write h1,
+#write h2,
+#write h3,
+#write h4,
+#write h5,
+#write h6 {
+  font-family: var(--font-ui);
+  color: var(--text-strong);
+  font-weight: 620;
+  line-height: 1.28;
+  letter-spacing: -0.011em;
+  margin: 1.9em 0 0.7em;
+  position: relative;
+}
+
+#write h1 {
+  font-size: 1.92em;
+  letter-spacing: -0.023em;
+  margin-top: 1.2em;
+}
+#write h2 {
+  font-size: 1.5em;
+  letter-spacing: -0.018em;
+}
+#write h3 {
+  font-size: 1.22em;
+}
+#write h4 {
+  font-size: 1.06em;
+}
+#write h5 {
+  font-size: 1em;
+}
+#write h6 {
+  font-size: 0.94em;
+  color: var(--muted-strong);
+}
+
+#write h1 .md-meta,
+#write h2 .md-meta,
+#write h3 .md-meta,
+#write h4 .md-meta,
+#write h5 .md-meta,
+#write h6 .md-meta {
+  color: var(--heading-char-color);
+  font-weight: 400;
+}
+
+/* ── Paragraphs and inline ───────────────────────────────────────── */
+
+#write p {
+  margin: 0 0 1.15em;
+}
+
+#write strong {
+  font-weight: 650;
+  color: var(--text-strong);
+}
+
+#write em {
+  font-style: italic;
+}
+
+#write del {
+  color: var(--muted);
+  text-decoration-color: var(--muted);
+}
+
+#write mark {
+  background: var(--accent-soft);
+  color: var(--text-strong);
+  border-radius: 3px;
+  padding: 0.1em 0.22em;
+  box-decoration-break: clone;
+}
+
+#write sub,
+#write sup {
+  font-size: 0.72em;
+  line-height: 0;
+}
+
+#write u {
+  text-decoration-thickness: 1px;
+  text-underline-offset: 2px;
+}
+
+#write a {
+  color: var(--accent);
+  text-decoration: none;
+  border-bottom: 1px solid var(--accent-line);
+  transition:
+    border-color var(--dur-fast) var(--ease-out),
+    color var(--dur-fast) var(--ease-out);
+}
+
+#write a:hover {
+  color: var(--accent-hover);
+  border-bottom-color: var(--accent);
+}
+
+/* ── Code ────────────────────────────────────────────────────────── */
+
+#write code {
+  font-family: var(--font-mono);
+  font-size: 0.88em;
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  padding: 0.12em 0.34em;
+}
+
+#write pre {
+  font-family: var(--font-mono);
+  font-size: 0.86em;
+  line-height: 1.6;
+  background: var(--code-block-bg-color);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  padding: var(--space-4);
+  margin: 1.5em 0;
+  overflow-x: auto;
+}
+
+#write pre code {
+  background: none;
+  border: none;
+  padding: 0;
+  font-size: inherit;
+}
+
+/* ── Lists ───────────────────────────────────────────────────────── */
+
+#write ul,
+#write ol {
+  margin: 0 0 1.15em;
+  padding-left: 1.55em;
+}
+
+#write li {
+  margin: 0.3em 0;
+}
+
+#write li > ul,
+#write li > ol {
+  margin: 0.3em 0 0.4em;
+}
+
+#write ul {
+  list-style: none;
+}
+
+#write ul > li::before {
+  content: '';
+  position: absolute;
+  margin-left: -1em;
+  margin-top: 0.72em;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--muted);
+  transition: background var(--dur-fast) var(--ease-out);
+}
+
+#write ol {
+  list-style: decimal;
+}
+
+#write ol::marker {
+  color: var(--muted);
+}
+
+/* Task lists */
+
+#write .task-list-item {
+  list-style: none;
+  position: relative;
+}
+
+#write .task-list-item::before {
+  display: none;
+}
+
+#write .task-list-item input[type='checkbox'] {
+  appearance: none;
+  position: absolute;
+  left: -1.5em;
+  top: 0.36em;
+  width: 15px;
+  height: 15px;
+  border: 1.5px solid var(--line-strong);
+  border-radius: 4px;
+  background: transparent;
+  cursor: pointer;
+  transition:
+    border-color var(--dur-fast) var(--ease-out),
+    background var(--dur-fast) var(--ease-out),
+    transform var(--dur-fast) var(--ease-spring);
+}
+
+#write .task-list-item input[type='checkbox']:hover {
+  border-color: var(--accent);
+  transform: scale(1.1);
+}
+
+#write .task-list-item input[type='checkbox']:checked {
+  background: var(--accent);
+  border-color: var(--accent);
+}
+
+#write .task-list-item input[type='checkbox']:checked::after {
+  content: '';
+  position: absolute;
+  left: 4.5px;
+  top: 1px;
+  width: 4px;
+  height: 8px;
+  border: solid #fff;
+  border-width: 0 2px 2px 0;
+  transform: rotate(43deg);
+  animation: check-draw var(--dur-base) var(--ease-spring);
+}
+
+@keyframes check-draw {
+  from {
+    opacity: 0;
+    transform: rotate(43deg) scale(0.4);
+  }
+  to {
+    opacity: 1;
+    transform: rotate(43deg) scale(1);
+  }
+}
+
+#write .task-list-item.is-done {
+  color: var(--muted);
+}
+
+/* ── Blockquote ──────────────────────────────────────────────────── */
+
+#write blockquote {
+  margin: 1.5em 0;
+  padding: 0.1em 0 0.1em 1.15em;
+  border-left: 2px solid var(--blockquote-border-color);
+  color: var(--muted-strong);
+  transition: border-color var(--dur-base) var(--ease-out);
+}
+
+#write blockquote:hover {
+  border-left-color: var(--accent);
+}
+
+/* ── Tables ──────────────────────────────────────────────────────── */
+
+#write table {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 1.6em 0;
+  font-size: 0.94em;
+}
+
+#write th,
+#write td {
+  border: 1px solid var(--table-border-color);
+  padding: 0.5em 0.75em;
+  text-align: left;
+}
+
+#write th {
+  background: var(--surface);
+  font-weight: 620;
+  color: var(--text-strong);
+}
+
+#write tbody tr {
+  transition: background var(--dur-fast) var(--ease-out);
+}
+
+#write tbody tr:hover {
+  background: var(--surface);
+}
+
+/* ── Rules, images, media ────────────────────────────────────────── */
+
+#write hr {
+  border: none;
+  height: 1px;
+  background: var(--line);
+  margin: 2.4em 0;
+}
+
+#write img {
+  max-width: 100%;
+  height: auto;
+  border-radius: var(--radius-md);
+  display: block;
+  margin: 1.5em auto;
+}
+
+#write iframe,
+#write video {
+  max-width: 100%;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--line);
+}
+
+/* ── Footnotes, front matter, TOC ────────────────────────────────── */
+
+#write .footnote-ref {
+  font-size: 0.76em;
+  vertical-align: super;
+  color: var(--accent);
+  border: none;
+}
+
+#write .footnotes {
+  margin-top: 3em;
+  padding-top: 1.2em;
+  border-top: 1px solid var(--line);
+  font-size: 0.9em;
+  color: var(--muted-strong);
+}
+
+#write .front-matter {
+  font-family: var(--font-mono);
+  font-size: 0.82em;
+  color: var(--muted);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  padding: var(--space-3) var(--space-4);
+  margin-bottom: 2em;
+  white-space: pre-wrap;
+}
+
+#write .toc {
+  border-left: 2px solid var(--line);
+  padding-left: 1.15em;
+  margin: 1.6em 0;
+}
+
+#write .toc a {
+  border: none;
+  color: var(--muted-strong);
+  display: block;
+  padding: 0.16em 0;
+  transition:
+    color var(--dur-fast) var(--ease-out),
+    transform var(--dur-fast) var(--ease-out);
+}
+
+#write .toc a:hover {
+  color: var(--accent);
+  transform: translateX(2px);
+}
+
+/* ── Math and diagrams ───────────────────────────────────────────── */
+
+#write .math-block,
+#write .diagram {
+  margin: 1.7em 0;
+  text-align: center;
+  overflow-x: auto;
+}
+
+#write .math-inline {
+  padding: 0 0.1em;
+}
+
+/* ── Callouts (GitHub-style alerts) ──────────────────────────────── */
+
+#write .callout {
+  margin: 1.5em 0;
+  padding: 0.85em 1.1em;
+  border-left: 3px solid var(--callout-accent, var(--accent));
+  border-radius: 0 var(--radius-md) var(--radius-md) 0;
+  background: color-mix(in srgb, var(--callout-accent, var(--accent)) 8%, transparent);
+}
+
+#write .callout[data-kind='note'] {
+  --callout-accent: #4a8df6;
+}
+#write .callout[data-kind='tip'] {
+  --callout-accent: var(--success);
+}
+#write .callout[data-kind='important'] {
+  --callout-accent: var(--accent);
+}
+#write .callout[data-kind='warning'] {
+  --callout-accent: #e0a233;
+}
+#write .callout[data-kind='caution'] {
+  --callout-accent: var(--danger);
+}
+
+/* ── Focus mode ──────────────────────────────────────────────────── */
+
+.focus-mode #write > *:not(.is-focused) {
+  opacity: 0.28;
+  transition: opacity var(--dur-slow) var(--ease-out);
+}
+
+.focus-mode #write > .is-focused {
+  opacity: 1;
+}
