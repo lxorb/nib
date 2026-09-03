@@ -107,8 +107,9 @@ jobs:
 
       # Schema first. A new Worker may read a column the old schema lacks, and
       # the reverse - an unused new column - breaks nothing.
-      # `run` spelled out: `pnpm deploy` is a pnpm command of its own, and
-      # without it the package script is never reached.
+      #
+      # `run` is spelled out in both steps below because `pnpm deploy` is a
+      # pnpm command of its own, and swallows the package script otherwise.
       - name: Migrate the database
         run: pnpm --filter @nib/sync run migrate:remote
         env:

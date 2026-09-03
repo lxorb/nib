@@ -91,11 +91,16 @@
     const at = Math.min(untrack(() => tab?.cursor ?? 0), current.state.doc.length)
     const top = untrack(() => tab?.scroll ?? 0)
 
-    // After a frame, or the scroll offset has nothing laid out to apply to.
+    // The caret needs no layout, so it goes back now, and recording starts the
+    // moment it has. Waiting would let the fresh view's caret at 0 be written
+    // down as the real one.
+    current.dispatch({ selection: { anchor: at } })
+    placed = id
+
+    // The scroll offset does need layout, and there is none until a frame has
+    // been drawn.
     const frame = requestAnimationFrame(() => {
-      current.dispatch({ selection: { anchor: at } })
       current.scrollDOM.scrollTop = top
-      placed = id
     })
 
     const remember = () => {
