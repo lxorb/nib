@@ -9,6 +9,7 @@ import {
   type WidgetType,
 } from '@codemirror/view'
 import type { SyntaxNode } from '@lezer/common'
+import { dragging } from './dragging'
 import { lineRevealed, overlaps, revealed } from './reveal'
 import { DIAGRAM_LANGUAGES, MathWidget } from './render'
 import { emojiFor } from '../emoji'
@@ -386,8 +387,14 @@ export const livePreviewDecorations = ViewPlugin.fromClass(
     }
 
     update(update: ViewUpdate) {
-      // Selection decides what is revealed, so it rebuilds as often as edits do.
-      if (update.docChanged || update.selectionSet || update.viewportChanged) {
+      const held = update.state.field(dragging, false)
+      const released = update.startState.field(dragging, false) && !held
+
+      // Selection decides what is revealed, so it rebuilds as often as edits do
+      // — except mid-drag, when reflowing the line would move the text out from
+      // under the pointer.
+      const settled = update.selectionSet && !held
+      if (update.docChanged || update.viewportChanged || settled || released) {
         const built = buildDecorations(update.view.state, update.view.visibleRanges)
         this.decorations = built.decorations
         this.atomic = built.atomic

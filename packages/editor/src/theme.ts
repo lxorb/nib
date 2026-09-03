@@ -25,8 +25,14 @@ export const nibTheme = EditorView.theme({
     borderLeftColor: 'var(--accent)',
     borderLeftWidth: '2px',
   },
-  '&.cm-focused .cm-selectionBackground, .cm-selectionBackground, ::selection': {
+  // `drawSelection` paints the selection itself. The browser's own highlight has
+  // to be turned off inside the editor, or the two stack and the words under
+  // them wash out.
+  '&.cm-focused .cm-selectionBackground, .cm-selectionBackground': {
     backgroundColor: 'var(--selection)',
+  },
+  '.cm-content ::selection, .cm-content::selection': {
+    backgroundColor: 'transparent',
   },
   '.cm-activeLine': { backgroundColor: 'transparent' },
   '.cm-selectionMatch': {
