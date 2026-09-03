@@ -1,7 +1,7 @@
 <script lang="ts">
   import { t } from './i18n.svelte'
   import Tabs from './Tabs.svelte'
-  import { isDesktop, currentWindow } from './tauri'
+  import { currentWindow, isDesktop } from './tauri'
   import { workspace } from './workspace.svelte'
 
   let maximized = $state(false)
@@ -44,7 +44,8 @@
   <!-- The empty stretch is what the window is dragged by. -->
   <div class="drag" data-tauri-drag-region></div>
 
-  <div class="controls">
+  <!-- A page in a browser has no window of its own to minimise or close. -->
+  <div class="controls" class:hidden={!isDesktop}>
     <button onclick={minimize} aria-label={t('Minimize')}>
       <svg viewBox="0 0 10 10"><path d="M0 5h10" /></svg>
     </button>
@@ -105,6 +106,10 @@
     fill: none;
     stroke: currentColor;
     stroke-width: 1.2;
+  }
+
+  .controls.hidden {
+    display: none;
   }
 
   .controls {

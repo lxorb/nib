@@ -68,6 +68,7 @@ const UNDO_LIMIT = 20
 const PINNED_KEY = 'nib:pinned'
 const AUTO_SAVE_DELAY = 1200
 const UNTITLED = 'Untitled'
+const MARKDOWN = /\.(md|markdown|mdown|mkd)$/i
 
 interface Persisted {
   spaces: Space[]
@@ -113,8 +114,23 @@ function readTreeOptions(): TreeOptions {
   }
 }
 
-async function pickSavePath(): Promise<string | null> {
-  if (!isDesktop) return null
+/** Where a note that has never been saved should go. The desktop asks the
+ *  system; the browser has no file dialog, so it asks for a name and puts the
+ *  note in the space that is open. */
+async function pickSavePath(space: string | null): Promise<string | null> {
+  if (!isDesktop) {
+    const { prompt } = await import('./prompt.svelte')
+    const name = await prompt.ask({
+      title: t('Name the note'),
+      placeholder: t('Untitled'),
+      confirmLabel: 'Save',
+    })
+
+    if (!name || !space) return null
+
+    const clean = name.replace(/[\\/]/g, ' ').trim()
+    return joinPath(space, MARKDOWN.test(clean) ? clean : `${clean}.md`)
+  }
 
   const { save } = await import('@tauri-apps/plugin-dialog')
   const picked = await save({
@@ -179,14 +195,30 @@ class Workspace {
   })
 
   async restore() {
-    const saved = localStorage.getItem(STORAGE_KEY)
-    if (!saved) return this.openBlank()
+    // The browser build starts empty, so give a first visit something to read.
+    if (!isDesktop) {
+      const { seed } = await import('./web/commands')
+      await seed()
+    }
 
-    let state: Persisted
+    const saved = localStorage.getItem(STORAGE_KEY)
+
+    let state: Persisted | null = null
     try {
-      state = JSON.parse(saved) as Persisted
+      state = saved ? (JSON.parse(saved) as Persisted) : null
     } catch {
-      return this.openBlank()
+      state = null
+    }
+
+    if (!state) {
+      await this.loadSpaces()
+      if (this.activeSpaceId) await this.loadTree()
+
+      // A first visit opens what it was given rather than a blank page.
+      const first = this.notes[0]
+      if (first) await this.open(first.path)
+      if (!this.tabs.length) this.openBlank()
+      return
     }
 
     this.spaces = state.spaces ?? []
@@ -226,8 +258,6 @@ class Workspace {
   /** Reads the spaces folder. It is the source of truth, so a space added or
    *  removed outside the app simply shows up that way. */
   async loadSpaces() {
-    if (!isDesktop) return
-
     const found = await invoke<{ name: string; path: string }[]>('list_spaces').catch(() => [])
 
     // Ids are kept across a reload so the selected space survives one.
@@ -244,7 +274,7 @@ class Workspace {
   /** Creates a space folder under the one the app owns. The name is the only
    *  thing asked for; where it lives is not a decision worth making. */
   async addSpace(name: string) {
-    if (!isDesktop || !name.trim()) return
+    if (!name.trim()) return
 
     const created = await invoke<{ name: string; path: string }>('create_space', {
       name: name.trim(),
@@ -260,7 +290,7 @@ class Workspace {
 
   async renameSpace(id: string, name: string) {
     const space = this.spaces.find((entry) => entry.id === id)
-    if (!isDesktop || !space || !name.trim()) return
+    if (!space || !name.trim()) return
 
     const renamed = await invoke<{ name: string; path: string }>('rename_space', {
       from: space.root,
@@ -294,7 +324,7 @@ class Workspace {
     const space = this.spaces.find((entry) => entry.id === id)
     if (!space) return
 
-    if (isDesktop) {
+    {
       const gone = await invoke('delete_space', { path: space.root })
         .then(() => true)
         .catch(() => false)
@@ -449,7 +479,7 @@ class Workspace {
 
     let path = tab.path
     if (!path) {
-      const picked = await pickSavePath()
+      const picked = await pickSavePath(this.activeSpace?.root ?? null)
       if (!picked) return
       path = picked
     }
@@ -506,7 +536,7 @@ class Workspace {
   /** Every `#tag` in the space, most used first. */
   async loadTags() {
     const root = this.activeSpace?.root
-    if (!isDesktop || !root) return
+    if (!root) return
 
     this.tags = await invoke<Tag[]>('space_tags', { root }).catch(() => [])
   }

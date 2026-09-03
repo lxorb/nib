@@ -1,0 +1,52 @@
+/** Path arithmetic for the browser's virtual disk. Everything uses `/`, and a
+ *  space is a folder directly under the root. */
+
+export const MARKDOWN = /\.(md|markdown|mdown|mkd)$/i
+
+export function normalise(path: string): string {
+  return `/${path.replace(/\\/g, '/').replace(/^\/+|\/+$/g, '')}`
+}
+
+export function basename(path: string): string {
+  return normalise(path).split('/').pop() ?? ''
+}
+
+export function parent(path: string): string {
+  const parts = normalise(path).split('/')
+  parts.pop()
+  return parts.join('/') || '/'
+}
+
+export function join(dir: string, name: string): string {
+  return normalise(`${normalise(dir)}/${name}`)
+}
+
+/** True when `path` sits anywhere under `root`. */
+export function within(root: string, path: string): boolean {
+  const base = normalise(root)
+  return base === '/' || normalise(path).startsWith(`${base}/`)
+}
+
+export function isMarkdown(path: string): boolean {
+  return MARKDOWN.test(path)
+}
+
+/** The space a path belongs to: the first segment under the root. */
+export function spaceOf(path: string): string {
+  const segment = normalise(path).split('/')[1]
+  return segment ? `/${segment}` : '/'
+}
+
+/** Makes a name every platform would accept, so notes written in the browser
+ *  keep working if the same space is later synced to a real disk. */
+export function safeName(input: string): string | null {
+  const cleaned = input
+    .split('')
+    .map((c) => (c < ' ' || `<>:"/\\|?*`.includes(c) ? ' ' : c))
+    .join('')
+
+  const collapsed = cleaned.split(/\s+/).filter(Boolean).join(' ')
+  const trimmed = collapsed.replace(/^[.\s]+|[.\s]+$/g, '')
+
+  return trimmed ? trimmed.slice(0, 64) : null
+}
