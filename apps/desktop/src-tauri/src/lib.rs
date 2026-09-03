@@ -19,6 +19,7 @@ pub fn run() {
     // and hands over whatever file it was asked to open.
     #[cfg(desktop)]
     {
+        builder = builder.plugin(tauri_plugin_updater::Builder::new().build());
         builder = builder.plugin(tauri_plugin_single_instance::init(|app, argv, _cwd| {
             if let Some(window) = app.get_webview_window("main") {
                 let _ = window.unminimize();

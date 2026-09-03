@@ -4,6 +4,7 @@ import { t } from './i18n.svelte'
 import { PANDOC_FORMATS } from './export'
 import { imagePath, imageUrl } from './images'
 import { newSpace } from './space-actions'
+import { stageUpdate } from './updater'
 import { modes } from './modes.svelte'
 import { settings } from './settings.svelte'
 import { invoke, isDesktop } from './tauri'
@@ -260,10 +261,9 @@ export function appCommands(view?: EditorView): Command[] {
     { id: 'logs', label: t('Open the log file'), run: () => void openLog() },
     {
       id: 'update',
-      label: settings.update
-        ? t('Version {version} is out', { version: settings.update.version })
-        : t('Check for updates'),
-      run: () => void settings.checkForUpdate({ announce: true }),
+      label: t('Check for updates'),
+      disabled: !isDesktop,
+      run: () => void stageUpdate(),
     },
     {
       id: 'sidebar',

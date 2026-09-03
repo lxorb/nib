@@ -36,6 +36,7 @@
   import { collectErrors } from './lib/log'
   import { prompt } from './lib/prompt.svelte'
   import { newSpace } from './lib/space-actions'
+  import { installStaged, ready, stageUpdate } from './lib/updater'
   import { currentWindow, invoke, isDesktop } from './lib/tauri'
   import { theme } from './lib/theme.svelte'
   import { workspace } from './lib/workspace.svelte'
@@ -65,6 +66,8 @@
   settings.restore()
   void workspace.restore().then(openLaunchFiles)
   void guardClose()
+  // Fetched quietly at startup; it takes effect the next time Nib opens.
+  void stageUpdate()
   void account.restore()
 
   // A new view starts with no modes applied, so re-apply on every swap.
@@ -100,7 +103,15 @@
 
     const window = await currentWindow()
     await window.onCloseRequested(async (event) => {
-      if (!workspace.unsaved.length) return
+      // Nothing to ask about, but there may still be an update to put in place.
+      if (!workspace.unsaved.length) {
+        if (!ready()) return
+
+        event.preventDefault()
+        await installStaged()
+        await window.destroy()
+        return
+      }
 
       event.preventDefault()
 
@@ -120,6 +131,7 @@
       else if (answer !== 'discard') return
 
       // Everything is either written or deliberately given up on.
+      await installStaged()
       await window.destroy()
     })
   }
