@@ -246,6 +246,85 @@ pub fn search_space(root: String, query: String, limit: usize) -> Result<Vec<Hit
     Ok(hits)
 }
 
+#[derive(Serialize)]
+pub struct Tag {
+    tag: String,
+    count: usize,
+}
+
+/// Every `#tag` used in a space, most-used first. A heading is not a tag: it
+/// has a space after the hash, and a tag never does.
+#[tauri::command]
+pub fn space_tags(root: String) -> Result<Vec<Tag>, String> {
+    let mut files = Vec::new();
+    collect(&PathBuf::from(&root), &mut files);
+
+    let mut counts: std::collections::HashMap<String, usize> = std::collections::HashMap::new();
+
+    for path in files {
+        let Ok(body) = fs::read_to_string(&path) else {
+            continue;
+        };
+
+        for tag in tags_in(&body) {
+            *counts.entry(tag).or_default() += 1;
+        }
+    }
+
+    let mut tags: Vec<Tag> = counts
+        .into_iter()
+        .map(|(tag, count)| Tag { tag, count })
+        .collect();
+
+    // Most used first, and alphabetical within a count so the list holds still.
+    tags.sort_by(|a, b| b.count.cmp(&a.count).then_with(|| a.tag.cmp(&b.tag)));
+    Ok(tags)
+}
+
+fn tags_in(body: &str) -> Vec<String> {
+    let mut found = Vec::new();
+    let mut in_fence = false;
+
+    for line in body.lines() {
+        let trimmed = line.trim_start();
+        if trimmed.starts_with("```") || trimmed.starts_with("~~~") {
+            in_fence = !in_fence;
+            continue;
+        }
+        if in_fence {
+            continue;
+        }
+
+        let chars: Vec<char> = line.chars().collect();
+        let mut i = 0;
+
+        while i < chars.len() {
+            if chars[i] != '#' {
+                i += 1;
+                continue;
+            }
+
+            // A tag starts a word, so what comes before must be a space.
+            let opens = i == 0 || chars[i - 1].is_whitespace() || chars[i - 1] == '(';
+            let mut end = i + 1;
+            while end < chars.len() && (chars[end].is_alphanumeric() || "-_/".contains(chars[end])) {
+                end += 1;
+            }
+
+            // The first character has to be a letter, which rules out `#1`.
+            let named = end > i + 1 && chars[i + 1].is_alphabetic();
+
+            if opens && named {
+                found.push(chars[i..end].iter().collect());
+            }
+
+            i = end.max(i + 1);
+        }
+    }
+
+    found
+}
+
 fn collect(dir: &Path, out: &mut Vec<PathBuf>) {
     let Ok(entries) = fs::read_dir(dir) else {
         return;
@@ -366,6 +445,34 @@ mod tests {
     fn encodes_bytes_that_are_not_text() {
         assert_eq!(encode(&[0x00, 0xff, 0x80]), "AP+A");
         assert_eq!(encode(&[0xfb, 0xff]), "+/8=");
+    }
+
+    #[test]
+    fn finds_tags_but_not_headings() {
+        assert_eq!(tags_in("# Heading\n#tag here"), vec!["#tag"]);
+        assert_eq!(tags_in("## Also a heading"), Vec::<String>::new());
+    }
+
+    #[test]
+    fn a_tag_has_to_start_a_word() {
+        assert_eq!(tags_in("a#b"), Vec::<String>::new());
+        assert_eq!(tags_in("(#nested)"), vec!["#nested"]);
+        assert_eq!(tags_in("issue #42"), Vec::<String>::new());
+    }
+
+    #[test]
+    fn keeps_the_characters_a_tag_may_contain() {
+        assert_eq!(tags_in("#work/2026 #a-b #c_d"), vec!["#work/2026", "#a-b", "#c_d"]);
+    }
+
+    #[test]
+    fn ignores_anything_inside_a_fence() {
+        assert_eq!(tags_in("```\n#notatag\n```\n#real"), vec!["#real"]);
+    }
+
+    #[test]
+    fn counts_a_tag_once_per_use() {
+        assert_eq!(tags_in("#a #a #b").len(), 3);
     }
 
     #[test]

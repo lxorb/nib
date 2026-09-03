@@ -47,6 +47,11 @@ export interface Hit {
   text: string
 }
 
+export interface Tag {
+  tag: string
+  count: number
+}
+
 export interface Heading {
   level: number
   text: string
@@ -135,6 +140,7 @@ class Workspace {
   recent = $state<string[]>(readRecent())
   /** Not persisted: putting a file back only makes sense while it is fresh. */
   undoable = $state<FileAction[]>([])
+  tags = $state<Tag[]>([])
 
   private saveTimer: ReturnType<typeof setTimeout> | undefined
 
@@ -397,6 +403,14 @@ class Workspace {
   forgetRecent() {
     this.recent = []
     localStorage.removeItem(RECENT_KEY)
+  }
+
+  /** Every `#tag` in the space, most used first. */
+  async loadTags() {
+    const root = this.activeSpace?.root
+    if (!isDesktop || !root) return
+
+    this.tags = await invoke<Tag[]>('space_tags', { root }).catch(() => [])
   }
 
   /** Searches every note in the space and returns the matching lines. */

@@ -38,6 +38,7 @@ pub fn run() {
             notes::create_folder,
             notes::delete_folder,
             notes::read_asset,
+            notes::space_tags,
             notes::save_asset,
             notes::search_space,
             mcp::mcp_config,

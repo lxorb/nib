@@ -61,6 +61,17 @@
     await workspace.open(hit.path)
     ongoto?.(hit.line)
   }
+
+  /** An empty search offers the space's own tags, which is how you find out
+   *  what there is to search for. */
+  const tags = $derived.by(() => {
+    if (workspace.panel !== 'search' || query.trim()) return []
+    return workspace.tags
+  })
+
+  $effect(() => {
+    if (workspace.panel === 'search') void workspace.loadTags()
+  })
 </script>
 
 <!-- A CSS animation rather than a Svelte transition: transitions are driven by
@@ -121,6 +132,16 @@
               <button class="hit" onclick={() => openHit(hit)}>
                 <span class="hit-note">{stripped(hit.name)}</span>
                 <span class="hit-line">{hit.text}</span>
+              </button>
+            </li>
+          {/each}
+        </ul>
+      {:else if tags.length}
+        <ul class="tags">
+          {#each tags as tag (tag.tag)}
+            <li>
+              <button class="tag" onclick={() => onQuery(tag.tag)}>
+                {tag.tag}<span class="count">{tag.count}</span>
               </button>
             </li>
           {/each}
@@ -304,6 +325,42 @@
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+  }
+
+  .tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    padding: var(--space-2) 0;
+  }
+
+  .tag {
+    display: flex;
+    align-items: baseline;
+    gap: 5px;
+    padding: 3px 8px;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    background: none;
+    color: var(--muted-strong);
+    font-family: var(--font-ui);
+    font-size: var(--text-xs);
+    cursor: default;
+    transition:
+      background var(--dur-instant) var(--ease-out),
+      border-color var(--dur-instant) var(--ease-out),
+      color var(--dur-instant) var(--ease-out);
+  }
+
+  .tag:hover {
+    border-color: var(--accent-line);
+    background: var(--accent-soft);
+    color: var(--text-strong);
+  }
+
+  .count {
+    color: var(--muted);
+    font-variant-numeric: tabular-nums;
   }
 
   .empty-text {
