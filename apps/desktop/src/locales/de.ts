@@ -177,13 +177,21 @@ export const de: Dictionary = {
   'checking…': 'wird geprüft…',
 
   // LLM
-  'Connect an LLM to this space': 'Ein LLM mit diesem Bereich verbinden',
-  'Let an LLM read this space': 'Ein LLM darf diesen Bereich lesen',
-  '…and write to it': '…und darin schreiben',
-  "Paste this into your LLM client's MCP settings.":
-    'Füge das in die MCP-Einstellungen deines LLM-Clients ein.',
-  'The connector is not built yet — run the desktop build once.':
-    'Der Connector ist noch nicht gebaut — führe den Desktop-Build einmal aus.',
+    'Connect an LLM to your notes': 'Ein LLM mit deinen Notizen verbinden',
+  'Sign in first — the connector reaches the notes in your account.':
+    'Melde dich zuerst an — der Connector greift auf die Notizen in deinem Konto zu.',
+  'Let it write to my notes, not only read them':
+    'Es darf meine Notizen schreiben, nicht nur lesen',
+  "Paste this into your LLM client's MCP settings. It is shown only once.":
+    'Füge das in die MCP-Einstellungen deines LLM-Clients ein. Es wird nur einmal angezeigt.',
+  'A token lets one LLM client reach every note in your account.':
+    'Ein Token lässt einen LLM-Client auf jede Notiz in deinem Konto zugreifen.',
+  'Create a token': 'Token erstellen',
+  'A token is active.': 'Ein Token ist aktiv.',
+  'It has not been used yet.': 'Es wurde noch nicht verwendet.',
+  'Last used {time}.': 'Zuletzt verwendet {time}.',
+  'Replace it': 'Ersetzen',
+  Revoke: 'Widerrufen',
   Copied: 'Kopiert',
 
   // Export

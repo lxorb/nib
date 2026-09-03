@@ -37,7 +37,6 @@
     "active": true,
     "targets": "all",
     "createUpdaterArtifacts": true,
-    "resources": ["binaries/*"],
     "fileAssociations": [
       {
         "ext": ["md", "markdown", "mdown", "mkd"],

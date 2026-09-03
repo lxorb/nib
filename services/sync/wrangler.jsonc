@@ -26,18 +26,18 @@
     "run_worker_first": true
   },
 
-  // Cloudflare Email Sending. `mail.emilvinu.ch` is enabled as a sending
+  // Cloudflare Email Sending. `nibeditor.com` is enabled as a sending
   // domain, so SPF, DKIM, DMARC and bounce handling are already in place.
   "send_email": [{ "name": "EMAIL" }],
 
   "vars": {
-    "BLOG_ROOT": "icinoxis.net",
-    "APP_ORIGIN": "https://markdown.emilvinu.ch",
-    "MAIL_FROM": "Nib <nib@mail.emilvinu.ch>"
+    "BLOG_ROOT": "nibeditor.com",
+    "APP_ORIGIN": "https://nibeditor.com",
+    "MAIL_FROM": "Nib <nib@nibeditor.com>"
   },
 
   "routes": [
-    { "pattern": "markdown.emilvinu.ch/*", "zone_name": "emilvinu.ch" },
-    { "pattern": "*.icinoxis.net/*", "zone_name": "icinoxis.net" }
+    { "pattern": "nibeditor.com/*", "zone_name": "nibeditor.com" },
+    { "pattern": "*.nibeditor.com/*", "zone_name": "nibeditor.com" }
   ]
 }

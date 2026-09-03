@@ -11,10 +11,10 @@ const PAGE_KEY = 'nib:page'
 
 export type Section = 'account' | 'publish' | 'llm' | 'appearance' | 'export'
 
-interface McpConfig {
-  binary: string
-  installed: boolean
-  snippet: string
+interface Connector {
+  exists: boolean
+  readOnly: boolean
+  lastUsedAt: number | null
 }
 
 class Settings {
@@ -23,10 +23,11 @@ class Settings {
   /** The version-history sheet, which is its own overlay. */
   historyOpen = $state(false)
 
-  /** LLM access is off until switched on, and read-only until widened. */
-  llmEnabled = $state(false)
+  /** LLM access is read-only until widened. */
   llmReadOnly = $state(true)
-  mcp = $state<McpConfig | null>(null)
+  connector = $state<Connector | null>(null)
+  /** Shown once, straight after minting. It is never retrievable again. */
+  freshToken = $state<string | null>(null)
 
   /** Whether pandoc is on this machine, which decides the export list. */
   pandoc = $state(false)
@@ -58,7 +59,6 @@ class Settings {
   restore() {
     try {
       const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) ?? '{}')
-      this.llmEnabled = !!saved.enabled
       this.llmReadOnly = saved.readOnly ?? true
     } catch {
       // Defaults are the safe ones.
@@ -124,24 +124,51 @@ class Settings {
     this.section = section
     this.open = true
     this.error = null
-    void this.loadMcp()
+    this.freshToken = null
+    void this.loadConnector()
   }
 
-  setLlm(enabled: boolean, readOnly: boolean) {
-    this.llmEnabled = enabled
-    this.llmReadOnly = readOnly
-    localStorage.setItem(STORAGE_KEY, JSON.stringify({ enabled, readOnly }))
-    void this.loadMcp()
+  async loadConnector() {
+    if (!account.token) {
+      this.connector = null
+      return
+    }
+
+    this.connector = await api.connector(account.token).catch(() => null)
+    if (this.connector) this.llmReadOnly = this.connector.readOnly
   }
 
-  async loadMcp() {
-    const root = workspace.activeSpace?.root
-    if (!isDesktop || !root) return
+  /** Mints a token and shows it once. Any previous one stops working. */
+  async createConnector(readOnly: boolean) {
+    if (!account.token) return
 
-    this.mcp = await invoke<McpConfig>('mcp_config', {
-      space: root,
-      readOnly: this.llmReadOnly,
-    }).catch(() => null)
+    this.busy = true
+    this.error = null
+
+    try {
+      const { token } = await api.issueConnector(account.token, readOnly)
+      this.freshToken = token
+      this.llmReadOnly = readOnly
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({ readOnly }))
+      await this.loadConnector()
+    } catch (error) {
+      this.error = error instanceof Error ? error.message : 'could not create a token'
+    } finally {
+      this.busy = false
+    }
+  }
+
+  async revokeConnector() {
+    if (!account.token) return
+
+    this.busy = true
+    try {
+      await api.revokeConnector(account.token)
+      this.freshToken = null
+      await this.loadConnector()
+    } finally {
+      this.busy = false
+    }
   }
 
   /** Turns syncing on or off for everything at once. */

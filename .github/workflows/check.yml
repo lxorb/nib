@@ -51,7 +51,6 @@ jobs:
         with:
           workspaces: |
             apps/desktop/src-tauri
-            services/mcp
 
       # Tauri needs the system webview to compile against.
       - name: System dependencies
@@ -69,9 +68,7 @@ jobs:
       - name: Format
         run: |
           cargo fmt --manifest-path apps/desktop/src-tauri/Cargo.toml --check
-          cargo fmt --manifest-path services/mcp/Cargo.toml --check
 
       - name: Clippy
         run: |
-          cargo clippy --manifest-path services/mcp/Cargo.toml -- -D warnings
           cargo clippy --manifest-path apps/desktop/src-tauri/Cargo.toml -- -D warnings

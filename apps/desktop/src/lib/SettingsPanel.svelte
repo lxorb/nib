@@ -2,6 +2,7 @@
   import { fade, fly, scale, slide } from 'svelte/transition'
   import { cubicOut } from 'svelte/easing'
   import { CODE_PALETTES, type EditorView } from '@nib/editor'
+  import { MCP_URL } from './api'
   import { account } from './account.svelte'
   import { i18n, LANGUAGES, t } from './i18n.svelte'
   import { modes } from './modes.svelte'
@@ -45,9 +46,24 @@
 
   const isWindows = navigator.userAgent.includes('Windows')
 
+  /** What an LLM client needs to reach these notes. */
+  const snippet = $derived(
+    JSON.stringify(
+      {
+        mcpServers: {
+          nib: {
+            url: MCP_URL,
+            headers: { Authorization: `Bearer ${settings.freshToken ?? ''}` },
+          },
+        },
+      },
+      null,
+      2,
+    ),
+  )
+
   async function copySnippet() {
-    if (!settings.mcp) return
-    await navigator.clipboard.writeText(settings.mcp.snippet)
+    await navigator.clipboard.writeText(snippet)
     copied = true
     setTimeout(() => (copied = false), 1600)
   }
@@ -129,7 +145,7 @@
                     placeholder="your-name"
                     spellcheck="false"
                   />
-                  <span class="suffix">.icinoxis.net</span>
+                  <span class="suffix">.nibeditor.com</span>
                 </div>
                 {#if settings.availability.checking}
                   <span class="hint">{t('checking…')}</span>
@@ -176,8 +192,8 @@
             {#if published}
               <p class="note" transition:slide={{ duration: 180 }}>
                 {t('Live at')}
-                <a href="https://{blog?.subdomain}.icinoxis.net" target="_blank" rel="noreferrer">
-                  {blog?.subdomain}.icinoxis.net
+                <a href="https://{blog?.subdomain}.nibeditor.com" target="_blank" rel="noreferrer">
+                  {blog?.subdomain}.nibeditor.com
                 </a>
               </p>
               <button class="quiet danger" onclick={() => settings.unpublish()}>{t('Stop publishing')}</button>
@@ -186,35 +202,59 @@
         </div>
       {:else if settings.section === 'llm'}
         <div class="pane" in:fly={{ y: 8, duration: 180, easing: cubicOut }}>
-          <label class="switch">
-            <input
-              type="checkbox"
-              checked={settings.llmEnabled}
-              onchange={(event) => settings.setLlm(event.currentTarget.checked, settings.llmReadOnly)}
-            />
-            <span>{t('Let an LLM read this space')}</span>
-          </label>
+          {#if !account.signedIn}
+            <p class="note">{t('Sign in first — the connector reaches the notes in your account.')}</p>
+          {:else}
+            <label class="switch">
+              <input
+                type="checkbox"
+                checked={!settings.llmReadOnly}
+                onchange={(event) => (settings.llmReadOnly = !event.currentTarget.checked)}
+              />
+              <span>{t('Let it write to my notes, not only read them')}</span>
+            </label>
 
-          <label class="switch">
-            <input
-              type="checkbox"
-              checked={!settings.llmReadOnly}
-              disabled={!settings.llmEnabled}
-              onchange={(event) => settings.setLlm(settings.llmEnabled, !event.currentTarget.checked)}
-            />
-            <span>{t('…and write to it')}</span>
-          </label>
+            {#if settings.freshToken}
+              <!-- Shown once. There is no way to get it back afterwards. -->
+              <div transition:slide={{ duration: 200 }}>
+                <p class="note">{t("Paste this into your LLM client's MCP settings. It is shown only once.")}</p>
+                <pre>{snippet}</pre>
+                <button class="primary" onclick={copySnippet}>{copied ? t('Copied') : t('Copy')}</button>
+              </div>
+            {:else if settings.connector?.exists}
+              <p class="note">
+                {t('A token is active.')}
+                {#if settings.connector.lastUsedAt}
+                  {t('Last used {time}.', {
+                    time: new Date(settings.connector.lastUsedAt).toLocaleString(),
+                  })}
+                {:else}
+                  {t('It has not been used yet.')}
+                {/if}
+              </p>
 
-          {#if settings.llmEnabled}
-            <div transition:slide={{ duration: 200 }}>
-              {#if settings.mcp?.installed === false}
-                <p class="hint bad">{t('The connector is not built yet — run the desktop build once.')}</p>
-              {/if}
-
-              <p class="note">{t("Paste this into your LLM client's MCP settings.")}</p>
-              <pre>{settings.mcp?.snippet ?? '…'}</pre>
-              <button class="primary" onclick={copySnippet}>{copied ? t('Copied') : t('Copy')}</button>
-            </div>
+              <div class="row">
+                <button
+                  class="primary"
+                  disabled={settings.busy}
+                  onclick={() => settings.createConnector(settings.llmReadOnly)}
+                >
+                  {t('Replace it')}
+                </button>
+                <button class="quiet danger" onclick={() => settings.revokeConnector()}>
+                  {t('Revoke')}
+                </button>
+              </div>
+            {:else}
+              <p class="note">{t('A token lets one LLM client reach every note in your account.')}</p>
+              <button
+                class="primary"
+                disabled={settings.busy}
+                onclick={() => settings.createConnector(settings.llmReadOnly)}
+              >
+                {t('Create a token')}
+              </button>
+            {/if}
           {/if}
         </div>
       {:else if settings.section === 'export'}

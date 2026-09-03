@@ -1,7 +1,7 @@
 /** Typed client for the sync service. Every call carries the session token;
  *  nothing here touches cookies, so it works the same in the app and the web. */
 
-const BASE = import.meta.env.VITE_NIB_API ?? 'https://markdown.emilvinu.ch'
+const BASE = import.meta.env.VITE_NIB_API ?? 'https://nibeditor.com'
 
 export interface Account {
   id: string
@@ -143,4 +143,19 @@ export const api = {
 
   unpublish: (token: string, spaceId: string) =>
     request<{ ok: true }>(`/v1/spaces/${spaceId}/blog`, { method: 'DELETE', token }),
+
+  /** Whether a connector token exists. The secret itself is never handed back. */
+  connector: (token: string) =>
+    request<{ exists: boolean; readOnly: boolean; lastUsedAt: number | null }>('/v1/mcp/token', {
+      token,
+    }),
+
+  issueConnector: (token: string, readOnly: boolean) =>
+    request<{ token: string }>('/v1/mcp/token', { token, body: { readOnly } }),
+
+  revokeConnector: (token: string) =>
+    request<{ ok: true }>('/v1/mcp/token', { method: 'DELETE', token }),
 }
+
+/** Where an LLM client points to reach these notes. */
+export const MCP_URL = `${BASE}/mcp`

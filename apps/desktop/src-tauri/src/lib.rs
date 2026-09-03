@@ -2,7 +2,6 @@ mod export;
 mod history;
 mod launch;
 mod logs;
-mod mcp;
 mod notes;
 mod recent;
 mod shell_menu;
@@ -46,7 +45,6 @@ pub fn run() {
             notes::space_tags,
             notes::save_asset,
             notes::search_space,
-            mcp::mcp_config,
             themes::theme_dir,
             themes::list_themes,
             themes::read_theme,

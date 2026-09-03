@@ -162,7 +162,7 @@ export function appCommands(view?: EditorView): Command[] {
 
     ...exportCommands(),
     { id: 'publish', label: t('Publish this space as a blog'), run: () => settings.show('publish') },
-    { id: 'llm', label: t('Connect an LLM to this space'), run: () => settings.show('llm') },
+    { id: 'llm', label: t('Connect an LLM to your notes'), run: () => settings.show('llm') },
 
     account.signedIn
       ? {

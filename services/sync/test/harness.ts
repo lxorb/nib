@@ -4,7 +4,9 @@ import { fileURLToPath } from 'node:url'
 import app from '../src/index'
 import type { Env } from '../src/types'
 
-const MIGRATION = fileURLToPath(new URL('../migrations/0001_init.sql', import.meta.url))
+const MIGRATIONS = ['0001_init.sql', '0002_mcp_tokens.sql'].map((name) =>
+  fileURLToPath(new URL(`../migrations/${name}`, import.meta.url)),
+)
 
 /** D1's shape over Node's built-in SQLite, so routes run against real SQL. */
 function d1(database: DatabaseSync) {
@@ -55,13 +57,13 @@ export interface TestEnv extends Env {
 
 export function testEnv(overrides: Partial<Env> = {}): TestEnv {
   const database = new DatabaseSync(':memory:')
-  database.exec(readFileSync(MIGRATION, 'utf8'))
+  for (const migration of MIGRATIONS) database.exec(readFileSync(migration, 'utf8'))
 
   return {
     DB: d1(database) as unknown as D1Database,
     NOTES: bucket() as unknown as R2Bucket,
-    BLOG_ROOT: 'icinoxis.net',
-    APP_ORIGIN: 'https://markdown.emilvinu.ch',
+    BLOG_ROOT: 'nibeditor.com',
+    APP_ORIGIN: 'https://nibeditor.com',
     ...overrides,
     close: () => database.close(),
   }
@@ -76,7 +78,7 @@ interface CallOptions {
 
 /** Calls the Worker the way the network would. */
 export async function call(env: Env, path: string, options: CallOptions = {}) {
-  const host = options.host ?? 'markdown.emilvinu.ch'
+  const host = options.host ?? 'nibeditor.com'
   const headers: Record<string, string> = {}
 
   if (options.body !== undefined) headers['content-type'] = 'application/json'

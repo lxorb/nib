@@ -41,7 +41,7 @@ describe('slugs', () => {
 
 describe('while a space is private', () => {
   test('its subdomain serves nothing', async () => {
-    const response = await call(env, '/', { host: 'field.icinoxis.net' })
+    const response = await call(env, '/', { host: 'field.nibeditor.com' })
     expect(response.status).toBe(404)
   })
 
@@ -49,7 +49,7 @@ describe('while a space is private', () => {
     await publish({ subdomain: 'field' })
     await call(env, `/v1/spaces/${space}/blog`, { method: 'DELETE', token })
 
-    expect((await call(env, '/', { host: 'field.icinoxis.net' })).status).toBe(404)
+    expect((await call(env, '/', { host: 'field.nibeditor.com' })).status).toBe(404)
   })
 })
 
@@ -57,7 +57,7 @@ describe('publishing', () => {
   test('a subdomain starts serving the index', async () => {
     await publish({ subdomain: 'field' })
 
-    const response = await call(env, '/', { host: 'field.icinoxis.net' })
+    const response = await call(env, '/', { host: 'field.nibeditor.com' })
     expect(response.status).toBe(200)
     expect(response.text).toContain('Field notes')
     expect(response.text).toContain('/hello-world')
@@ -66,7 +66,7 @@ describe('publishing', () => {
   test('a note renders as HTML', async () => {
     await publish({ subdomain: 'field' })
 
-    const response = await call(env, '/hello-world', { host: 'field.icinoxis.net' })
+    const response = await call(env, '/hello-world', { host: 'field.nibeditor.com' })
     expect(response.text).toContain('<h1>Hello world</h1>')
     expect(response.text).toContain('<strong>post</strong>')
   })
@@ -74,7 +74,7 @@ describe('publishing', () => {
   test('an unknown slug is handled', async () => {
     await publish({ subdomain: 'field' })
 
-    const response = await call(env, '/nothing-here', { host: 'field.icinoxis.net' })
+    const response = await call(env, '/nothing-here', { host: 'field.nibeditor.com' })
     expect(response.text).toContain('Not found')
   })
 
@@ -85,7 +85,7 @@ describe('publishing', () => {
     })
     await publish({ subdomain: 'field' })
 
-    const response = await call(env, '/meta', { host: 'field.icinoxis.net' })
+    const response = await call(env, '/meta', { host: 'field.nibeditor.com' })
     expect(response.text).not.toContain('title: Hi')
     expect(response.text).toContain('Body text.')
   })
@@ -103,7 +103,7 @@ describe('publishing', () => {
 
     expect(response.json.dns).toHaveLength(1)
     expect(response.json.dns[0].type).toBe('CNAME')
-    expect(response.json.dns[0].value).toBe('field.icinoxis.net')
+    expect(response.json.dns[0].value).toBe('field.nibeditor.com')
   })
 
   test('an apex domain needs an A record instead', async () => {
@@ -114,7 +114,7 @@ describe('publishing', () => {
   test('a custom title replaces the space name', async () => {
     await publish({ subdomain: 'field', title: 'Notes from the field' })
 
-    const response = await call(env, '/', { host: 'field.icinoxis.net' })
+    const response = await call(env, '/', { host: 'field.nibeditor.com' })
     expect(response.text).toContain('Notes from the field')
   })
 })
@@ -127,7 +127,7 @@ describe('a published note cannot script the reader', () => {
     })
     await publish({ subdomain: 'field' })
 
-    const response = await call(env, '/nasty', { host: 'field.icinoxis.net' })
+    const response = await call(env, '/nasty', { host: 'field.nibeditor.com' })
     expect(response.text).not.toContain('<script>alert(1)</script>')
     expect(response.text).toContain('&lt;script&gt;')
   })
@@ -135,7 +135,7 @@ describe('a published note cannot script the reader', () => {
   test('every page forbids scripts outright', async () => {
     await publish({ subdomain: 'field' })
 
-    const response = await call(env, '/', { host: 'field.icinoxis.net' })
+    const response = await call(env, '/', { host: 'field.nibeditor.com' })
     const policy = response.headers.get('content-security-policy') ?? ''
 
     expect(policy).toContain("script-src 'none'")
@@ -150,7 +150,7 @@ describe('a published note cannot script the reader', () => {
     })
     await publish({ subdomain: 'field' })
 
-    const response = await call(env, '/rich', { host: 'field.icinoxis.net' })
+    const response = await call(env, '/rich', { host: 'field.nibeditor.com' })
     expect(response.text).toContain('<mark>marked</mark>')
     expect(response.text).toContain('katex')
     expect(response.text).toContain('<sub>2</sub>')

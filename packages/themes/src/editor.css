@@ -89,10 +89,14 @@
   margin-bottom: 1.1em;
 }
 
-/* The fence's own line carries its language and a copy button. */
+/* The fence's own line carries its language and a copy button.
+   Not floated: a line holding only a float has a zero-height box, so every
+   click in the block would land a line lower than it looked. Taking the full
+   width keeps the line measurable and still puts the controls on the right. */
 .nib-fence-header {
-  float: right;
   display: inline-flex;
+  width: 100%;
+  justify-content: flex-end;
   align-items: center;
   gap: var(--space-3);
   font-family: var(--font-ui);

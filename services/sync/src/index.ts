@@ -2,6 +2,7 @@ import { Hono } from 'hono'
 import { cors } from 'hono/cors'
 import { auth, requireUser } from './auth'
 import { serveBlog, spaceForHost } from './blog'
+import { mcp, mcpAdmin } from './mcp'
 import { notes } from './notes'
 import { spaces } from './spaces'
 import type { Env, Variables } from './types'
@@ -14,7 +15,7 @@ app.use(
   '/v1/*',
   cors({
     origin: (origin) =>
-      /^(https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?|tauri:\/\/localhost|https?:\/\/tauri\.localhost|https:\/\/markdown\.emilvinu\.ch)$/.test(
+      /^(https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?|tauri:\/\/localhost|https?:\/\/tauri\.localhost|https:\/\/nibeditor\.com)$/.test(
         origin,
       )
         ? origin
@@ -26,6 +27,10 @@ app.use(
 )
 
 app.route('/v1/auth', auth)
+
+// The connector carries its own token, so it sits outside the session guard.
+app.use('/mcp', cors({ origin: '*', allowHeaders: ['authorization', 'content-type'] }))
+app.route('/mcp', mcp)
 
 /** Everything past this point needs a session. */
 app.use('/v1/*', async (context, next) => {
@@ -42,6 +47,7 @@ app.get('/v1/me', (context) => {
 })
 
 app.route('/v1/spaces', spaces)
+app.route('/v1/mcp/token', mcpAdmin)
 app.route('/v1', notes)
 
 app.get('/health', (context) => context.json({ ok: true }))
