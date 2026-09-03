@@ -1,7 +1,9 @@
 <script lang="ts">
   import { fade, fly, scale, slide } from 'svelte/transition'
   import { cubicOut } from 'svelte/easing'
+  import { CODE_PALETTES, type EditorView } from '@nib/editor'
   import { account } from './account.svelte'
+  import { modes } from './modes.svelte'
   import { ORIENTATIONS, PAPER_SIZES } from './page-setup'
   import { settings, type Section } from './settings.svelte'
   import { sync } from './sync.svelte'
@@ -15,6 +17,8 @@
     { id: 'appearance', label: 'Appearance' },
     { id: 'export', label: 'Export' },
   ]
+
+  let { view }: { view?: EditorView } = $props()
 
   let subdomain = $state('')
   let domain = $state('')
@@ -280,6 +284,18 @@
               </button>
             {/each}
           </div>
+          <label class="field">
+            <span class="label">Code</span>
+            <select
+              value={modes.codeTheme}
+              onchange={(event) => modes.setCodeTheme(event.currentTarget.value, view)}
+            >
+              {#each CODE_PALETTES as palette (palette.id)}
+                <option value={palette.id}>{palette.name}</option>
+              {/each}
+            </select>
+          </label>
+
           <button class="quiet" onclick={() => theme.reload()}>Reload themes and custom CSS</button>
         </div>
       {/if}

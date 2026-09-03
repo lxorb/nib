@@ -1,4 +1,4 @@
-import { type EditorView, reformatDocument, type Transaction } from '@nib/editor'
+import { CODE_PALETTES, type EditorView, reformatDocument, type Transaction } from '@nib/editor'
 import { account } from './account.svelte'
 import { PANDOC_FORMATS } from './export'
 import { imagePath, imageUrl } from './images'
@@ -226,6 +226,12 @@ export function appCommands(view?: EditorView): Command[] {
       label: `Theme: ${item.name}`,
       hint: item.id === theme.id ? 'current' : undefined,
       run: () => theme.select(item.id),
+    })),
+    ...CODE_PALETTES.map((palette) => ({
+      id: `code-theme:${palette.id}`,
+      label: `Code theme: ${palette.name}`,
+      hint: palette.id === modes.codeTheme ? 'current' : undefined,
+      run: () => modes.setCodeTheme(palette.id, view),
     })),
     { id: 'themes-folder', label: 'Open themes folder', run: () => void openThemesFolder() },
     { id: 'custom-css', label: 'Edit custom CSS', run: () => void openCustomCss() },

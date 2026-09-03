@@ -1,0 +1,119 @@
+import { HighlightStyle, syntaxHighlighting } from '@codemirror/language'
+import { Compartment, type Extension } from '@codemirror/state'
+import type { EditorView } from '@codemirror/view'
+import { tags } from '@lezer/highlight'
+
+/** The colours a code fence needs. Kept apart from the document's own styling
+ *  so a code theme can be chosen without changing how prose looks. */
+export interface CodePalette {
+  id: string
+  name: string
+  keyword: string
+  string: string
+  number: string
+  comment: string
+  function: string
+  type: string
+  punctuation: string
+  property: string
+}
+
+/** Reads the app theme's own tokens, so this one changes with the app. */
+const FOLLOW: CodePalette = {
+  id: 'follow',
+  name: 'Follow the theme',
+  keyword: 'var(--accent)',
+  string: 'var(--success)',
+  number: '#e0a233',
+  comment: 'var(--muted)',
+  function: '#4a8df6',
+  type: '#3fcf8e',
+  punctuation: 'var(--muted-strong)',
+  property: '#7c6bf5',
+}
+
+export const CODE_PALETTES: CodePalette[] = [
+  FOLLOW,
+  {
+    id: 'github',
+    name: 'GitHub',
+    keyword: '#cf222e',
+    string: '#0a3069',
+    number: '#0550ae',
+    comment: '#6e7781',
+    function: '#8250df',
+    type: '#953800',
+    punctuation: '#24292f',
+    property: '#0550ae',
+  },
+  {
+    id: 'dracula',
+    name: 'Dracula',
+    keyword: '#ff79c6',
+    string: '#f1fa8c',
+    number: '#bd93f9',
+    comment: '#6272a4',
+    function: '#50fa7b',
+    type: '#8be9fd',
+    punctuation: '#f8f8f2',
+    property: '#ffb86c',
+  },
+  {
+    id: 'solarized',
+    name: 'Solarized',
+    keyword: '#859900',
+    string: '#2aa198',
+    number: '#d33682',
+    comment: '#93a1a1',
+    function: '#268bd2',
+    type: '#b58900',
+    punctuation: '#657b83',
+    property: '#cb4b16',
+  },
+  {
+    id: 'nord',
+    name: 'Nord',
+    keyword: '#81a1c1',
+    string: '#a3be8c',
+    number: '#b48ead',
+    comment: '#616e88',
+    function: '#88c0d0',
+    type: '#8fbcbb',
+    punctuation: '#d8dee9',
+    property: '#ebcb8b',
+  },
+]
+
+export function codeHighlightStyle(palette: CodePalette) {
+  return HighlightStyle.define([
+    { tag: tags.keyword, color: palette.keyword },
+    { tag: [tags.string, tags.special(tags.string)], color: palette.string },
+    { tag: [tags.number, tags.bool, tags.null], color: palette.number },
+    {
+      tag: [tags.comment, tags.lineComment, tags.blockComment],
+      color: palette.comment,
+      fontStyle: 'italic',
+    },
+    { tag: [tags.function(tags.variableName), tags.labelName], color: palette.function },
+    { tag: [tags.typeName, tags.className, tags.namespace], color: palette.type },
+    { tag: [tags.operator, tags.punctuation], color: palette.punctuation },
+    { tag: tags.propertyName, color: palette.property },
+    { tag: tags.invalid, color: 'var(--danger)' },
+  ])
+}
+
+export function paletteById(id: string): CodePalette {
+  return CODE_PALETTES.find((palette) => palette.id === id) ?? FOLLOW
+}
+
+const codeTheme = new Compartment()
+
+export function codeThemeExtension(id = 'follow'): Extension {
+  return codeTheme.of(syntaxHighlighting(codeHighlightStyle(paletteById(id))))
+}
+
+export function setCodeTheme(view: EditorView, id: string) {
+  view.dispatch({
+    effects: codeTheme.reconfigure(syntaxHighlighting(codeHighlightStyle(paletteById(id)))),
+  })
+}

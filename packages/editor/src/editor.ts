@@ -6,6 +6,7 @@ import { EditorState } from '@codemirror/state'
 import { EditorView, drawSelection, dropCursor, highlightActiveLine, keymap } from '@codemirror/view'
 import { editorCompletion } from './emoji'
 import { imageHandling, imageResolver, type ImageSink } from './images'
+import { codeThemeExtension } from './code-theme'
 import { nibKeymap } from './keymap'
 import { richPaste } from './paste'
 import { modeExtensions } from './modes'
@@ -21,16 +22,12 @@ export interface EditorOptions {
   resolveImage?: (src: string) => string
   /** Fires when the selection moves, so a toolbar can follow it. */
   onSelection?: (view: EditorView) => void
+  /** Which palette colours code fences. Defaults to following the app theme. */
+  codeTheme?: string
 }
 
-export function createEditor({
-  parent,
-  doc = '',
-  onChange,
-  onImage,
-  resolveImage,
-  onSelection,
-}: EditorOptions): EditorView {
+export function createEditor(options: EditorOptions): EditorView {
+  const { parent, doc = '', onChange, onImage, resolveImage, onSelection } = options
   return new EditorView({
     parent,
     state: EditorState.create({
@@ -49,6 +46,7 @@ export function createEditor({
         // that target `#write` style our editor directly.
         EditorView.contentAttributes.of({ id: 'write', spellcheck: 'true' }),
         syntaxHighlighting(nibHighlightStyle),
+        codeThemeExtension(options.codeTheme),
         modeExtensions(),
         editorCompletion(),
         // Images are checked first, so a screenshot beats the HTML around it.

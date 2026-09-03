@@ -66,15 +66,7 @@ export const nibHighlightStyle = HighlightStyle.define([
   { tag: markTags.math, fontFamily: 'var(--font-mono)', color: 'var(--muted-strong)' },
   { tag: markTags.footnote, color: 'var(--accent)', fontSize: '0.8em', verticalAlign: 'super' },
   { tag: markTags.frontMatter, fontFamily: 'var(--font-mono)', color: 'var(--muted)' },
-
-  // Code fence highlighting.
-  { tag: tags.keyword, color: 'var(--accent)' },
-  { tag: [tags.string, tags.special(tags.string)], color: 'var(--success)' },
-  { tag: [tags.number, tags.bool, tags.null], color: '#e0a233' },
-  { tag: [tags.comment, tags.lineComment, tags.blockComment], color: 'var(--muted)', fontStyle: 'italic' },
-  { tag: [tags.function(tags.variableName), tags.labelName], color: '#4a8df6' },
-  { tag: [tags.typeName, tags.className, tags.namespace], color: '#3fcf8e' },
-  { tag: [tags.operator, tags.punctuation], color: 'var(--muted-strong)' },
-  { tag: tags.propertyName, color: '#7c6bf5' },
-  { tag: tags.invalid, color: 'var(--danger)' },
 ])
+
+// Code fences are coloured separately, in `code-theme.ts`, so the syntax theme
+// can be chosen independently of the one the document is written in.

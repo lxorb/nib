@@ -1,5 +1,6 @@
 import {
   setCodeLineNumbers,
+  setCodeTheme,
   setFocusMode,
   setHeadingNumbers,
   setLineHeight,
@@ -27,6 +28,7 @@ interface Saved {
   punctuation: boolean
   numbers: boolean
   lineNumbers: boolean
+  codeTheme: string
   rtl: boolean
   strict: boolean
   equationNumbers: boolean
@@ -42,6 +44,7 @@ class Modes {
   punctuation = $state(true)
   numbers = $state(false)
   lineNumbers = $state(false)
+  codeTheme = $state('follow')
   rtl = $state(false)
   strict = $state(false)
   equationNumbers = $state(false)
@@ -60,6 +63,7 @@ class Modes {
         this.punctuation = state.punctuation ?? true
         this.numbers = !!state.numbers
         this.lineNumbers = !!state.lineNumbers
+        this.codeTheme = state.codeTheme || 'follow'
         this.rtl = !!state.rtl
         this.strict = !!state.strict
         this.equationNumbers = !!state.equationNumbers
@@ -81,6 +85,7 @@ class Modes {
     setSmartPunctuation(view, this.punctuation)
     setHeadingNumbers(view, this.numbers)
     setCodeLineNumbers(view, this.lineNumbers)
+    setCodeTheme(view, this.codeTheme)
     setRightToLeft(view, this.rtl)
     setStrictMode(view, this.strict)
     setEquationNumbers(view, this.equationNumbers)
@@ -121,6 +126,14 @@ class Modes {
   toggleLineNumbers(view?: EditorView) {
     this.lineNumbers = !this.lineNumbers
     if (view) setCodeLineNumbers(view, this.lineNumbers)
+    this.persist()
+  }
+
+  /** Code fences are coloured on their own, so a light theme can hold a dark
+   *  fence and the other way round. */
+  setCodeTheme(id: string, view?: EditorView) {
+    this.codeTheme = id
+    if (view) setCodeTheme(view, id)
     this.persist()
   }
 
@@ -191,6 +204,7 @@ class Modes {
       punctuation: this.punctuation,
       numbers: this.numbers,
       lineNumbers: this.lineNumbers,
+      codeTheme: this.codeTheme,
       rtl: this.rtl,
       strict: this.strict,
       equationNumbers: this.equationNumbers,

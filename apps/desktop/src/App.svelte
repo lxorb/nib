@@ -248,7 +248,7 @@
 
 <Palette bind:open={palette} {view} />
 <SignIn />
-<SettingsPanel />
+<SettingsPanel {view} />
 <FormatBar bind:this={formatBar} {view} />
 <History bind:open={settings.historyOpen} />
 <ContextMenu />
