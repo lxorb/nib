@@ -37,6 +37,12 @@ function relative(root: string, absolute: string): string {
   return absolute.slice(root.length).replace(/^[\\/]+/, '').replace(/\\/g, '/')
 }
 
+/** Where the other side's copy goes when both changed the same note. */
+function conflictPath(path: string): string {
+  const stamp = new Date().toISOString().slice(0, 10)
+  return path.replace(/(\.[^.\\/]+)$/, ` (from another device ${stamp})$1`)
+}
+
 class Sync {
   status = $state<Status>('off')
   lastError = $state<string | null>(null)
@@ -108,11 +114,11 @@ class Sync {
       const page = await api.changes(token, mirror.spaceId, mirror.cursor)
 
       for (const remote of page.notes) {
+        const target = join(mirror.root, remote.path)
+
         if (remote.deleted) {
           if (mirror.notes[remote.path]) {
-            await invoke('delete_note', { path: join(mirror.root, remote.path) }).catch(
-              () => undefined,
-            )
+            await invoke('delete_note', { path: target }).catch(() => undefined)
             delete mirror.notes[remote.path]
           }
           continue
@@ -121,14 +127,23 @@ class Sync {
         const tracked = mirror.notes[remote.path]
         if (tracked?.version === remote.version) continue
 
+        const local = await invoke<string>('read_note', { path: target }).catch(() => null)
         const { content } = await api.readNote(token, remote.id)
-        await invoke('write_note', { path: join(mirror.root, remote.path), content })
 
-        mirror.notes[remote.path] = {
-          id: remote.id,
-          version: remote.version,
-          hash: remote.hash,
+        // The local file carries edits that never reached the server, and the
+        // server moved too. Overwriting here would throw one of them away.
+        const diverged = tracked && local !== null && (await sha256(local)) !== tracked.hash
+
+        if (diverged && local !== content) {
+          await invoke('write_note', { path: conflictPath(target), content })
+          // An empty hash guarantees the push below sends our copy, now based
+          // on the version we just saw, so it lands as the newest one.
+          mirror.notes[remote.path] = { id: remote.id, version: remote.version, hash: '' }
+          continue
         }
+
+        await invoke('write_note', { path: target, content })
+        mirror.notes[remote.path] = { id: remote.id, version: remote.version, hash: remote.hash }
       }
 
       mirror.cursor = page.cursor
@@ -187,11 +202,8 @@ class Sync {
     const server = conflict as { note?: { version: number; hash: string }; content?: string }
     if (!server?.note) return
 
-    const stamp = new Date().toISOString().slice(0, 10)
-    const copy = path.replace(/(\.[^.]+)$/, ` (from another device ${stamp})$1`)
-
     await invoke('write_note', {
-      path: join(mirror.root, copy),
+      path: conflictPath(join(mirror.root, path)),
       content: server.content ?? '',
     })
 

@@ -6,6 +6,7 @@
   import Sidebar from './lib/Sidebar.svelte'
   import SignIn from './lib/SignIn.svelte'
   import { account } from './lib/account.svelte'
+  import { sync } from './lib/sync.svelte'
   import StatusBar from './lib/StatusBar.svelte'
   import Tabs from './lib/Tabs.svelte'
   import Titlebar from './lib/Titlebar.svelte'
@@ -32,6 +33,15 @@
   $effect(() => {
     if (view) modes.apply(view)
   })
+
+  // Syncing only runs while there is an account behind it.
+  $effect(() => {
+    if (account.signedIn) sync.start()
+    else sync.stop()
+  })
+
+  // `window.nib` is the editor view; this is the surrounding app state.
+  if (import.meta.env.DEV) Object.assign(window, { nibApp: { account, sync, workspace } })
 
   function goto(line: number) {
     if (!view) return
