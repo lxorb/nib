@@ -5,8 +5,10 @@ import {
   setLineHeight,
   setMeasure,
   setRightToLeft,
+  setEquationNumbers,
   setSmartPunctuation,
   setSourceMode,
+  setStrictMode,
   setTypewriterMode,
   type EditorView,
 } from '@nib/editor'
@@ -26,6 +28,8 @@ interface Saved {
   numbers: boolean
   lineNumbers: boolean
   rtl: boolean
+  strict: boolean
+  equationNumbers: boolean
   zoom: number
   width: number
   lineHeight: number
@@ -39,6 +43,8 @@ class Modes {
   numbers = $state(false)
   lineNumbers = $state(false)
   rtl = $state(false)
+  strict = $state(false)
+  equationNumbers = $state(false)
   zoom = $state(1)
   width = $state(42)
   lineHeight = $state(1.72)
@@ -55,6 +61,8 @@ class Modes {
         this.numbers = !!state.numbers
         this.lineNumbers = !!state.lineNumbers
         this.rtl = !!state.rtl
+        this.strict = !!state.strict
+        this.equationNumbers = !!state.equationNumbers
         this.zoom = state.zoom || 1
         this.width = state.width || 42
         this.lineHeight = state.lineHeight || 1.72
@@ -74,6 +82,8 @@ class Modes {
     setHeadingNumbers(view, this.numbers)
     setCodeLineNumbers(view, this.lineNumbers)
     setRightToLeft(view, this.rtl)
+    setStrictMode(view, this.strict)
+    setEquationNumbers(view, this.equationNumbers)
     setMeasure(view, this.width)
     setLineHeight(view, this.lineHeight)
   }
@@ -111,6 +121,18 @@ class Modes {
   toggleLineNumbers(view?: EditorView) {
     this.lineNumbers = !this.lineNumbers
     if (view) setCodeLineNumbers(view, this.lineNumbers)
+    this.persist()
+  }
+
+  toggleStrict(view?: EditorView) {
+    this.strict = !this.strict
+    if (view) setStrictMode(view, this.strict)
+    this.persist()
+  }
+
+  toggleEquationNumbers(view?: EditorView) {
+    this.equationNumbers = !this.equationNumbers
+    if (view) setEquationNumbers(view, this.equationNumbers)
     this.persist()
   }
 
@@ -170,6 +192,8 @@ class Modes {
       numbers: this.numbers,
       lineNumbers: this.lineNumbers,
       rtl: this.rtl,
+      strict: this.strict,
+      equationNumbers: this.equationNumbers,
       zoom: this.zoom,
       width: this.width,
       lineHeight: this.lineHeight,

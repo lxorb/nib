@@ -19,6 +19,7 @@ export { imageResolver, type ImageSink } from './images'
 export { setSnippets, snippets } from './snippets'
 export {
   setCodeLineNumbers,
+  setEquationNumbers,
   setFocusMode,
   setHeadingNumbers,
   setLineHeight,
@@ -26,6 +27,7 @@ export {
   setRightToLeft,
   setSmartPunctuation,
   setSourceMode,
+  setStrictMode,
   setTypewriterMode,
 } from './modes'
 export { flushTableEdits } from './table/widget'

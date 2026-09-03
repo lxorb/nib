@@ -164,6 +164,16 @@ export function appCommands(view?: EditorView): Command[] {
       label: modes.rtl ? 'Write left to right' : 'Write right to left',
       run: () => modes.toggleRightToLeft(view),
     },
+    {
+      id: 'strict',
+      label: modes.strict ? 'Allow extended markdown' : 'Strict CommonMark only',
+      run: () => modes.toggleStrict(view),
+    },
+    {
+      id: 'equation-numbers',
+      label: modes.equationNumbers ? 'Stop numbering equations' : 'Number equations',
+      run: () => modes.toggleEquationNumbers(view),
+    },
     { id: 'wider', label: 'Wider writing area', run: () => modes.stepWidth(1, view) },
     { id: 'narrower', label: 'Narrower writing area', run: () => modes.stepWidth(-1, view) },
     { id: 'looser', label: 'Looser line spacing', run: () => modes.stepLineHeight(1, view) },

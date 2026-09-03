@@ -745,12 +745,23 @@
 }
 
 .nib-math-block {
+  position: relative;
   display: block;
   margin: 1.4em 0;
   padding: var(--space-3) 0;
   text-align: center;
   overflow-x: auto;
   animation: settle-in var(--dur-base) var(--ease-out);
+}
+
+.nib-math-number {
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--muted);
+  font-family: var(--font-content);
+  font-size: 0.9em;
 }
 
 .cm-line.nib-math-source {

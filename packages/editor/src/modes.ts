@@ -1,7 +1,11 @@
 import { Compartment, type Extension } from '@codemirror/state'
 import { Decoration, type DecorationSet, EditorView, ViewPlugin, type ViewUpdate } from '@codemirror/view'
 import { syntaxTree } from '@codemirror/language'
+import { commonmarkLanguage, markdown, markdownLanguage } from '@codemirror/lang-markdown'
+import { languages } from '@codemirror/language-data'
 import { livePreview } from './live-preview'
+import { numberEquations } from './live-preview/blocks'
+import { nibMarkdownExtensions } from './markdown/extensions'
 import { smartPunctuation } from './typography'
 
 /** Each mode lives in its own compartment so it can be swapped at runtime
@@ -10,6 +14,18 @@ const preview = new Compartment()
 const focus = new Compartment()
 const typewriter = new Compartment()
 const punctuation = new Compartment()
+const language = new Compartment()
+const equations = new Compartment()
+
+/** Strict mode drops GFM and the Typora extensions, leaving plain CommonMark —
+ *  useful when a document has to render the same everywhere. */
+function markdownFor(strict: boolean) {
+  return markdown({
+    base: strict ? commonmarkLanguage : markdownLanguage,
+    codeLanguages: languages,
+    extensions: strict ? [] : nibMarkdownExtensions,
+  })
+}
 
 const dim = Decoration.line({ class: 'nib-dim' })
 
@@ -78,11 +94,22 @@ const typewriterPlugin = EditorView.updateListener.of((update) => {
 
 export function modeExtensions(): Extension {
   return [
+    language.of(markdownFor(false)),
     preview.of(livePreview()),
     focus.of([]),
     typewriter.of([]),
     punctuation.of(smartPunctuation()),
+    equations.of(numberEquations.of(false)),
   ]
+}
+
+export function setStrictMode(view: EditorView, on: boolean) {
+  view.dispatch({ effects: language.reconfigure(markdownFor(on)) })
+}
+
+/** Numbers display equations and lets `\eqref` point at them. */
+export function setEquationNumbers(view: EditorView, on: boolean) {
+  view.dispatch({ effects: equations.reconfigure(numberEquations.of(on)) })
 }
 
 /** Source mode shows the markdown as written, with no syntax hidden. */

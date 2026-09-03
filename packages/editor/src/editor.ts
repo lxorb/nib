@@ -1,7 +1,5 @@
 import { closeBrackets, closeBracketsKeymap } from '@codemirror/autocomplete'
 import { defaultKeymap, history, historyKeymap, indentWithTab } from '@codemirror/commands'
-import { markdown, markdownLanguage } from '@codemirror/lang-markdown'
-import { languages } from '@codemirror/language-data'
 import { bracketMatching, indentOnInput, syntaxHighlighting } from '@codemirror/language'
 import { highlightSelectionMatches, searchKeymap } from '@codemirror/search'
 import { EditorState } from '@codemirror/state'
@@ -10,7 +8,6 @@ import { editorCompletion } from './emoji'
 import { imageHandling, imageResolver, type ImageSink } from './images'
 import { nibKeymap } from './keymap'
 import { richPaste } from './paste'
-import { nibMarkdownExtensions } from './markdown/extensions'
 import { modeExtensions } from './modes'
 import { nibHighlightStyle, nibTheme } from './theme'
 
@@ -48,11 +45,6 @@ export function createEditor({
         // The writing surface carries Typora's `#write` id, so Typora themes
         // that target `#write` style our editor directly.
         EditorView.contentAttributes.of({ id: 'write', spellcheck: 'true' }),
-        markdown({
-          base: markdownLanguage,
-          codeLanguages: languages,
-          extensions: nibMarkdownExtensions,
-        }),
         syntaxHighlighting(nibHighlightStyle),
         modeExtensions(),
         editorCompletion(),
