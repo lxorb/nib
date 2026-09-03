@@ -25,6 +25,10 @@ async function publish(body: Record<string, unknown>) {
   return call(env, `/v1/spaces/${space}/blog`, { method: 'PUT', token, body })
 }
 
+async function addNote(path: string, content: string) {
+  return call(env, `/v1/spaces/${space}/notes`, { token, body: { path, content } })
+}
+
 describe('slugs', () => {
   test('lowercases and hyphenates', () => {
     expect(slugFor('Hello world.md')).toBe('hello-world')
@@ -188,5 +192,77 @@ describe('choosing a subdomain', () => {
     await publish({ subdomain: 'taken-name' })
     expect((await call(env, '/v1/spaces/available/taken-name', { token })).json.available).toBe(false)
     expect((await call(env, '/v1/spaces/available/www', { token })).json.available).toBe(false)
+  })
+})
+
+describe('publishing one note instead of the space', () => {
+  test('serves that note at the root, with no index', async () => {
+    await addNote('home.md', '# Hello\n\nMy personal page.\n')
+    await addNote('secret.md', '# Secret\n\nNot for the web.\n')
+
+    await publish({ subdomain: 'me', note: 'home.md' })
+
+    const root = await call(env, '/', { host: 'me.nibeditor.com' })
+
+    expect(root.status).toBe(200)
+    expect(root.text).toContain('My personal page.')
+    expect(root.text).not.toContain('class="index"')
+  })
+
+  test('hides every other note in the space', async () => {
+    await addNote('home.md', '# Hello\n')
+    await addNote('secret.md', '# Secret\n\nNot for the web.\n')
+
+    await publish({ subdomain: 'me', note: 'home.md' })
+
+    const other = await call(env, '/secret', { host: 'me.nibeditor.com' })
+    expect(other.text).not.toContain('Not for the web.')
+  })
+
+  test('refuses a note that is not in the space', async () => {
+    const response = await publish({ subdomain: 'me', note: 'nowhere.md' })
+
+    expect(response.status).toBe(404)
+  })
+
+  test('goes back to the whole space when the note is cleared', async () => {
+    await addNote('home.md', '# Hello\n')
+    await addNote('other.md', '# Other\n')
+
+    await publish({ subdomain: 'me', note: 'home.md' })
+    await publish({ subdomain: 'me', note: null })
+
+    const root = await call(env, '/', { host: 'me.nibeditor.com' })
+    expect(root.text).toContain('class="index"')
+  })
+
+  test('reports which note is published', async () => {
+    await addNote('home.md', '# Hello\n')
+    const published = await publish({ subdomain: 'me', note: 'home.md' })
+
+    expect(published.json.space.blog.note).toBe('home.md')
+  })
+})
+
+describe('subdomain lengths', () => {
+  test('takes the shortest the message promises', async () => {
+    expect((await publish({ subdomain: 'me' })).status).toBe(200)
+  })
+
+  test('takes the longest', async () => {
+    expect((await publish({ subdomain: 'x'.repeat(32) })).status).toBe(200)
+  })
+
+  test('refuses one character', async () => {
+    expect((await publish({ subdomain: 'x' })).status).toBe(400)
+  })
+
+  test('refuses more than thirty-two', async () => {
+    expect((await publish({ subdomain: 'x'.repeat(33) })).status).toBe(400)
+  })
+
+  test('refuses a leading or trailing hyphen', async () => {
+    expect((await publish({ subdomain: '-me' })).status).toBe(400)
+    expect((await publish({ subdomain: 'me-' })).status).toBe(400)
   })
 })

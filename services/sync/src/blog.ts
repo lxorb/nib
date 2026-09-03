@@ -127,6 +127,23 @@ export async function serveBlog(env: Env, space: Space, url: URL): Promise<Respo
   const slug = url.pathname.replace(/^\/+|\/+$/g, '')
   const heading = space.blog_title ?? space.name
 
+  // One note published on its own is the whole site: it sits at the root with
+  // no index above it, and nothing else in the space is reachable.
+  if (space.blog_note) {
+    const only = results.find((entry) => entry.path === space.blog_note)
+    if (!only) return page('Not found', '<h1>Not found</h1>', env)
+    if (slug) return page('Not found', '<h1>Not found</h1>', env)
+
+    const object = await env.NOTES.get(`spaces/${space.id}/${only.id}`)
+    const source = object ? await object.text() : ''
+
+    return page(
+      title(only, source),
+      renderMarkdown(source, { footnotes: true, escapeHtml: true }),
+      env,
+    )
+  }
+
   if (!slug) {
     const items = results
       .map((note) => {

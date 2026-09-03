@@ -176,14 +176,15 @@ export const de: Dictionary = {
   'Digit {number}': 'Ziffer {number}',
   'Resend in {seconds}s': 'Erneut in {seconds}s',
   'Last synced {time}.': 'Zuletzt synchronisiert um {time}.',
-  'Keep my spaces in my account': 'Meine Bereiche in meinem Konto behalten',
   '{count} spaces sync to your account.': '{count} Bereiche werden mit deinem Konto synchronisiert.',
-  'Your notes stay on this computer.': 'Deine Notizen bleiben auf diesem Computer.',
-  'Turn on syncing first, from Account.': 'Aktiviere die Synchronisierung zuerst unter Konto.',
   Update: 'Aktualisieren',
   'Live at': 'Erreichbar unter',
 
   // Publishing
+  'What to publish': 'Was veröffentlicht wird',
+  'The whole space': 'Der ganze Bereich',
+  'Only {name}': 'Nur {name}',
+  'Sign in first, from Account.': 'Melde dich zuerst an, unter Konto.',
   'Publish this space as a blog': 'Diesen Bereich als Blog veröffentlichen',
   'Everything in this space becomes public.': 'Alles in diesem Bereich wird öffentlich.',
   'Every note, including drafts, is readable by anyone with the address.':
@@ -200,7 +201,7 @@ export const de: Dictionary = {
   'checking…': 'wird geprüft…',
 
   // LLM
-    'Connect an LLM to your notes': 'Ein LLM mit deinen Notizen verbinden',
+  'Connect an LLM to your notes': 'Ein LLM mit deinen Notizen verbinden',
   'Sign in first - the connector reaches the notes in your account.':
     'Melde dich zuerst an - der Connector greift auf die Notizen in deinem Konto zu.',
   'Let it write to my notes, not only read them':

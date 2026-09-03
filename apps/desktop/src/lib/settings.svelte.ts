@@ -171,22 +171,6 @@ class Settings {
     }
   }
 
-  /** Turns syncing on or off for everything at once. */
-  async setSyncing(on: boolean) {
-    if (!account.token) return
-
-    this.busy = true
-    this.error = null
-
-    try {
-      await sync.setEnabled(on)
-    } catch (error) {
-      this.error = error instanceof Error ? error.message : 'could not change syncing'
-    } finally {
-      this.busy = false
-    }
-  }
-
   async checkSubdomain(value: string) {
     if (!account.token || value.length < 2) {
       this.availability = { checking: false, available: null }
@@ -202,7 +186,12 @@ class Settings {
     }
   }
 
-  async publish(settings: { subdomain?: string; domain?: string; title?: string }) {
+  async publish(settings: {
+    subdomain?: string
+    domain?: string
+    title?: string
+    note?: string | null
+  }) {
     const space = this.remote
     if (!space || !account.token) return
 

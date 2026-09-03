@@ -175,14 +175,15 @@ export const ja: Dictionary = {
   'Digit {number}': '{number} 桁目',
   'Resend in {seconds}s': '{seconds} 秒後に再送',
   'Last synced {time}.': '最終同期 {time}。',
-  'Keep my spaces in my account': 'スペースをアカウントに保管する',
   '{count} spaces sync to your account.': '{count} 個のスペースがアカウントと同期しています。',
-  'Your notes stay on this computer.': 'ノートはこのコンピューターに留まります。',
-  'Turn on syncing first, from Account.': 'まずアカウントで同期を有効にしてください。',
   Update: '更新',
   'Live at': '公開先',
 
   // Publishing
+  'What to publish': '公開する範囲',
+  'The whole space': 'スペース全体',
+  'Only {name}': '{name} のみ',
+  'Sign in first, from Account.': 'まずアカウントでサインインしてください。',
   'Publish this space as a blog': 'このスペースをブログとして公開',
   'Everything in this space becomes public.': 'このスペースのすべてが公開されます。',
   'Every note, including drafts, is readable by anyone with the address.':

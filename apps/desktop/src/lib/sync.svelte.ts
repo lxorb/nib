@@ -4,7 +4,6 @@ import { invoke } from './tauri'
 import { type Entry, workspace } from './workspace.svelte'
 
 const STORAGE_KEY = 'nib:mirrors'
-const ENABLED_KEY = 'nib:sync-on'
 const POLL_INTERVAL = 20_000
 
 /** What the last sync left on disk, so local edits can be told apart from
@@ -55,28 +54,7 @@ class Sync {
   private timer: ReturnType<typeof setInterval> | null = null
   private running = false
 
-  /** Syncing is all of your spaces or none of them. A per-space choice would
-   *  mean some notes are on this machine only and others are everywhere, with
-   *  nothing on screen to say which is which. */
-  enabled = $state(localStorage.getItem(ENABLED_KEY) === 'true')
-
-  async setEnabled(on: boolean) {
-    this.enabled = on
-    localStorage.setItem(ENABLED_KEY, String(on))
-
-    if (!on) {
-      this.mirrors = {}
-      this.save()
-      this.stop()
-      return
-    }
-
-    this.start()
-  }
-
   start() {
-    if (!this.enabled) return
-
     this.mirrors = this.load()
     if (this.timer) clearInterval(this.timer)
     this.timer = setInterval(() => void this.tick(), POLL_INTERVAL)
@@ -98,7 +76,7 @@ class Sync {
 
   private async reconcile() {
     const token = account.token
-    if (!token || !this.enabled) return
+    if (!token) return
 
     try {
       await account.loadSpaces()

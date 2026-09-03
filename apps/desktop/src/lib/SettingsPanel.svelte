@@ -24,6 +24,8 @@
 
   let subdomain = $state('')
   let domain = $state('')
+  /** Empty means the whole space; otherwise the one note's path in it. */
+  let blogNote = $state('')
   let confirmPublic = $state(false)
   let copied = $state(false)
   let checkTimer: ReturnType<typeof setTimeout>
@@ -35,6 +37,7 @@
     if (!settings.open) return
     subdomain = blog?.subdomain ?? ''
     domain = blog?.domain ?? ''
+    blogNote = blog?.note ?? ''
     confirmPublic = published
   })
 
@@ -45,6 +48,17 @@
   }
 
   const isWindows = navigator.userAgent.includes('Windows')
+
+  const stripped = (name: string) => name.replace(/\.(md|markdown|mdown|mkd)$/i, '')
+
+  /** The path the server knows a note by: relative to its space, forward slashed. */
+  function relativeTo(path: string): string {
+    const root = workspace.activeSpace?.root ?? ''
+    return path
+      .slice(root.length)
+      .replace(/^[\\/]+/, '')
+      .replace(/\\/g, '/')
+  }
 
   /** What an LLM client needs to reach these notes. */
   const snippet = $derived(
@@ -88,30 +102,16 @@
           {#if account.signedIn}
             <p class="lead">{account.user?.email}</p>
 
-            <!-- One switch for everything: spaces are either all in the
-                 account or all on this machine. -->
-            <label class="switch">
-              <input
-                type="checkbox"
-                checked={sync.enabled}
-                disabled={settings.busy}
-                onchange={(event) => settings.setSyncing(event.currentTarget.checked)}
-              />
-              <span>{t('Keep my spaces in my account')}</span>
-            </label>
-
-            {#if sync.enabled}
-              <p class="note" transition:slide={{ duration: 180 }}>
-                {t('{count} spaces sync to your account.', { count: workspace.spaces.length })}
-                {#if sync.lastSyncedAt}
-                  {t('Last synced {time}.', {
-                    time: new Date(sync.lastSyncedAt).toLocaleTimeString(),
-                  })}
-                {/if}
-              </p>
-            {:else}
-              <p class="note">{t('Your notes stay on this computer.')}</p>
-            {/if}
+            <!-- Having an account is what syncing means, so there is nothing
+                 to switch: the pane only says where things stand. -->
+            <p class="note">
+              {t('{count} spaces sync to your account.', { count: workspace.spaces.length })}
+              {#if sync.lastSyncedAt}
+                {t('Last synced {time}.', {
+                  time: new Date(sync.lastSyncedAt).toLocaleTimeString(),
+                })}
+              {/if}
+            </p>
 
             <button class="quiet" onclick={() => account.signOut()}>{t('Sign out')}</button>
           {:else}
@@ -124,7 +124,7 @@
       {:else if settings.section === 'publish'}
         <div class="pane" in:fly={{ y: 8, duration: 180, easing: cubicOut }}>
           {#if !settings.remote}
-            <p class="note">{t('Turn on syncing first, from Account.')}</p>
+            <p class="note">{t('Sign in first, from Account.')}</p>
           {:else}
             <!-- The consequence comes before the switch, not after it. -->
             <label class="danger-check">
@@ -136,6 +136,18 @@
             </label>
 
             <fieldset disabled={!confirmPublic}>
+              <label class="field">
+                <span class="label">{t('What to publish')}</span>
+                <select bind:value={blogNote}>
+                  <option value="">{t('The whole space')}</option>
+                  {#each workspace.notes as note (note.path)}
+                    <option value={relativeTo(note.path)}>
+                      {t('Only {name}', { name: stripped(note.name) })}
+                    </option>
+                  {/each}
+                </select>
+              </label>
+
               <label class="field">
                 <span class="label">{t('Address')}</span>
                 <div class="row">
@@ -183,7 +195,7 @@
               <button
                 class="primary"
                 disabled={settings.busy || !subdomain}
-                onclick={() => settings.publish({ subdomain, domain: domain || undefined })}
+                onclick={() => settings.publish({ subdomain, domain: domain || undefined, note: blogNote || null })}
               >
                 {published ? t('Update') : t('Publish')}
               </button>

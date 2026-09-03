@@ -4,7 +4,7 @@ import { fileURLToPath } from 'node:url'
 import app from '../src/index'
 import type { Env } from '../src/types'
 
-const MIGRATIONS = ['0001_init.sql', '0002_mcp_tokens.sql'].map((name) =>
+const MIGRATIONS = ['0001_init.sql', '0002_mcp_tokens.sql', '0003_blog_note.sql'].map((name) =>
   fileURLToPath(new URL(`../migrations/${name}`, import.meta.url)),
 )
 

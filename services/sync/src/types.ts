@@ -41,6 +41,8 @@ export interface Space {
   blog_subdomain: string | null
   blog_domain: string | null
   blog_title: string | null
+  /** When set, the only note published, shown at the root. */
+  blog_note: string | null
 }
 
 export interface Note {

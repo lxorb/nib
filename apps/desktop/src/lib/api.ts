@@ -18,6 +18,7 @@ export interface RemoteSpace {
     subdomain: string | null
     domain: string | null
     title: string | null
+    note: string | null
   }
 }
 
@@ -133,7 +134,7 @@ export const api = {
   publish: (
     token: string,
     spaceId: string,
-    settings: { subdomain?: string; domain?: string; title?: string },
+    settings: { subdomain?: string; domain?: string; title?: string; note?: string | null },
   ) =>
     request<{ space: RemoteSpace; dns: DnsRecord[] }>(`/v1/spaces/${spaceId}/blog`, {
       method: 'PUT',

@@ -176,16 +176,16 @@ export const fr: Dictionary = {
   'Digit {number}': 'Chiffre {number}',
   'Resend in {seconds}s': 'Renvoyer dans {seconds} s',
   'Last synced {time}.': 'Dernière synchronisation à {time}.',
-  'Keep my spaces in my account': 'Garder mes espaces dans mon compte',
   '{count} spaces sync to your account.':
     '{count} espaces sont synchronisés avec votre compte.',
-  'Your notes stay on this computer.': 'Vos notes restent sur cet ordinateur.',
-  'Turn on syncing first, from Account.':
-    "Activez d'abord la synchronisation, depuis Compte.",
   Update: 'Mettre à jour',
   'Live at': 'En ligne sur',
 
   // Publishing
+  'What to publish': 'Ce qui est publié',
+  'The whole space': "L'espace entier",
+  'Only {name}': 'Seulement {name}',
+  'Sign in first, from Account.': "Connectez-vous d'abord, depuis Compte.",
   'Publish this space as a blog': 'Publier cet espace comme blog',
   'Everything in this space becomes public.': 'Tout dans cet espace devient public.',
   'Every note, including drafts, is readable by anyone with the address.':

@@ -177,14 +177,15 @@ export const gsw: Dictionary = {
   'Digit {number}': 'Ziffer {number}',
   'Resend in {seconds}s': 'Nomal i {seconds}s',
   'Last synced {time}.': 'Zletscht abglichä am {time}.',
-  'Keep my spaces in my account': 'Mini Ablage im Konto behalte',
   '{count} spaces sync to your account.': '{count} Ablage wärded mit dim Konto abglichä.',
-  'Your notes stay on this computer.': 'Dini Notize bliibed uf däm Computer.',
-  'Turn on syncing first, from Account.': 'Schalt zerscht s Abgliche i, under Konto.',
   Update: 'Aktualisiere',
   'Live at': 'Erreichbar under',
 
   // Publishing
+  'What to publish': 'Was veröffentlicht wird',
+  'The whole space': 'Di ganz Ablag',
+  'Only {name}': 'Nur {name}',
+  'Sign in first, from Account.': 'Mäld di zerscht aa, under Konto.',
   'Publish this space as a blog': 'Die Ablag als Blog veröffentliche',
   'Everything in this space becomes public.': 'Alles i dere Ablag wird öffentlich.',
   'Every note, including drafts, is readable by anyone with the address.':

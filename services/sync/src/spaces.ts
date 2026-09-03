@@ -1,9 +1,12 @@
 import { Hono } from 'hono'
 import { newId, now } from './crypto'
+import { cleanPath } from './notes'
 import type { Env, Space, Variables } from './types'
 
 const NAME_LIMIT = 80
-const SUBDOMAIN = /^[a-z0-9](?:[a-z0-9-]{1,30}[a-z0-9])?$/
+// Two to thirty-two, which is what the message beside it promises. The
+// optional group made one character legal and two impossible.
+const SUBDOMAIN = /^[a-z0-9][a-z0-9-]{0,30}[a-z0-9]$/
 const DOMAIN = /^(?!-)[a-z0-9-]{1,63}(?<!-)(\.(?!-)[a-z0-9-]{1,63}(?<!-))+$/
 
 /** Names people cannot take on the shared blog domain. */
@@ -50,6 +53,7 @@ spaces.post('/', async (context) => {
     blog_enabled: 0,
     blog_subdomain: null,
     blog_domain: null,
+    blog_note: null,
     blog_title: null,
   }
 
@@ -100,7 +104,12 @@ spaces.put('/:id/blog', async (context) => {
   const space = await ownedSpace(context.env, user.id, context.req.param('id'))
   if (!space) return context.json({ error: 'no such space' }, 404)
 
-  const body = await context.req.json<{ subdomain?: string; domain?: string; title?: string }>()
+  const body = await context.req.json<{
+    subdomain?: string
+    domain?: string
+    title?: string
+    note?: string | null
+  }>()
   const subdomain = body.subdomain?.trim().toLowerCase()
   const domain = body.domain?.trim().toLowerCase().replace(/^https?:\/\//, '').replace(/\/.*$/, '')
 
@@ -123,15 +132,29 @@ spaces.put('/:id/blog', async (context) => {
     return context.json({ error: 'that does not look like a domain' }, 400)
   }
 
+  // A note path publishes that one note at the root; null publishes the space.
+  const note = body.note === undefined ? space.blog_note : (cleanPath(body.note ?? '') ?? null)
+
+  if (note) {
+    const exists = await context.env.DB.prepare(
+      'select id from notes where space_id = ? and path = ? and deleted = 0',
+    )
+      .bind(space.id, note)
+      .first()
+
+    if (!exists) return context.json({ error: 'no such note in this space' }, 404)
+  }
+
   await context.env.DB.prepare(
     `update spaces set blog_enabled = 1,
                        blog_subdomain = coalesce(?, blog_subdomain),
                        blog_domain = ?,
                        blog_title = coalesce(?, blog_title),
+                       blog_note = ?,
                        updated_at = ?
       where id = ?`,
   )
-    .bind(subdomain ?? null, domain || null, body.title?.trim() || null, now(), space.id)
+    .bind(subdomain ?? null, domain || null, body.title?.trim() || null, note, now(), space.id)
     .run()
 
   const updated = await ownedSpace(context.env, user.id, space.id)
@@ -196,6 +219,7 @@ function present(space: Space) {
       subdomain: space.blog_subdomain,
       domain: space.blog_domain,
       title: space.blog_title,
+      note: space.blog_note,
     },
   }
 }
