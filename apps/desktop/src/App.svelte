@@ -1,15 +1,19 @@
 <script lang="ts">
   import { EditorView } from '@nib/editor'
   import Editor from './lib/Editor.svelte'
+  import Palette from './lib/Palette.svelte'
   import Rail from './lib/Rail.svelte'
   import Sidebar from './lib/Sidebar.svelte'
   import StatusBar from './lib/StatusBar.svelte'
   import Tabs from './lib/Tabs.svelte'
   import Titlebar from './lib/Titlebar.svelte'
+  import { modes } from './lib/modes.svelte'
+  import { currentWindow, isDesktop } from './lib/tauri'
   import { theme } from './lib/theme.svelte'
   import { workspace } from './lib/workspace.svelte'
 
   let view = $state<EditorView>()
+  let palette = $state(false)
 
   const title = $derived(
     workspace.active
@@ -18,7 +22,13 @@
   )
 
   theme.init()
+  modes.restore()
   void workspace.restore()
+
+  // A new view starts with no modes applied, so re-apply on every swap.
+  $effect(() => {
+    if (view) modes.apply(view)
+  })
 
   function goto(line: number) {
     if (!view) return
@@ -31,37 +41,59 @@
     view.focus()
   }
 
-  function onKeydown(event: KeyboardEvent) {
-    if (!event.ctrlKey && !event.metaKey) return
+  async function toggleFullscreen() {
+    if (!isDesktop) return
+    const window = await currentWindow()
+    await window.setFullscreen(!(await window.isFullscreen()))
+  }
 
-    const key = event.key.toLowerCase()
+  function cycleTab(direction: number) {
+    const index = workspace.tabs.findIndex((tab) => tab.id === workspace.activeTabId)
+    if (index < 0) return
+
+    const next = (index + direction + workspace.tabs.length) % workspace.tabs.length
+    workspace.activate(workspace.tabs[next].id)
+  }
+
+  function onKeydown(event: KeyboardEvent) {
+    const mod = event.ctrlKey || event.metaKey
     const shift = event.shiftKey
 
-    const handlers: Record<string, () => void> = {
-      s: () => void workspace.save(),
-      n: () => workspace.openBlank(),
-      w: () => workspace.activeTabId && workspace.close(workspace.activeTabId),
-      o: () => void workspace.addSpace(),
-      l: () => shift && workspace.toggleSidebar(),
-      '1': () => shift && workspace.showPanel('outline'),
-      '2': () => shift && workspace.showPanel('articles'),
-      '3': () => shift && workspace.showPanel('tree'),
-    }
+    if (event.key === 'F8') return act(event, () => modes.toggleFocus(view))
+    if (event.key === 'F9') return act(event, () => modes.toggleTypewriter(view))
+    if (event.key === 'F11') return act(event, () => void toggleFullscreen())
+    if (!mod) return
 
-    const handler = handlers[key]
-    if (!handler) return
+    const key = event.key.toLowerCase()
 
-    // Shift-qualified bindings must not swallow their unshifted counterparts.
-    if ((key === 'l' || key === '1' || key === '2' || key === '3') && !shift) return
+    if (key === 'p' && !shift) return act(event, () => (palette = true))
+    if (key === '/') return act(event, () => modes.toggleSource(view))
+    if (key === 's' && !shift) return act(event, () => void workspace.save())
+    if (key === 'n' && !shift) return act(event, () => workspace.openBlank())
+    if (key === 'o' && !shift) return act(event, () => void workspace.addSpace())
+    if (key === 'w') return act(event, () => workspace.activeTabId && workspace.close(workspace.activeTabId))
+    if (key === 'tab') return act(event, () => cycleTab(shift ? -1 : 1))
 
+    if (!shift) return
+
+    if (key === 'l') return act(event, () => workspace.toggleSidebar())
+    if (key === '1') return act(event, () => workspace.showPanel('outline'))
+    if (key === '2') return act(event, () => workspace.showPanel('articles'))
+    if (key === '3') return act(event, () => workspace.showPanel('tree'))
+    if (key === '0') return act(event, () => modes.resetZoom())
+    if (key === '=' || key === '+') return act(event, () => modes.stepZoom(1))
+    if (key === '-' || key === '_') return act(event, () => modes.stepZoom(-1))
+  }
+
+  function act(event: KeyboardEvent, run: () => void) {
     event.preventDefault()
-    handler()
+    run()
   }
 </script>
 
 <svelte:window onkeydown={onKeydown} />
 
-<main>
+<main class:focus={modes.focus}>
   <Rail />
 
   <div class="pane">
@@ -90,6 +122,8 @@
     </div>
   </div>
 </main>
+
+<Palette bind:open={palette} {view} />
 
 <style>
   main {

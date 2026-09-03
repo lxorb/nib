@@ -10,7 +10,9 @@
   --text-xs: 11px;
   --text-sm: 12.5px;
   --text-base: 15px;
-  --text-content: 16.5px;
+  /* The editor's own zoom, so chrome stays put while the text scales. */
+  --zoom: 1;
+  --text-content: calc(16.5px * var(--zoom));
   --leading-content: 1.72;
 
   --space-1: 4px;
