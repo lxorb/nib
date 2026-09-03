@@ -4,6 +4,7 @@ mod launch;
 mod logs;
 mod mcp;
 mod notes;
+mod recent;
 mod themes;
 
 use launch::{markdown_paths, Pending};
@@ -60,6 +61,7 @@ pub fn run() {
             logs::log_dir,
             logs::write_log,
             logs::read_log,
+            recent::remember_recent,
         ])
         .setup(|app| {
             let files = markdown_paths(std::env::args());

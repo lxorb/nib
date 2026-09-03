@@ -410,6 +410,9 @@ class Workspace {
   private remember(path: string) {
     this.recent = [path, ...this.recent.filter((entry) => entry !== path)].slice(0, RECENT_LIMIT)
     localStorage.setItem(RECENT_KEY, JSON.stringify(this.recent))
+
+    // The taskbar keeps its own recent list; this is what puts a note in it.
+    if (isDesktop) void invoke('remember_recent', { path }).catch(() => undefined)
   }
 
   forgetRecent() {
