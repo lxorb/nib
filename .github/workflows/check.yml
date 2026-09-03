@@ -107,12 +107,14 @@ jobs:
 
       # Schema first. A new Worker may read a column the old schema lacks, and
       # the reverse - an unused new column - breaks nothing.
+      # `run` spelled out: `pnpm deploy` is a pnpm command of its own, and
+      # without it the package script is never reached.
       - name: Migrate the database
-        run: pnpm --filter @nib/sync migrate:remote
+        run: pnpm --filter @nib/sync run migrate:remote
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
 
       - name: Deploy the Worker
-        run: pnpm --filter @nib/sync deploy
+        run: pnpm --filter @nib/sync run deploy
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
