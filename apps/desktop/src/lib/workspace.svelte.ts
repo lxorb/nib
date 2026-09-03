@@ -79,7 +79,8 @@ class Workspace {
   tree = $state<Entry | null>(null)
   tabs = $state<Tab[]>([])
   activeTabId = $state<string | null>(null)
-  panel = $state<Panel | null>('tree')
+  // Hidden until asked for, the way Typora starts.
+  panel = $state<Panel | null>(null)
 
   readonly activeSpace = $derived(this.spaces.find((space) => space.id === this.activeSpaceId) ?? null)
   readonly active = $derived(this.tabs.find((tab) => tab.id === this.activeTabId) ?? null)
@@ -127,7 +128,8 @@ class Workspace {
     }
 
     this.spaces = state.spaces ?? []
-    this.panel = state.panel ?? 'tree'
+    // `?? 'tree'` would resurrect a sidebar the reader deliberately closed.
+    this.panel = 'panel' in state ? state.panel : null
     this.activeSpaceId = state.activeSpace ?? this.spaces[0]?.id ?? null
 
     if (this.activeSpaceId) await this.loadTree()

@@ -12,5 +12,8 @@
   },
   "devDependencies": {
     "typescript": "^5.9.3"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": ["esbuild", "workerd"]
   }
 }

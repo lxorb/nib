@@ -1,0 +1,58 @@
+import { Hono } from 'hono'
+import { cors } from 'hono/cors'
+import { auth, requireUser } from './auth'
+import { serveBlog, spaceForHost } from './blog'
+import { notes } from './notes'
+import { spaces } from './spaces'
+import type { Env, Variables } from './types'
+
+const app = new Hono<{ Bindings: Env; Variables: Variables }>()
+
+/** The desktop app is not served from the API's origin, so it needs to be let in
+ *  by name. Auth rides on a bearer token, never on cookies. */
+app.use(
+  '/v1/*',
+  cors({
+    origin: (origin) =>
+      /^(https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?|tauri:\/\/localhost|https?:\/\/tauri\.localhost|https:\/\/markdown\.emilvinu\.ch)$/.test(
+        origin,
+      )
+        ? origin
+        : '',
+    allowHeaders: ['authorization', 'content-type'],
+    allowMethods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    maxAge: 86400,
+  }),
+)
+
+app.route('/v1/auth', auth)
+
+/** Everything past this point needs a session. */
+app.use('/v1/*', async (context, next) => {
+  const user = await requireUser(context.env, context.req.header('authorization'))
+  if (!user) return context.json({ error: 'sign in first' }, 401)
+
+  context.set('user', user)
+  await next()
+})
+
+app.get('/v1/me', (context) => {
+  const user = context.get('user')
+  return context.json({ user: { id: user.id, email: user.email } })
+})
+
+app.route('/v1/spaces', spaces)
+app.route('/v1', notes)
+
+app.get('/health', (context) => context.json({ ok: true }))
+
+/** Anything that is not the API is a published space, looked up by hostname. */
+app.all('*', async (context) => {
+  const url = new URL(context.req.url)
+  const space = await spaceForHost(context.env, url.host)
+
+  if (!space) return context.text('Not found', 404)
+  return serveBlog(context.env, space, url)
+})
+
+export default app

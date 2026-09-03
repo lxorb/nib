@@ -1,0 +1,24 @@
+{
+  "name": "@nib/sync",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "migrate:local": "wrangler d1 migrations apply nib --local",
+    "migrate:remote": "wrangler d1 migrations apply nib --remote",
+    "test": "vitest run",
+    "check": "tsc --noEmit"
+  },
+  "dependencies": {
+    "hono": "^4.13.5",
+    "marked": "^18.0.11"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^5.20260903.1",
+    "typescript": "^5.9.3",
+    "vitest": "^5.0.0",
+    "wrangler": "^4.128.0"
+  }
+}

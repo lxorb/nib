@@ -1,0 +1,29 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "nib-sync",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-09-01",
+  "compatibility_flags": ["nodejs_compat"],
+  "observability": { "enabled": true },
+
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "nib",
+      "database_id": "PLACEHOLDER",
+      "migrations_dir": "migrations"
+    }
+  ],
+
+  "r2_buckets": [{ "binding": "NOTES", "bucket_name": "nib-notes" }],
+
+  "vars": {
+    "BLOG_ROOT": "icinoxis.net",
+    "APP_ORIGIN": "https://markdown.emilvinu.ch"
+  },
+
+  "routes": [
+    { "pattern": "markdown.emilvinu.ch/*", "zone_name": "emilvinu.ch" },
+    { "pattern": "*.icinoxis.net/*", "zone_name": "icinoxis.net" }
+  ]
+}
