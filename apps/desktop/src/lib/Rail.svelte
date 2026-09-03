@@ -1,5 +1,7 @@
 <script lang="ts">
   import { account } from './account.svelte'
+  import IconPicker from './IconPicker.svelte'
+  import { type IconNode, loadIcons } from './icons'
   import { t } from './i18n.svelte'
   import { DIVIDER, menu, revealEntry } from './menu.svelte'
   import { deleteSpace, newSpace, renameSpace } from './space-actions'
@@ -7,9 +9,25 @@
   import { workspace } from './workspace.svelte'
   import { theme } from './theme.svelte'
 
+  let picker = $state<IconPicker>()
+  /** Filled once any space has an icon, so the rail can draw them. */
+  let library = $state<Record<string, IconNode>>({})
+
   function initial(name: string): string {
     return [...name.trim()][0]?.toUpperCase() ?? '·'
   }
+
+  const icon = (id: string) => {
+    const name = workspace.iconFor(id)
+    return name ? (library[name] ?? null) : null
+  }
+
+  // Only worth loading the set once a space actually uses one.
+  $effect(() => {
+    if (Object.keys(workspace.icons).length && !Object.keys(library).length) {
+      void loadIcons().then((all) => (library = all))
+    }
+  })
 
 </script>
 
@@ -27,12 +45,21 @@
           menu.show(event, [
             { label: t('New note'), run: () => workspace.createNote(space.root) },
             { label: t('Rename'), run: () => void renameSpace(space) },
+            { label: t('Choose an icon'), run: () => void picker?.choose(space.id) },
             ...revealEntry(space.root),
             DIVIDER,
             { label: t('Delete space'), danger: true, run: () => void deleteSpace(space) },
           ])}
       >
-        {initial(space.name)}
+        {#if icon(space.id)}
+          <svg class="glyph" viewBox="0 0 24 24">
+            {#each icon(space.id)! as [tag, attrs] (JSON.stringify(attrs))}
+              <svelte:element this={tag} {...attrs} />
+            {/each}
+          </svg>
+        {:else}
+          {initial(space.name)}
+        {/if}
         <span class="name">{space.name}</span>
       </button>
     {/each}
@@ -89,6 +116,8 @@
     </button>
   </div>
 </nav>
+
+<IconPicker bind:this={picker} />
 
 <style>
   nav {
@@ -227,6 +256,13 @@
 
   .foot .add:hover {
     transform: none;
+  }
+
+  .glyph {
+    width: 16px;
+    height: 16px;
+    stroke-width: 1.8;
+    stroke-linejoin: round;
   }
 
   .account {

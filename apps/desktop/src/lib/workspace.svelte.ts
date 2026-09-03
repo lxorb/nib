@@ -67,6 +67,7 @@ const RECENT_KEY = 'nib:recent'
 const RECENT_LIMIT = 15
 const UNDO_LIMIT = 20
 const PINNED_KEY = 'nib:pinned'
+const ICONS_KEY = 'nib:icons'
 const AUTO_SAVE_DELAY = 1200
 const UNTITLED = 'Untitled'
 const MARKDOWN = /\.(md|markdown|mdown|mkd)$/i
@@ -93,6 +94,15 @@ function readRecent(): string[] {
     return Array.isArray(saved) ? (saved as string[]) : []
   } catch {
     return []
+  }
+}
+
+function readIcons(): Record<string, string> {
+  try {
+    const saved = JSON.parse(localStorage.getItem(ICONS_KEY) ?? '{}')
+    return saved && typeof saved === 'object' ? (saved as Record<string, string>) : {}
+  } catch {
+    return {}
   }
 }
 
@@ -162,6 +172,7 @@ class Workspace {
   undoable = $state<FileAction[]>([])
   tags = $state<Tag[]>([])
   pinned = $state<string[]>(readPinned())
+  icons = $state<Record<string, string>>(readIcons())
 
   private saveTimer: ReturnType<typeof setTimeout> | undefined
 
@@ -575,6 +586,25 @@ class Workspace {
   forgetRecent() {
     this.recent = []
     localStorage.removeItem(RECENT_KEY)
+  }
+
+  /** The icon a space shows in the rail, if it has been given one. Keyed by
+   *  folder rather than id, so it survives the ids being handed out again. */
+  iconFor(spaceId: string | null): string | null {
+    const space = this.spaces.find((entry) => entry.id === spaceId)
+    return space ? (this.icons[space.root] ?? null) : null
+  }
+
+  setIcon(spaceId: string, name: string | null) {
+    const space = this.spaces.find((entry) => entry.id === spaceId)
+    if (!space) return
+
+    const next = { ...this.icons }
+    if (name) next[space.root] = name
+    else delete next[space.root]
+
+    this.icons = next
+    localStorage.setItem(ICONS_KEY, JSON.stringify(next))
   }
 
   isPinned(path: string): boolean {

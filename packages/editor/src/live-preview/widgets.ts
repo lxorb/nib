@@ -130,15 +130,42 @@ export class FenceHeaderWidget extends WidgetType {
     copy.type = 'button'
     copy.title = uiLabel('copy')
     copy.setAttribute('aria-label', uiLabel('copyCode'))
-    copy.textContent = uiLabel('copy')
+
+    // Two overlapping sheets for copy, a tick once it has been taken. Drawn
+    // rather than written, so the button stays the same size in any language.
+    const draw = (paths: string[]) => {
+      copy.replaceChildren()
+      const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg')
+      svg.setAttribute('viewBox', '0 0 14 14')
+
+      for (const d of paths) {
+        const shape = document.createElementNS('http://www.w3.org/2000/svg', 'path')
+        shape.setAttribute('d', d)
+        svg.append(shape)
+      }
+
+      copy.append(svg)
+    }
+
+    const SHEETS = ['M5 5h7v7H5z', 'M2 9V2h7']
+    const TICK = ['M2.5 7.5l3 3 6-6']
+
+    draw(SHEETS)
 
     copy.addEventListener('mousedown', (event) => {
       event.preventDefault()
       event.stopPropagation()
 
       void navigator.clipboard.writeText(this.code).then(() => {
-        copy.textContent = uiLabel('copied')
-        window.setTimeout(() => (copy.textContent = uiLabel('copy')), 1400)
+        copy.classList.add('nib-fence-copied')
+        copy.title = uiLabel('copied')
+        draw(TICK)
+
+        window.setTimeout(() => {
+          copy.classList.remove('nib-fence-copied')
+          copy.title = uiLabel('copy')
+          draw(SHEETS)
+        }, 1400)
       })
     })
 

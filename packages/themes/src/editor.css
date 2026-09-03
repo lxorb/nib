@@ -164,29 +164,43 @@
   opacity: 0.65;
 }
 
+/* Always there: a control you have to hover to discover is one most people
+   never find. */
 .nib-fence-copy {
-  padding: 3px 7px;
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  padding: 0;
   border: 1px solid var(--line);
   border-radius: var(--radius-sm);
   background: var(--surface-2);
-  color: var(--muted-strong);
-  font: inherit;
+  color: var(--muted);
   cursor: default;
-  opacity: 0;
   transition:
-    opacity var(--dur-fast) var(--ease-out),
     background var(--dur-fast) var(--ease-out),
     color var(--dur-fast) var(--ease-out);
 }
 
-.cm-line.nib-code:hover .nib-fence-copy,
-.nib-fence-header:hover .nib-fence-copy {
-  opacity: 1;
+.nib-fence-copy svg {
+  width: 12px;
+  height: 12px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }
 
 .nib-fence-copy:hover {
   background: var(--accent);
   border-color: var(--accent);
+  color: #fff;
+}
+
+.nib-fence-copy.nib-fence-copied {
+  background: var(--success);
+  border-color: var(--success);
   color: #fff;
 }
 
