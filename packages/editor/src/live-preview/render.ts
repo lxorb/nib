@@ -3,6 +3,7 @@ import katex from 'katex'
 // Chemical equations: `\ce{H2O}` and friends, as Typora supports.
 import 'katex/contrib/mhchem'
 import 'katex/dist/katex.min.css'
+import { sequenceToMermaid } from './sequence'
 
 /** Equation labels seen in this document, in order, so `\eqref` can resolve. */
 const equationNumbers = new Map<string, number>()
@@ -70,7 +71,7 @@ export class MathWidget extends WidgetType {
 }
 
 /** Fence languages Typora renders as pictures rather than code. */
-export const DIAGRAM_LANGUAGES = new Set(['mermaid', 'flow'])
+export const DIAGRAM_LANGUAGES = new Set(['mermaid', 'flow', 'sequence'])
 
 let diagramSeq = 0
 
@@ -98,12 +99,23 @@ export class DiagramWidget extends WidgetType {
   private async draw(host: HTMLElement) {
     try {
       if (this.language === 'flow') await drawFlowchart(host, this.code)
+      else if (this.language === 'sequence') await drawMermaid(host, sequenceToMermaid(this.code))
       else await drawMermaid(host, this.code)
     } catch (error) {
       host.classList.add('nib-diagram-error')
       host.textContent = error instanceof Error ? error.message : String(error)
     }
   }
+}
+
+/** A diagram as standalone SVG, for an export that has no editor around it. */
+export async function diagramSvg(code: string, language: string): Promise<string> {
+  const host = document.createElement('div')
+
+  if (language === 'flow') await drawFlowchart(host, code)
+  else await drawMermaid(host, language === 'sequence' ? sequenceToMermaid(code) : code)
+
+  return host.innerHTML
 }
 
 function themeColour(name: string): string {

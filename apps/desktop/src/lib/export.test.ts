@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest'
-import { buildHtml, localSources, PANDOC_FORMATS } from './export'
+import { buildHtml, diagramFences, localSources, PANDOC_FORMATS, unescape } from './export'
 
 const NOTE = `---
 title: Meta
@@ -107,5 +107,31 @@ describe('finding local images', () => {
 
   test('finds nothing in a page without images', () => {
     expect(localSources('<p>text</p>')).toEqual([])
+  })
+})
+
+describe('diagrams in an export', () => {
+  const html = '<pre><code class="language-mermaid">graph TD;\nA--&gt;B;</code></pre>'
+
+  test('finds a diagram fence and unescapes its source', () => {
+    expect(diagramFences(html)).toEqual([{ language: 'mermaid', code: 'graph TD;\nA-->B;' }])
+  })
+
+  test('finds the legacy fences too', () => {
+    expect(diagramFences('<pre><code class="language-sequence">A-&gt;B: x</code></pre>')).toEqual([
+      { language: 'sequence', code: 'A->B: x' },
+    ])
+    expect(diagramFences('<pre><code class="language-flow">st=&gt;start: go</code></pre>')).toEqual([
+      { language: 'flow', code: 'st=>start: go' },
+    ])
+  })
+
+  test('leaves an ordinary code fence alone', () => {
+    expect(diagramFences('<pre><code class="language-js">const x = 1</code></pre>')).toEqual([])
+  })
+
+  test('undoes escaping in the right order', () => {
+    expect(unescape('&amp;lt;')).toBe('&lt;')
+    expect(unescape('a &lt;b&gt; &quot;c&quot; &#39;d&#39;')).toBe(`a <b> "c" 'd'`)
   })
 })

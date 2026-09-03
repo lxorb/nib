@@ -1,3 +1,4 @@
+import { DIAGRAM_LANGUAGES, diagramSvg } from '@nib/editor'
 import { documentTitle, renderMarkdown } from '@nib/markdown'
 import { katexCss, themeCss } from '@nib/themes/raw'
 import { DEFAULT_PAGE_SETUP, type PageSetup, pageCss, pageSetupFor, runningMarkup } from './page-setup'
@@ -95,6 +96,48 @@ ${body}</div>
 `
 }
 
+const FENCE = /<pre><code class="language-([a-z]+)">([\s\S]*?)<\/code><\/pre>/g
+
+/** Undoes the escaping marked applies inside a code fence. */
+export function unescape(text: string): string {
+  return text
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/&amp;/g, '&')
+}
+
+/** The diagram fences in a page, in the order they appear. */
+export function diagramFences(html: string): { language: string; code: string }[] {
+  return [...html.matchAll(FENCE)]
+    .filter((match) => DIAGRAM_LANGUAGES.has(match[1]))
+    .map((match) => ({ language: match[1], code: unescape(match[2]) }))
+}
+
+/** Draws every diagram fence, so an exported page shows pictures rather than
+ *  the source that would have made them. A fence that will not draw is left as
+ *  code, which is more useful than an empty space. */
+export async function renderDiagrams(html: string): Promise<string> {
+  const fences = diagramFences(html)
+  if (!fences.length) return html
+
+  const drawn = await Promise.all(
+    fences.map((fence) =>
+      diagramSvg(fence.code, fence.language).catch(() => null),
+    ),
+  )
+
+  let index = 0
+
+  return html.replace(FENCE, (whole, language: string) => {
+    if (!DIAGRAM_LANGUAGES.has(language)) return whole
+
+    const svg = drawn[index++]
+    return svg ? `<figure class="nib-diagram" data-language="${language}">${svg}</figure>` : whole
+  })
+}
+
 /** Every `src` in the page that points at a file rather than at the network. */
 export function localSources(html: string): string[] {
   const found = new Set<string>()
@@ -145,7 +188,7 @@ export async function exportHtml(source: string, name: string, options: HtmlOpti
   const target = await chooseTarget(name, 'html', 'HTML')
   if (!target) return
 
-  let content = buildHtml(source, name, options)
+  let content = await renderDiagrams(buildHtml(source, name, options))
   if (options.resolveImage) content = await inlineImages(content, options.resolveImage)
 
   await invoke('write_note', { path: target, content })
@@ -153,7 +196,19 @@ export async function exportHtml(source: string, name: string, options: HtmlOpti
 }
 
 /** Prints the rendered note. The print dialog is where "Save as PDF" lives. */
-export function exportPdf(source: string, name: string, options: HtmlOptions = {}) {
+export async function exportPdf(source: string, name: string, options: HtmlOptions = {}) {
+  // The print frame cannot read the disk, so paths become asset URLs first.
+  const built = buildHtml(source, name, options)
+  const pointed = options.resolveImage
+    ? built.replace(
+        /(<img\b[^>]*?\bsrc=")([^"]*)(")/g,
+        (whole, before, src: string, after) =>
+          /^(data:|https?:|\/\/)/i.test(src) ? whole : `${before}${options.resolveImage!(src)}${after}`,
+      )
+    : built
+
+  const html = await renderDiagrams(pointed)
+
   const frame = document.createElement('iframe')
   frame.setAttribute('aria-hidden', 'true')
   frame.style.cssText = 'position:fixed;right:0;bottom:0;width:0;height:0;border:0;'
@@ -161,15 +216,6 @@ export function exportPdf(source: string, name: string, options: HtmlOptions = {
 
   const doc = frame.contentDocument
   if (!doc) return
-
-  // The print frame cannot read the disk, so paths become asset URLs first.
-  const html = options.resolveImage
-    ? buildHtml(source, name, options).replace(
-        /(<img\b[^>]*?\bsrc=")([^"]*)(")/g,
-        (whole, before, src: string, after) =>
-          /^(data:|https?:|\/\/)/i.test(src) ? whole : `${before}${options.resolveImage!(src)}${after}`,
-      )
-    : buildHtml(source, name, options)
 
   doc.open()
   doc.write(html)
