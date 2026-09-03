@@ -1,3 +1,4 @@
+mod export;
 mod mcp;
 mod notes;
 mod themes;
@@ -19,6 +20,8 @@ pub fn run() {
             notes::delete_folder,
             notes::save_asset,
             mcp::mcp_config,
+            export::has_pandoc,
+            export::run_pandoc,
             themes::theme_dir,
             themes::list_themes,
             themes::read_theme,

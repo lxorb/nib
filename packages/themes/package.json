@@ -5,8 +5,12 @@
   "type": "module",
   "exports": {
     ".": "./src/index.css",
+    "./raw": "./src/raw.ts",
     "./tokens.css": "./src/tokens.css",
     "./base.css": "./src/base.css",
     "./*": "./src/*"
+  },
+  "dependencies": {
+    "katex": "^0.18.5"
   }
 }

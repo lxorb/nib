@@ -1,10 +1,49 @@
 import type { EditorView } from '@nib/editor'
 import { account } from './account.svelte'
+import { PANDOC_FORMATS } from './export'
 import { modes } from './modes.svelte'
 import { settings } from './settings.svelte'
 import { invoke, isDesktop } from './tauri'
 import { theme } from './theme.svelte'
 import { workspace } from './workspace.svelte'
+
+/** Export entries. The pandoc formats only appear when pandoc is installed,
+ *  so the list never offers something that cannot work. */
+function exportCommands(): Command[] {
+  const note = () => workspace.active
+  const source = () => note()?.doc ?? ''
+  const name = () => note()?.name ?? 'Untitled.md'
+
+  const commands: Command[] = [
+    {
+      id: 'export-pdf',
+      label: 'Export as PDF',
+      run: () => import('./export').then((m) => m.exportPdf(source(), name())),
+    },
+    {
+      id: 'export-html',
+      label: 'Export as HTML',
+      run: () => void import('./export').then((m) => m.exportHtml(source(), name())),
+    },
+    {
+      id: 'export-html-bare',
+      label: 'Export as HTML without styles',
+      run: () => void import('./export').then((m) => m.exportHtml(source(), name(), { bare: true })),
+    },
+  ]
+
+  if (!settings.pandoc) return commands
+
+  for (const format of PANDOC_FORMATS) {
+    commands.push({
+      id: `export-${format.id}`,
+      label: `Export as ${format.label}`,
+      run: () => void import('./export').then((m) => m.exportPandoc(source(), name(), format.id)),
+    })
+  }
+
+  return commands
+}
 
 /** Reveals the folder a `.css` theme should be dropped into. */
 async function openThemesFolder() {
@@ -36,6 +75,8 @@ export function appCommands(view?: EditorView): Command[] {
     },
     { id: 'space', label: 'Add a space', run: () => void workspace.addSpace() },
     { id: 'settings', label: 'Settings', hint: 'Ctrl ,', run: () => settings.show() },
+
+    ...exportCommands(),
     { id: 'publish', label: 'Publish this space as a blog', run: () => settings.show('publish') },
     { id: 'llm', label: 'Connect an LLM to this space', run: () => settings.show('llm') },
 

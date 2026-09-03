@@ -34,6 +34,9 @@ class Settings {
   llmReadOnly = $state(true)
   mcp = $state<McpConfig | null>(null)
 
+  /** Whether pandoc is on this machine, which decides the export list. */
+  pandoc = $state(false)
+
   busy = $state(false)
   error = $state<string | null>(null)
   dns = $state<DnsRecord[]>([])
@@ -59,6 +62,10 @@ class Settings {
     } catch {
       // Defaults are the safe ones.
     }
+
+    void import('./export').then(({ pandocAvailable }) =>
+      pandocAvailable().then((found) => (this.pandoc = found)),
+    )
   }
 
   show(section: Section = 'account') {

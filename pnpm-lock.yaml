@@ -17,6 +17,9 @@ importers:
       '@nib/editor':
         specifier: workspace:*
         version: link:../../packages/editor
+      '@nib/markdown':
+        specifier: workspace:*
+        version: link:../../packages/markdown
       '@nib/themes':
         specifier: workspace:*
         version: link:../../packages/themes
@@ -35,6 +38,9 @@ importers:
       '@tauri-apps/plugin-opener':
         specifier: ^2.5.5
         version: 2.5.5
+      katex:
+        specifier: ^0.18.5
+        version: 0.18.5
     devDependencies:
       '@sveltejs/vite-plugin-svelte':
         specifier: ^7.3.0
@@ -51,6 +57,9 @@ importers:
       vite:
         specifier: ^8.2.2
         version: 8.2.2(esbuild@0.28.1)
+      vitest:
+        specifier: ^5.0.0
+        version: 5.0.0(vite@8.2.2(esbuild@0.28.1))
 
   packages/editor:
     dependencies:
@@ -117,7 +126,11 @@ importers:
         specifier: ^5.0.0
         version: 5.0.0(vite@8.2.2(esbuild@0.28.1))
 
-  packages/themes: {}
+  packages/themes:
+    dependencies:
+      katex:
+        specifier: ^0.18.5
+        version: 0.18.5
 
   packages/ui:
     dependencies:
