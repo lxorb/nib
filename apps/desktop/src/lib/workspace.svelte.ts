@@ -64,6 +64,7 @@ const TREE_KEY = 'nib:tree'
 const RECENT_KEY = 'nib:recent'
 const RECENT_LIMIT = 15
 const UNDO_LIMIT = 20
+const PINNED_KEY = 'nib:pinned'
 const AUTO_SAVE_DELAY = 1200
 const UNTITLED = 'Untitled'
 
@@ -86,6 +87,15 @@ function identifier(): string {
 function readRecent(): string[] {
   try {
     const saved = JSON.parse(localStorage.getItem(RECENT_KEY) ?? '[]')
+    return Array.isArray(saved) ? (saved as string[]) : []
+  } catch {
+    return []
+  }
+}
+
+function readPinned(): string[] {
+  try {
+    const saved = JSON.parse(localStorage.getItem(PINNED_KEY) ?? '[]')
     return Array.isArray(saved) ? (saved as string[]) : []
   } catch {
     return []
@@ -141,6 +151,7 @@ class Workspace {
   /** Not persisted: putting a file back only makes sense while it is fresh. */
   undoable = $state<FileAction[]>([])
   tags = $state<Tag[]>([])
+  pinned = $state<string[]>(readPinned())
 
   private saveTimer: ReturnType<typeof setTimeout> | undefined
 
@@ -403,6 +414,19 @@ class Workspace {
   forgetRecent() {
     this.recent = []
     localStorage.removeItem(RECENT_KEY)
+  }
+
+  isPinned(path: string): boolean {
+    return this.pinned.includes(path)
+  }
+
+  /** Pinned notes and folders sit above the tree, whatever their depth. */
+  togglePin(path: string) {
+    this.pinned = this.isPinned(path)
+      ? this.pinned.filter((entry) => entry !== path)
+      : [...this.pinned, path]
+
+    localStorage.setItem(PINNED_KEY, JSON.stringify(this.pinned))
   }
 
   /** Every `#tag` in the space, most used first. */

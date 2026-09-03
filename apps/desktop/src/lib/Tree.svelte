@@ -19,12 +19,15 @@
       { label: 'New folder', run: () => workspace.createFolder(entry.path) },
       DIVIDER,
       { label: 'Rename', run: () => (workspace.renaming = entry.path) },
+      { label: pinLabel(entry.path), run: () => workspace.togglePin(entry.path) },
       { label: 'Reveal in Explorer', run: () => workspace.reveal(entry.path) },
       DIVIDER,
       { label: 'Delete', danger: true, run: () => workspace.remove(entry.path, true) },
       ...undoEntry(),
     ]
   }
+
+  const pinLabel = (path: string) => (workspace.isPinned(path) ? 'Unpin' : 'Pin to the top')
 
   /** Only offered once there is something to take back. */
   function undoEntry(): MenuEntry[] {
@@ -37,6 +40,7 @@
       { label: 'Open', run: () => workspace.open(entry.path) },
       DIVIDER,
       { label: 'Rename', run: () => (workspace.renaming = entry.path) },
+      { label: pinLabel(entry.path), run: () => workspace.togglePin(entry.path) },
       { label: 'Duplicate', run: () => workspace.duplicate(entry.path) },
       { label: 'Copy path', run: () => navigator.clipboard.writeText(entry.path) },
       { label: 'Reveal in Explorer', run: () => workspace.reveal(entry.path) },

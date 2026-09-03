@@ -1,6 +1,6 @@
 <script lang="ts">
   import { DIVIDER, menu, type MenuEntry } from './menu.svelte'
-  import type { Hit, Panel, SortKey } from './workspace.svelte'
+  import type { Entry, Hit, Panel, SortKey } from './workspace.svelte'
   import { workspace } from './workspace.svelte'
   import Tree from './Tree.svelte'
 
@@ -62,6 +62,22 @@
     ongoto?.(hit.line)
   }
 
+  /** Pinned entries, in the order they were pinned. One that has since been
+   *  deleted simply does not appear. */
+  const pinned = $derived.by(() => {
+    const byPath = new Map<string, Entry>()
+
+    const walk = (entries: Entry[]) => {
+      for (const entry of entries) {
+        byPath.set(entry.path, entry)
+        if (entry.children?.length) walk(entry.children)
+      }
+    }
+
+    if (workspace.tree) walk(workspace.tree.children)
+    return workspace.pinned.map((path) => byPath.get(path)).filter((entry) => !!entry)
+  })
+
   /** An empty search offers the space's own tags, which is how you find out
    *  what there is to search for. */
   const tags = $derived.by(() => {
@@ -96,6 +112,26 @@
   <div class="body">
     {#if workspace.panel === 'tree'}
       {#if workspace.tree}
+        {#if pinned.length}
+          <ul class="pinned">
+            {#each pinned as entry (entry.path)}
+              <li>
+                <button
+                  class="row"
+                  class:active={workspace.active?.path === entry.path}
+                  onclick={() => !entry.is_dir && workspace.open(entry.path)}
+                  oncontextmenu={(event) =>
+                    menu.show(event, [
+                      { label: 'Unpin', run: () => workspace.togglePin(entry.path) },
+                    ])}
+                >
+                  {entry.is_dir ? entry.name : stripped(entry.name)}
+                </button>
+              </li>
+            {/each}
+          </ul>
+        {/if}
+
         <Tree entries={workspace.tree.children} />
       {:else}
         <button class="empty" onclick={() => workspace.addSpace()}>Open a folder</button>
@@ -325,6 +361,12 @@
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+  }
+
+  .pinned {
+    margin-bottom: var(--space-2);
+    padding-bottom: var(--space-2);
+    border-bottom: 1px solid var(--line);
   }
 
   .tags {
