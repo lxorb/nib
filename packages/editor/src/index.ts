@@ -15,8 +15,12 @@ export { nibHighlightStyle, nibTheme } from './theme'
 export { livePreview } from './live-preview'
 export { imageResolver, type ImageSink } from './images'
 export {
+  setCodeLineNumbers,
   setFocusMode,
   setHeadingNumbers,
+  setLineHeight,
+  setMeasure,
+  setRightToLeft,
   setSmartPunctuation,
   setSourceMode,
   setTypewriterMode,

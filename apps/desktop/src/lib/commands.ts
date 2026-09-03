@@ -119,6 +119,21 @@ export function appCommands(view?: EditorView): Command[] {
       run: () => modes.toggleNumbers(view),
     },
 
+    {
+      id: 'line-numbers',
+      label: modes.lineNumbers ? 'Hide code line numbers' : 'Show code line numbers',
+      run: () => modes.toggleLineNumbers(view),
+    },
+    {
+      id: 'rtl',
+      label: modes.rtl ? 'Write left to right' : 'Write right to left',
+      run: () => modes.toggleRightToLeft(view),
+    },
+    { id: 'wider', label: 'Wider writing area', run: () => modes.stepWidth(1, view) },
+    { id: 'narrower', label: 'Narrower writing area', run: () => modes.stepWidth(-1, view) },
+    { id: 'looser', label: 'Looser line spacing', run: () => modes.stepLineHeight(1, view) },
+    { id: 'tighter', label: 'Tighter line spacing', run: () => modes.stepLineHeight(-1, view) },
+
     { id: 'zoom-in', label: 'Zoom in', hint: 'Ctrl Shift =', run: () => modes.stepZoom(1) },
     { id: 'zoom-out', label: 'Zoom out', hint: 'Ctrl Shift -', run: () => modes.stepZoom(-1) },
     { id: 'zoom-reset', label: 'Actual size', hint: 'Ctrl Shift 0', run: () => modes.resetZoom() },

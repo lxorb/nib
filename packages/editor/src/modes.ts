@@ -110,3 +110,24 @@ export function setSmartPunctuation(view: EditorView, on: boolean) {
 export function setHeadingNumbers(view: EditorView, on: boolean) {
   view.dom.classList.toggle('nib-numbered', on)
 }
+
+/** Numbers the lines inside code fences, counting from one per fence. */
+export function setCodeLineNumbers(view: EditorView, on: boolean) {
+  view.dom.classList.toggle('nib-line-numbers', on)
+}
+
+/** Widens or narrows the writing column. */
+export function setMeasure(view: EditorView, rem: number) {
+  view.dom.style.setProperty('--measure', `${rem}rem`)
+}
+
+/** Line height for the writing surface. */
+export function setLineHeight(view: EditorView, height: number) {
+  view.dom.style.setProperty('--leading-content', String(height))
+}
+
+/** Right-to-left writing, for Arabic and Hebrew. */
+export function setRightToLeft(view: EditorView, on: boolean) {
+  view.contentDOM.setAttribute('dir', on ? 'rtl' : 'ltr')
+  view.dom.classList.toggle('nib-rtl', on)
+}

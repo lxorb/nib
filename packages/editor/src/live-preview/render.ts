@@ -1,5 +1,7 @@
 import { WidgetType } from '@codemirror/view'
 import katex from 'katex'
+// Chemical equations: `\ce{H2O}` and friends, as Typora supports.
+import 'katex/contrib/mhchem'
 import 'katex/dist/katex.min.css'
 
 export class MathWidget extends WidgetType {

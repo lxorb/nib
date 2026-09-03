@@ -5,6 +5,8 @@ use std::process::{Command, Stdio};
 use std::os::windows::process::CommandExt;
 
 /// Keeps a console window from flashing up on Windows.
+// `mut` is only used by the Windows branch below; elsewhere it is dead.
+#[cfg_attr(not(windows), allow(unused_mut))]
 fn command(program: &str) -> Command {
     let mut command = Command::new(program);
     #[cfg(windows)]

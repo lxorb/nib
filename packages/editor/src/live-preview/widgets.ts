@@ -88,25 +88,40 @@ export class FenceHeaderWidget extends WidgetType {
   constructor(
     private readonly language: string,
     private readonly code: string,
+    /** Where the language name lives in the document, so it can be retyped. */
+    private readonly infoFrom: number,
+    private readonly infoTo: number,
   ) {
     super()
   }
 
   eq(other: FenceHeaderWidget) {
-    return other.language === this.language && other.code === this.code
+    return (
+      other.language === this.language &&
+      other.code === this.code &&
+      other.infoFrom === this.infoFrom
+    )
   }
 
-  toDOM() {
+  toDOM(view: EditorView) {
     const bar = document.createElement('span')
     bar.className = 'nib-fence-header'
     bar.contentEditable = 'false'
 
-    if (this.language) {
-      const label = document.createElement('span')
-      label.className = 'nib-fence-language'
-      label.textContent = this.language
-      bar.append(label)
-    }
+    const label = document.createElement('button')
+    label.className = 'nib-fence-language'
+    label.type = 'button'
+    label.title = 'Set the language'
+    label.textContent = this.language || 'plain'
+    if (!this.language) label.classList.add('nib-fence-unset')
+
+    label.addEventListener('mousedown', (event) => {
+      event.preventDefault()
+      event.stopPropagation()
+      this.editLanguage(view, label)
+    })
+
+    bar.append(label)
 
     const copy = document.createElement('button')
     copy.className = 'nib-fence-copy'
@@ -127,6 +142,37 @@ export class FenceHeaderWidget extends WidgetType {
 
     bar.append(copy)
     return bar
+  }
+
+  /** Turns the label into a field, and writes the name straight into the fence. */
+  private editLanguage(view: EditorView, label: HTMLElement) {
+    const field = document.createElement('input')
+    field.className = 'nib-fence-language-input'
+    field.value = this.language
+    field.placeholder = 'language'
+    field.spellcheck = false
+
+    const commit = () => {
+      const next = field.value.trim().replace(/\s+/g, '')
+      field.replaceWith(label)
+
+      if (next === this.language) return
+      view.dispatch({ changes: { from: this.infoFrom, to: this.infoTo, insert: next } })
+    }
+
+    field.addEventListener('keydown', (event) => {
+      event.stopPropagation()
+      if (event.key === 'Enter') field.blur()
+      if (event.key === 'Escape') {
+        field.value = this.language
+        field.blur()
+      }
+    })
+    field.addEventListener('blur', commit)
+
+    label.replaceWith(field)
+    field.focus()
+    field.select()
   }
 
   ignoreEvent() {

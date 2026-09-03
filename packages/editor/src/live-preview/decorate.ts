@@ -191,9 +191,17 @@ class Decorator {
     // The opening line reads as empty once its fence is hidden, which leaves
     // room for the language and a copy button.
     const text = node.getChild('CodeText')
+    const mark = node.firstChild
+    const infoFrom = info ? info.from : (mark?.to ?? open.to)
+
     this.marks.push(
       Decoration.widget({
-        widget: new FenceHeaderWidget(language, text ? doc.sliceString(text.from, text.to) : ''),
+        widget: new FenceHeaderWidget(
+          language,
+          text ? doc.sliceString(text.from, text.to) : '',
+          infoFrom,
+          info ? info.to : infoFrom,
+        ),
         side: 1,
       }).range(open.to),
     )

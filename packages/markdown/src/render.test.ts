@@ -74,6 +74,14 @@ describe('Typora extensions', () => {
     expect(html).toContain('math-block')
   })
 
+  test('renders chemical equations', () => {
+    const html = renderMarkdown('$\\ce{H2O}$')
+    expect(html).toContain('katex')
+    // mhchem splits the formula into atoms and a subscript.
+    expect(html).toContain('H')
+    expect(html).not.toContain('ParseError')
+  })
+
   test('leaves a lone dollar alone', () => {
     expect(renderMarkdown('costs $5 and $9')).not.toContain('katex')
   })

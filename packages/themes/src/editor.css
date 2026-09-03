@@ -103,7 +103,61 @@
 }
 
 .nib-fence-language {
+  padding: 3px 6px;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: none;
+  color: var(--muted);
+  font: inherit;
   letter-spacing: 0.02em;
+  cursor: default;
+  transition: color var(--dur-fast) var(--ease-out);
+}
+
+.nib-fence-language:hover {
+  color: var(--accent);
+}
+
+.nib-fence-unset {
+  opacity: 0;
+}
+
+.cm-line.nib-code:hover .nib-fence-unset,
+.nib-fence-header:hover .nib-fence-unset {
+  opacity: 1;
+}
+
+.nib-fence-language-input {
+  width: 7em;
+  padding: 2px 6px;
+  border: 1px solid var(--accent);
+  border-radius: var(--radius-sm);
+  background: var(--bg);
+  color: var(--text-strong);
+  font: inherit;
+  outline: none;
+}
+
+/* ── Code line numbers ───────────────────────────────────────────── */
+
+.nib-line-numbers .cm-line.nib-code-open {
+  counter-reset: nib-code-line;
+}
+
+.nib-line-numbers .cm-line.nib-code:not(.nib-code-open):not(.nib-code-close) {
+  position: relative;
+  counter-increment: nib-code-line;
+  padding-left: calc(var(--space-4) + 2.6em);
+}
+
+.nib-line-numbers .cm-line.nib-code:not(.nib-code-open):not(.nib-code-close)::before {
+  content: counter(nib-code-line);
+  position: absolute;
+  left: var(--space-4);
+  width: 2em;
+  text-align: right;
+  color: var(--muted);
+  opacity: 0.65;
 }
 
 .nib-fence-copy {

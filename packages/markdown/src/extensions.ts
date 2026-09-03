@@ -1,4 +1,6 @@
 import katex from 'katex'
+// Chemical equations: `\ce{H2O}` and friends, as Typora supports.
+import 'katex/contrib/mhchem'
 import type { MarkedExtension, Tokens } from 'marked'
 import { get } from 'node-emoji'
 
