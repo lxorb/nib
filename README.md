@@ -4,19 +4,19 @@ A markdown editor. Nothing but markdown.
 
 ## Out of all markdown editors, why should you use Nib?
 
-| | Free | Inline preview | Open source | Sync | MCP | Themes | Publish |
-| --- | :-: | :-: | :-: | :-: | :-: | :-: | :-: |
-| **Nib** | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| Typora | ❌ | ✅ | ❌ | ❌ | ❌ | ✅ | ❌ |
-| MarkText | ✅ | ✅ | ✅ | ❌ | ❌ | ✅ | ❌ |
-| Obsidian | ✅ | ✅ | ❌ | ❌ | ❌ | ✅ | ❌ |
-| Zettlr | ✅ | ✅ | ✅ | ❌ | ❌ | ✅ | ❌ |
-| Joplin | ✅ | ✅ | ✅ | ✅ | ❌ | ✅ | ❌ |
-| Logseq | ✅ | ✅ | ✅ | ❌ | ❌ | ✅ | ✅ |
-| iA Writer | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ | ✅ |
-| Bear | ❌ | ✅ | ❌ | ❌ | ❌ | ✅ | ❌ |
-| VS Code | ✅ | ❌ | ✅ | ❌ | ✅ | ✅ | ❌ |
-| Sublime Text | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ | ❌ |
+| | Free | Inline preview | Open source | Sync | MCP | Publish |
+| --- | :-: | :-: | :-: | :-: | :-: | :-: |
+| **Nib** | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Typora | ❌ | ✅ | ❌ | ❌ | ❌ | ❌ |
+| MarkText | ✅ | ✅ | ✅ | ❌ | ❌ | ❌ |
+| Obsidian | ✅ | ✅ | ❌ | ❌ | ❌ | ❌ |
+| Zettlr | ✅ | ✅ | ✅ | ❌ | ❌ | ❌ |
+| Joplin | ✅ | ✅ | ✅ | ✅ | ❌ | ❌ |
+| Logseq | ✅ | ✅ | ✅ | ❌ | ❌ | ✅ |
+| iA Writer | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ |
+| Bear | ❌ | ✅ | ❌ | ❌ | ❌ | ❌ |
+| VS Code | ✅ | ❌ | ✅ | ❌ | ✅ | ❌ |
+| Sublime Text | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ |
 
 **Inline preview** — you edit the markdown in the same place you see the result.
 No split pane, no toggling between a source view and a preview.
