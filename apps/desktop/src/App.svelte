@@ -77,8 +77,13 @@
   })
 
   /** The tab whose caret and scroll have been put back. Nothing is recorded
-   *  before that, or the fresh view's caret at 0 would overwrite the real one. */
-  let placed = $state<string | null>(null)
+   *  before that, or the fresh view's caret at 0 would overwrite the real one.
+   *
+   *  Deliberately not `$state`: nothing renders from it, and the effect below
+   *  both writes it and reads it back through `remember`. As reactive state
+   *  that is a cycle, and Svelte answers a cycle by tearing down the whole
+   *  render loop - which looked like tabs that only switched after a reload. */
+  let placed: string | null = null
 
   // Reopening a note lands where it was left, and keeps saying where that is,
   // because a crash gives no chance to write it down on the way out.
