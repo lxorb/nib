@@ -14,13 +14,27 @@ interface Confirm {
   danger?: boolean
 }
 
+export interface Choice {
+  id: string
+  label: string
+  primary?: boolean
+  danger?: boolean
+}
+
+interface Choose {
+  title: string
+  detail?: string
+  options: Choice[]
+}
+
 type Pending = { resolve: (answer: string | null) => void } | null
 
 /** One small modal for the two questions the app ever asks: name this, and are
  *  you sure. Both resolve a promise, so the caller reads top to bottom. */
 class Prompt {
   open = $state(false)
-  mode = $state<'text' | 'confirm'>('text')
+  mode = $state<'text' | 'confirm' | 'choose'>('text')
+  options = $state<Choice[]>([])
   title = $state('')
   detail = $state('')
   value = $state('')
@@ -52,6 +66,25 @@ class Prompt {
     this.danger = options.danger ?? false
 
     return this.show().then((answer) => answer !== null)
+  }
+
+  /** More than two ways to answer — resolves the chosen id, or null if the
+   *  question was dismissed, which always means "do nothing". */
+  choose(options: Choose): Promise<string | null> {
+    this.mode = 'choose'
+    this.title = options.title
+    this.detail = options.detail ?? ''
+    this.value = ''
+    this.options = options.options
+
+    return this.show()
+  }
+
+  /** Answers a `choose` with one of its options. */
+  pick(id: string) {
+    this.open = false
+    this.pending?.resolve(id)
+    this.pending = null
   }
 
   private show(): Promise<string | null> {

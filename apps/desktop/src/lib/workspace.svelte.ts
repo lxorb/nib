@@ -430,11 +430,21 @@ class Workspace {
     if (!on) clearTimeout(this.saveTimer)
   }
 
-  async save() {
+  /** Notes holding work that is not on disk. Whitespace-only scratch does not
+   *  count — nobody wants to be asked about an empty note. */
+  get unsaved(): Tab[] {
+    return this.tabs.filter((tab) => tab.dirty && tab.doc.trim().length > 0)
+  }
+
+  async saveAll() {
+    for (const tab of this.unsaved) await this.save(tab)
+  }
+
+  async save(target?: Tab) {
     // A table cell holds its text until it loses focus; make sure it landed.
     flushTableEdits()
 
-    const tab = this.active
+    const tab = target ?? this.active
     if (!tab) return
 
     let path = tab.path

@@ -19,6 +19,10 @@ export const de: Dictionary = {
   Create: 'Erstellen',
   Cancel: 'Abbrechen',
   Confirm: 'Bestätigen',
+  'Save your changes?': 'Änderungen speichern?',
+  '{count} of your notes have unsaved changes.':
+    '{count} deiner Notizen haben ungespeicherte Änderungen.',
+  Discard: 'Verwerfen',
   'Close note': 'Notiz schließen',
   Close: 'Schließen',
   'Close others': 'Andere schließen',

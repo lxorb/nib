@@ -34,6 +34,7 @@
   import { modes } from './lib/modes.svelte'
   import { imageUrl } from './lib/images'
   import { collectErrors } from './lib/log'
+  import { prompt } from './lib/prompt.svelte'
   import { newSpace } from './lib/space-actions'
   import { currentWindow, invoke, isDesktop } from './lib/tauri'
   import { theme } from './lib/theme.svelte'
@@ -63,6 +64,7 @@
   modes.restore()
   settings.restore()
   void workspace.restore().then(openLaunchFiles)
+  void guardClose()
   void account.restore()
 
   // A new view starts with no modes applied, so re-apply on every swap.
@@ -90,6 +92,36 @@
       effects: EditorView.scrollIntoView(target.from, { y: 'start', yMargin: 72 }),
     })
     view.focus()
+  }
+
+  /** Nothing with words in it is lost on the way out: closing asks first. */
+  async function guardClose() {
+    if (!isDesktop) return
+
+    const window = await currentWindow()
+    await window.onCloseRequested(async (event) => {
+      if (!workspace.unsaved.length) return
+
+      event.preventDefault()
+
+      const answer = await prompt.choose({
+        title: t('Save your changes?'),
+        detail: t('{count} of your notes have unsaved changes.', {
+          count: workspace.unsaved.length,
+        }),
+        options: [
+          { id: 'save', label: 'Save', primary: true },
+          { id: 'discard', label: 'Discard', danger: true },
+          { id: 'cancel', label: 'Cancel' },
+        ],
+      })
+
+      if (answer === 'save') await workspace.saveAll()
+      else if (answer !== 'discard') return
+
+      // Everything is either written or deliberately given up on.
+      await window.destroy()
+    })
   }
 
   /** Files named on the command line, and any handed over by a second launch. */

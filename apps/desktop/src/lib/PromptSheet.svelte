@@ -40,15 +40,29 @@
       {/if}
 
       <div class="row">
-        <button type="button" class="quiet" onclick={() => prompt.dismiss()}>{t('Cancel')}</button>
-        <button
-          type="submit"
-          class="primary"
-          class:danger={prompt.danger}
-          disabled={prompt.mode === 'text' && !prompt.value.trim()}
-        >
-          {t(prompt.confirmLabel)}
-        </button>
+        {#if prompt.mode === 'choose'}
+          {#each prompt.options as option (option.id)}
+            <button
+              type="button"
+              class:primary={option.primary}
+              class:danger={option.danger}
+              class:quiet={!option.primary && !option.danger}
+              onclick={() => prompt.pick(option.id)}
+            >
+              {t(option.label)}
+            </button>
+          {/each}
+        {:else}
+          <button type="button" class="quiet" onclick={() => prompt.dismiss()}>{t('Cancel')}</button>
+          <button
+            type="submit"
+            class="primary"
+            class:danger={prompt.danger}
+            disabled={prompt.mode === 'text' && !prompt.value.trim()}
+          >
+            {t(prompt.confirmLabel)}
+          </button>
+        {/if}
       </div>
     </form>
   </div>
@@ -147,8 +161,13 @@
     background: var(--accent-hover);
   }
 
-  .primary.danger {
+  .danger {
     background: var(--danger);
+    color: #fff;
+  }
+
+  .danger:hover {
+    filter: brightness(1.08);
   }
 
   .primary:disabled {
