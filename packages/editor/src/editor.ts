@@ -7,6 +7,7 @@ import { highlightSelectionMatches, searchKeymap } from '@codemirror/search'
 import { EditorState } from '@codemirror/state'
 import { EditorView, drawSelection, dropCursor, highlightActiveLine, keymap } from '@codemirror/view'
 import { livePreview } from './live-preview'
+import { nibMarkdownExtensions } from './markdown/extensions'
 import { nibHighlightStyle, nibTheme } from './theme'
 
 export interface EditorOptions {
@@ -33,7 +34,11 @@ export function createEditor({ parent, doc = '', onChange }: EditorOptions): Edi
         // The writing surface carries Typora's `#write` id, so Typora themes
         // that target `#write` style our editor directly.
         EditorView.contentAttributes.of({ id: 'write', spellcheck: 'true' }),
-        markdown({ base: markdownLanguage, codeLanguages: languages }),
+        markdown({
+          base: markdownLanguage,
+          codeLanguages: languages,
+          extensions: nibMarkdownExtensions,
+        }),
         syntaxHighlighting(nibHighlightStyle),
         livePreview(),
         nibTheme,

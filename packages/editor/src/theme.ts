@@ -1,6 +1,7 @@
 import { HighlightStyle } from '@codemirror/language'
 import { EditorView } from '@codemirror/view'
 import { tags } from '@lezer/highlight'
+import { markTags } from './markdown/extensions'
 
 /** Chrome for the editor itself. Everything visual reads from the theme tokens,
  *  so swapping a theme restyles the editor without touching this file. */
@@ -60,6 +61,11 @@ export const nibHighlightStyle = HighlightStyle.define([
   { tag: tags.list, color: 'var(--text)' },
   { tag: tags.contentSeparator, color: 'var(--muted)' },
   { tag: tags.meta, color: 'var(--md-char-color)' },
+  { tag: tags.processingInstruction, color: 'var(--md-char-color)' },
+  { tag: markTags.highlight, background: 'var(--accent-soft)', color: 'var(--text-strong)' },
+  { tag: markTags.math, fontFamily: 'var(--font-mono)', color: 'var(--muted-strong)' },
+  { tag: markTags.footnote, color: 'var(--accent)', fontSize: '0.8em', verticalAlign: 'super' },
+  { tag: markTags.frontMatter, fontFamily: 'var(--font-mono)', color: 'var(--muted)' },
 
   // Code fence highlighting.
   { tag: tags.keyword, color: 'var(--accent)' },
