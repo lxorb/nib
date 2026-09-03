@@ -4,8 +4,10 @@
   import Palette from './lib/Palette.svelte'
   import Rail from './lib/Rail.svelte'
   import Sidebar from './lib/Sidebar.svelte'
+  import SettingsPanel from './lib/SettingsPanel.svelte'
   import SignIn from './lib/SignIn.svelte'
   import { account } from './lib/account.svelte'
+  import { settings } from './lib/settings.svelte'
   import { sync } from './lib/sync.svelte'
   import StatusBar from './lib/StatusBar.svelte'
   import Tabs from './lib/Tabs.svelte'
@@ -26,6 +28,7 @@
 
   theme.init()
   modes.restore()
+  settings.restore()
   void workspace.restore()
   void account.restore()
 
@@ -41,7 +44,9 @@
   })
 
   // `window.nib` is the editor view; this is the surrounding app state.
-  if (import.meta.env.DEV) Object.assign(window, { nibApp: { account, sync, workspace } })
+  if (import.meta.env.DEV) {
+    Object.assign(window, { nibApp: { account, sync, workspace, settings, modes, theme } })
+  }
 
   function goto(line: number) {
     if (!view) return
@@ -100,6 +105,7 @@
     const key = event.key.toLowerCase()
 
     if (key === 'p' && !shift) return act(event, () => (palette = true))
+    if (key === ',') return act(event, () => settings.show())
     if (key === '/') return act(event, () => modes.toggleSource(view))
     if (key === 's' && !shift) return act(event, () => void workspace.save())
     if (key === 'n' && !shift) return act(event, () => workspace.openBlank())
@@ -160,6 +166,7 @@
 
 <Palette bind:open={palette} {view} />
 <SignIn />
+<SettingsPanel />
 
 <style>
   main {

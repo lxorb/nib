@@ -1,3 +1,4 @@
+mod mcp;
 mod notes;
 mod themes;
 
@@ -17,6 +18,7 @@ pub fn run() {
             notes::create_folder,
             notes::delete_folder,
             notes::save_asset,
+            mcp::mcp_config,
             themes::theme_dir,
             themes::list_themes,
             themes::read_theme,

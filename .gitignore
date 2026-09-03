@@ -10,3 +10,6 @@ target/
 !.env.example
 .DS_Store
 Thumbs.db
+
+# Rust build output for the MCP connector
+services/mcp/target/

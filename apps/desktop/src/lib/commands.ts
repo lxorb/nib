@@ -1,6 +1,7 @@
 import type { EditorView } from '@nib/editor'
 import { account } from './account.svelte'
 import { modes } from './modes.svelte'
+import { settings } from './settings.svelte'
 import { invoke, isDesktop } from './tauri'
 import { theme } from './theme.svelte'
 import { workspace } from './workspace.svelte'
@@ -34,6 +35,9 @@ export function appCommands(view?: EditorView): Command[] {
       run: () => workspace.activeTabId && workspace.close(workspace.activeTabId),
     },
     { id: 'space', label: 'Add a space', run: () => void workspace.addSpace() },
+    { id: 'settings', label: 'Settings', hint: 'Ctrl ,', run: () => settings.show() },
+    { id: 'publish', label: 'Publish this space as a blog', run: () => settings.show('publish') },
+    { id: 'llm', label: 'Connect an LLM to this space', run: () => settings.show('llm') },
 
     account.signedIn
       ? { id: 'signout', label: `Sign out ${account.user?.email ?? ''}`.trim(), run: () => void account.signOut() }
