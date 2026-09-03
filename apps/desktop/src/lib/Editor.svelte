@@ -5,10 +5,14 @@
   let {
     doc = '',
     onchange,
+    onimage,
+    resolveimage,
     view = $bindable(),
   }: {
     doc?: string
     onchange?: (value: string) => void
+    onimage?: (file: File) => Promise<string | null>
+    resolveimage?: (src: string) => string
     view?: EditorView
   } = $props()
 
@@ -17,7 +21,13 @@
   // Built once. Reading `doc` reactively here would tear the editor down and
   // rebuild it on every keystroke, losing the caret each time.
   $effect(() => {
-    const created = createEditor({ parent: host, doc: untrack(() => doc), onChange: onchange })
+    const created = createEditor({
+      parent: host,
+      doc: untrack(() => doc),
+      onChange: onchange,
+      onImage: onimage,
+      resolveImage: resolveimage,
+    })
     view = created
     if (import.meta.env.DEV) Object.assign(window, { nib: created })
 

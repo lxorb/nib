@@ -11,7 +11,7 @@
   import Tabs from './lib/Tabs.svelte'
   import Titlebar from './lib/Titlebar.svelte'
   import { modes } from './lib/modes.svelte'
-  import { currentWindow, isDesktop } from './lib/tauri'
+  import { assetUrl, currentWindow, folderOf, invoke, isDesktop, joinPath } from './lib/tauri'
   import { theme } from './lib/theme.svelte'
   import { workspace } from './lib/workspace.svelte'
 
@@ -52,6 +52,26 @@
       effects: EditorView.scrollIntoView(target.from, { y: 'start', yMargin: 72 }),
     })
     view.focus()
+  }
+
+  /** Pasted and dropped images are copied next to the note, keeping it portable. */
+  async function saveImage(file: File): Promise<string | null> {
+    const path = workspace.active?.path
+    if (!path) return null
+
+    const bytes = [...new Uint8Array(await file.arrayBuffer())]
+    const name = file.name || `pasted-${Date.now()}.${(file.type.split('/')[1] || 'png').replace('+xml', '')}`
+
+    return invoke<string>('save_asset', { notePath: path, name, bytes }).catch(() => null)
+  }
+
+  function resolveImage(src: string): string {
+    if (/^([a-z]+:)?\/\//i.test(src) || src.startsWith('data:')) return src
+
+    const path = workspace.active?.path
+    if (!path) return src
+
+    return assetUrl(joinPath(folderOf(path), src))
   }
 
   async function toggleFullscreen() {
@@ -127,6 +147,8 @@
             bind:view
             doc={workspace.active?.doc ?? ''}
             onchange={(value) => workspace.edit(value)}
+            onimage={saveImage}
+            resolveimage={resolveImage}
           />
         {/key}
 

@@ -6,6 +6,7 @@ import { bracketMatching, indentOnInput, syntaxHighlighting } from '@codemirror/
 import { highlightSelectionMatches, searchKeymap } from '@codemirror/search'
 import { EditorState } from '@codemirror/state'
 import { EditorView, drawSelection, dropCursor, highlightActiveLine, keymap } from '@codemirror/view'
+import { imageHandling, imageResolver, type ImageSink } from './images'
 import { nibKeymap } from './keymap'
 import { nibMarkdownExtensions } from './markdown/extensions'
 import { modeExtensions } from './modes'
@@ -15,9 +16,19 @@ export interface EditorOptions {
   parent: HTMLElement
   doc?: string
   onChange?: (doc: string) => void
+  /** Called when an image is pasted or dropped; returns the path to insert. */
+  onImage?: ImageSink
+  /** Maps a document-relative image path to a URL the view can load. */
+  resolveImage?: (src: string) => string
 }
 
-export function createEditor({ parent, doc = '', onChange }: EditorOptions): EditorView {
+export function createEditor({
+  parent,
+  doc = '',
+  onChange,
+  onImage,
+  resolveImage,
+}: EditorOptions): EditorView {
   return new EditorView({
     parent,
     state: EditorState.create({
@@ -42,6 +53,8 @@ export function createEditor({ parent, doc = '', onChange }: EditorOptions): Edi
         }),
         syntaxHighlighting(nibHighlightStyle),
         modeExtensions(),
+        ...(onImage ? [imageHandling(onImage)] : []),
+        ...(resolveImage ? [imageResolver.of(resolveImage)] : []),
         nibTheme,
         keymap.of([
           // Markdown bindings come first so they win over the defaults.

@@ -1,4 +1,5 @@
 import { EditorView, WidgetType } from '@codemirror/view'
+import { imageResolver } from '../images'
 
 export class BulletWidget extends WidgetType {
   constructor(private readonly depth: number) {
@@ -94,12 +95,13 @@ export class ImageWidget extends WidgetType {
     return other.src === this.src && other.alt === this.alt
   }
 
-  toDOM() {
+  toDOM(view: EditorView) {
     const image = document.createElement('img')
     image.className = 'nib-image'
-    image.src = this.src
+    image.src = view.state.facet(imageResolver)(this.src)
     image.alt = this.alt
     image.loading = 'lazy'
+    image.title = this.alt || this.src
     return image
   }
 }

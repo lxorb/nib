@@ -18,3 +18,22 @@ export async function currentWindow() {
   const { getCurrentWindow } = await import('@tauri-apps/api/window')
   return getCurrentWindow()
 }
+
+/** A webview cannot load a bare filesystem path; Tauri hands out a URL for one. */
+export function assetUrl(path: string): string {
+  if (!isDesktop) return path
+
+  const internals = (window as unknown as { __TAURI_INTERNALS__?: { convertFileSrc?: (p: string) => string } })
+    .__TAURI_INTERNALS__
+
+  return internals?.convertFileSrc?.(path) ?? path
+}
+
+export function folderOf(path: string): string {
+  return path.replace(/[\\/][^\\/]*$/, '')
+}
+
+export function joinPath(dir: string, relative: string): string {
+  const separator = dir.includes('\\') ? '\\' : '/'
+  return `${dir}${separator}${relative.split('/').join(separator)}`
+}

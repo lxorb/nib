@@ -16,6 +16,7 @@ pub fn run() {
             notes::rename_note,
             notes::create_folder,
             notes::delete_folder,
+            notes::save_asset,
             themes::theme_dir,
             themes::list_themes,
             themes::read_theme,

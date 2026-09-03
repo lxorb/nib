@@ -40,6 +40,40 @@ pub fn delete_note(path: String) -> Result<(), String> {
     fs::remove_file(&path).map_err(|e| e.to_string())
 }
 
+/// Copies a pasted or dropped image next to the note and returns the relative
+/// path to write into the markdown, so the note stays portable.
+#[tauri::command]
+pub fn save_asset(note_path: String, name: String, bytes: Vec<u8>) -> Result<String, String> {
+    let note = PathBuf::from(&note_path);
+    let dir = note.parent().ok_or("note has no folder")?.join("assets");
+    fs::create_dir_all(&dir).map_err(|e| e.to_string())?;
+
+    let safe: String = name
+        .chars()
+        .map(|c| if c.is_alphanumeric() || c == '.' || c == '-' || c == '_' { c } else { '-' })
+        .collect();
+
+    // Never clobber an existing asset: add a counter until the name is free.
+    let stem = safe.rsplit_once('.').map(|(s, _)| s).unwrap_or(&safe).to_string();
+    let extension = safe.rsplit_once('.').map(|(_, e)| e).unwrap_or("png").to_string();
+
+    let mut candidate = dir.join(&safe);
+    let mut counter = 1;
+    while candidate.exists() {
+        candidate = dir.join(format!("{stem}-{counter}.{extension}"));
+        counter += 1;
+    }
+
+    fs::write(&candidate, bytes).map_err(|e| e.to_string())?;
+
+    let file = candidate
+        .file_name()
+        .and_then(|n| n.to_str())
+        .ok_or("could not name the asset")?;
+
+    Ok(format!("assets/{file}"))
+}
+
 #[tauri::command]
 pub fn rename_note(from: String, to: String) -> Result<(), String> {
     let target = PathBuf::from(&to);
