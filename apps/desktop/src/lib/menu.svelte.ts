@@ -55,6 +55,13 @@ function trim(items: MenuEntry[]): MenuEntry[] {
 
 export const menu = new ContextMenu()
 
+/** The note's path, which only means something where there is a filesystem. */
+export function copyPathEntry(path: string | null | undefined): MenuEntry[] {
+  if (!isDesktop || !path) return []
+
+  return [{ label: t('Copy path'), run: () => void navigator.clipboard.writeText(path) }]
+}
+
 /** "Reveal in Explorer", but only where there is a file manager to reveal in.
  *  Returns nothing in the browser, so the entry simply is not offered. */
 export function revealEntry(path: string | null | undefined): MenuEntry[] {

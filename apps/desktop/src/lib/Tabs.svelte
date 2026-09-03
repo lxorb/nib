@@ -2,7 +2,7 @@
   import { fly } from 'svelte/transition'
   import { cubicOut } from 'svelte/easing'
   import { t } from './i18n.svelte'
-  import { DIVIDER, menu, type MenuEntry, revealEntry } from './menu.svelte'
+  import { copyPathEntry, DIVIDER, menu, type MenuEntry, revealEntry } from './menu.svelte'
   import { workspace, type Tab } from './workspace.svelte'
 
   const stripped = (name: string) => name.replace(/\.(md|markdown|mdown|mkd)$/i, '')
@@ -20,11 +20,7 @@
         },
       },
       DIVIDER,
-      {
-        label: t('Copy path'),
-        disabled: !tab.path,
-        run: () => tab.path && navigator.clipboard.writeText(tab.path),
-      },
+      ...copyPathEntry(tab.path),
       ...revealEntry(tab.path),
     ]
   }
