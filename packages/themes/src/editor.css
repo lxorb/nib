@@ -819,6 +819,17 @@
   color: var(--muted-strong);
 }
 
+/* A definition sits under its term, indented the way it renders. */
+.cm-line.nib-definition {
+  padding-left: 1.6em;
+  color: var(--muted-strong);
+}
+
+.cm-line.nib-abbrev {
+  font-size: 0.9em;
+  color: var(--muted);
+}
+
 /* ── Callouts ────────────────────────────────────────────────────── */
 
 .cm-line.nib-callout {

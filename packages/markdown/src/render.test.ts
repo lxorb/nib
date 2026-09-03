@@ -151,3 +151,83 @@ describe('raw HTML', () => {
     expect(html).toContain('href="https://x.dev"')
   })
 })
+
+describe('definition lists', () => {
+  test('renders a term and its meaning', () => {
+    expect(renderMarkdown('Markdown\n: A way of writing.\n')).toContain(
+      '<dt>Markdown</dt>',
+    )
+    expect(renderMarkdown('Markdown\n: A way of writing.\n')).toContain('<dd>A way of writing.</dd>')
+  })
+
+  test('takes several meanings for one term', () => {
+    const html = renderMarkdown('Nib\n: A pen tip.\n: This editor.\n')
+    expect(html.match(/<dd>/g)).toHaveLength(2)
+  })
+
+  test('takes several terms in one list', () => {
+    const html = renderMarkdown('One\n: first\n\nTwo\n: second\n')
+    expect(html.match(/<dt>/g)).toHaveLength(2)
+  })
+
+  test('formats inside a term and a meaning', () => {
+    const html = renderMarkdown('**Bold**\n: with *emphasis*\n')
+    expect(html).toContain('<dt><strong>Bold</strong></dt>')
+    expect(html).toContain('<em>emphasis</em>')
+  })
+
+  test('leaves a plain paragraph alone', () => {
+    const html = renderMarkdown('Just a line of prose.\n')
+    expect(html).not.toContain('<dl>')
+  })
+
+  test('leaves a colon in prose alone', () => {
+    expect(renderMarkdown('Note: this is prose.\n')).not.toContain('<dl>')
+  })
+})
+
+describe('abbreviations', () => {
+  const SOURCE = '*[HTML]: HyperText Markup Language\n\nI write HTML every day.\n'
+
+  test('expands a defined word', () => {
+    expect(renderMarkdown(SOURCE)).toContain(
+      '<abbr title="HyperText Markup Language">HTML</abbr>',
+    )
+  })
+
+  test('does not print the definition itself', () => {
+    expect(renderMarkdown(SOURCE)).not.toContain('*[HTML]')
+  })
+
+  test('works when the definition comes after the use', () => {
+    const html = renderMarkdown('I write HTML.\n\n*[HTML]: HyperText Markup Language\n')
+    expect(html).toContain('<abbr title="HyperText Markup Language">HTML</abbr>')
+  })
+
+  test('leaves code alone', () => {
+    const html = renderMarkdown('*[HTML]: HyperText Markup Language\n\n`HTML` and HTML\n')
+    expect(html).toContain('<code>HTML</code>')
+    expect(html.match(/<abbr/g)).toHaveLength(1)
+  })
+
+  test('does not reach inside an attribute', () => {
+    const html = renderMarkdown('*[HTML]: Markup\n\n[link](https://e.com/HTML)\n')
+    expect(html).toContain('href="https://e.com/HTML"')
+  })
+
+  test('matches whole words only', () => {
+    const html = renderMarkdown('*[IT]: Information Technology\n\nlittle bits\n')
+    expect(html).not.toContain('<abbr')
+  })
+
+  test('prefers the longer of two definitions', () => {
+    const html = renderMarkdown('*[HTML]: Markup\n*[HTML5]: Newer markup\n\nHTML5 is here.\n')
+    expect(html).toContain('<abbr title="Newer markup">HTML5</abbr>')
+  })
+
+  test('escapes what it puts in the title', () => {
+    const html = renderMarkdown('*[X]: a "quoted" <thing>\n\nX marks it.\n')
+    expect(html).toContain('&quot;quoted&quot;')
+    expect(html).not.toContain('<thing>')
+  })
+})

@@ -251,3 +251,23 @@ describe('document integrity', () => {
     })
   })
 })
+
+describe('definition lists and abbreviations', () => {
+  test('hides the colon that opens a definition', () => {
+    expect(concealed('Term\n: a meaning')).toContain(':')
+  })
+
+  test('shows the colon again when the caret is on the line', () => {
+    expect(concealed('Term\n: a meaning', 8)).not.toContain(':')
+  })
+
+  test('hides the punctuation around an abbreviation definition', () => {
+    const hidden = concealed('*[HTML]: Markup')
+    expect(hidden).toContain('*[')
+    expect(hidden).toContain(']:')
+  })
+
+  test('leaves a bare colon in prose alone', () => {
+    expect(concealed('Note: prose')).not.toContain(':')
+  })
+})

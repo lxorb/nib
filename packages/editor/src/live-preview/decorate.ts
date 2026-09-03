@@ -35,6 +35,8 @@ const INLINE_MARKS = new Set([
   'HighlightMark',
   'MathMark',
   'FootnoteMark',
+  'DefinitionMark',
+  'AbbrevMark',
   'FrontMatterMark',
   'LinkMark',
   'URL',
@@ -49,6 +51,8 @@ const LINE_CLASS: Record<string, string> = {
   Table: 'nib-table',
   FrontMatter: 'nib-frontmatter',
   FootnoteDef: 'nib-footnote',
+  DefinitionDetail: 'nib-definition',
+  AbbrevDef: 'nib-abbrev',
 }
 
 class Decorator {

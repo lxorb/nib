@@ -205,4 +205,77 @@ export const FrontMatter: MarkdownConfig = {
   ],
 }
 
-export const nibMarkdownExtensions = [Highlight, InlineMath, BlockMath, Footnote, FrontMatter]
+/** `: a meaning` under the term it belongs to. */
+export const DefinitionList: MarkdownConfig = {
+  defineNodes: [
+    { name: 'DefinitionDetail', block: true },
+    { name: 'DefinitionMark', style: tags.processingInstruction },
+  ],
+  parseBlock: [
+    {
+      name: 'DefinitionDetail',
+      before: 'SetextHeading',
+      // The term above is a paragraph, and a paragraph swallows the lines that
+      // follow it. This ends it so the definition can be parsed on its own.
+      endLeaf(_cx: BlockContext, line: Line) {
+        return /^:[ \t]+\S/.test(line.text.slice(line.pos))
+      },
+      parse(cx: BlockContext, line: Line) {
+        const match = /^:[ \t]+\S/.exec(line.text.slice(line.pos))
+        if (!match) return false
+
+        const from = cx.lineStart + line.pos
+        const to = cx.lineStart + line.text.length
+
+        cx.addElement(cx.elt('DefinitionDetail', from, to, [cx.elt('DefinitionMark', from, from + 1)]))
+        cx.nextLine()
+        return true
+      },
+    },
+  ],
+}
+
+/** `*[HTML]: HyperText Markup Language` — a definition, never shown as prose. */
+export const Abbreviation: MarkdownConfig = {
+  defineNodes: [
+    { name: 'AbbrevDef', block: true },
+    { name: 'AbbrevMark', style: tags.processingInstruction },
+    { name: 'AbbrevLabel', style: tags.labelName },
+  ],
+  parseBlock: [
+    {
+      name: 'AbbrevDef',
+      before: 'LinkReference',
+      endLeaf(_cx: BlockContext, line: Line) {
+        return /^\*\[[^\]\n]+\]:/.test(line.text.slice(line.pos))
+      },
+      parse(cx: BlockContext, line: Line) {
+        const match = /^\*\[([^\]\n]+)\]:/.exec(line.text.slice(line.pos))
+        if (!match) return false
+
+        const from = cx.lineStart + line.pos
+        const to = cx.lineStart + line.text.length
+
+        cx.addElement(
+          cx.elt('AbbrevDef', from, to, [
+            cx.elt('AbbrevMark', from, from + 2),
+            cx.elt('AbbrevLabel', from + 2, from + 2 + match[1].length),
+            cx.elt('AbbrevMark', from + 2 + match[1].length, from + match[0].length),
+          ]),
+        )
+        cx.nextLine()
+        return true
+      },
+    },
+  ],
+}
+
+export const nibMarkdownExtensions = [
+  Highlight,
+  InlineMath,
+  BlockMath,
+  Footnote,
+  FrontMatter,
+  DefinitionList,
+  Abbreviation,
+]

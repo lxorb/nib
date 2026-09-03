@@ -142,6 +142,104 @@ export const emoji: MarkedExtension = {
   ],
 }
 
+/** A term on one line, its meanings on the `:` lines under it:
+ *
+ *      Markdown
+ *      : A way of writing formatted text.
+ *      : Also the format itself.
+ */
+export const definitionLists: MarkedExtension = {
+  extensions: [
+    {
+      name: 'definitionList',
+      level: 'block',
+      start: (src: string) => {
+        const at = src.search(/\n[ \t]{0,3}:[ \t]+\S/)
+        return at < 0 ? undefined : at
+      },
+      tokenizer(src: string) {
+        const match = /^((?:[^\n:][^\n]*\n(?:[ \t]{0,3}:[ \t]+[^\n]*(?:\n|$))+)+)/.exec(src)
+        if (!match) return undefined
+
+        const items: { term: string; details: string[] }[] = []
+
+        for (const line of match[1].split('\n')) {
+          if (!line.trim()) continue
+
+          const detail = /^[ \t]{0,3}:[ \t]+(.*)$/.exec(line)
+          if (detail) items.at(-1)?.details.push(detail[1])
+          else items.push({ term: line.trim(), details: [] })
+        }
+
+        // A term with nothing under it is a paragraph, not a definition list.
+        if (!items.length || items.some((item) => !item.details.length)) return undefined
+
+        // Tokenized here: the lexer is only reachable from the tokenizer.
+        return {
+          type: 'definitionList',
+          raw: match[1],
+          items: items.map((item) => ({
+            term: this.lexer.inlineTokens(item.term),
+            details: item.details.map((detail) => this.lexer.inlineTokens(detail)),
+          })),
+        }
+      },
+      renderer(token: Tokens.Generic) {
+        const items = token.items as { term: Tokens.Generic[]; details: Tokens.Generic[][] }[]
+
+        const body = items
+          .map((item) => {
+            const term = `<dt>${this.parser.parseInline(item.term)}</dt>`
+            const details = item.details
+              .map((detail) => `<dd>${this.parser.parseInline(detail)}</dd>`)
+              .join('\n')
+
+            return `${term}\n${details}`
+          })
+          .join('\n')
+
+        return `<dl>\n${body}\n</dl>\n`
+      },
+    },
+  ],
+}
+
+/** `*[HTML]: HyperText Markup Language` defines it; every later mention of
+ *  `HTML` in the document then carries the expansion. */
+export const abbreviations: MarkedExtension = {
+  extensions: [
+    {
+      name: 'abbrDef',
+      level: 'block',
+      start: (src: string) => {
+        const at = src.search(/\*\[[^\]\n]+\]:/)
+        return at < 0 ? undefined : at
+      },
+      tokenizer(src: string) {
+        const match = /^\*\[([^\]\n]+)\]:[ \t]*(.*)(?:\r?\n|$)/.exec(src)
+        if (!match) return undefined
+
+        return { type: 'abbrDef', raw: match[0], term: match[1], title: match[2].trim() }
+      },
+      // The definition itself is not shown; it only teaches the document a word.
+      renderer: () => '',
+    },
+  ],
+}
+
+/** Collects the abbreviations a document defines, so the rendered HTML can be
+ *  marked up afterwards — the definition may come after its first use. */
+export function collectAbbreviations(source: string): Map<string, string> {
+  const found = new Map<string, string>()
+
+  for (const match of source.matchAll(/^\*\[([^\]\n]+)\]:[ \t]*(.*)$/gm)) {
+    const term = match[1].trim()
+    if (term) found.set(term, match[2].trim())
+  }
+
+  return found
+}
+
 /** `[^1]` in the text, `[^1]: …` at the bottom. */
 export const footnotes: MarkedExtension = {
   extensions: [

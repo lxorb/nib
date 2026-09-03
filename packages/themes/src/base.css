@@ -388,6 +388,28 @@ body {
   color: var(--muted-strong);
 }
 
+/* ── Definition lists and abbreviations ──────────────────────────── */
+
+#write dl {
+  margin: 1.2em 0;
+}
+
+#write dt {
+  font-weight: 650;
+  color: var(--text-strong);
+}
+
+#write dd {
+  margin: 0.2em 0 0.8em 1.6em;
+  color: var(--muted-strong);
+}
+
+#write abbr[title] {
+  text-decoration: underline dotted var(--line-strong);
+  text-underline-offset: 3px;
+  cursor: help;
+}
+
 #write .front-matter {
   font-family: var(--font-mono);
   font-size: 0.82em;
