@@ -11,16 +11,32 @@
   import { ORIENTATIONS, PAPER_SIZES } from './page-setup'
   import { settings, type Section } from './settings.svelte'
   import { sync } from './sync.svelte'
+  import { isDesktop } from './tauri'
   import { theme } from './theme.svelte'
   import { workspace } from './workspace.svelte'
 
-  const SECTIONS: { id: Section; label: string }[] = [
-    { id: 'account', label: t('Account') },
-    { id: 'publish', label: t('Publish') },
-    { id: 'llm', label: t('LLM access') },
-    { id: 'appearance', label: t('Appearance') },
-    { id: 'export', label: t('Export') },
-  ]
+  /** Publishing and the LLM connector are both things an account owns, and
+   *  both are off until deliberately turned on. Until there is an account they
+   *  have nothing to show but an instruction to sign in, so they stay out of
+   *  the list rather than sitting there offering nothing. */
+  const SECTIONS = $derived(
+    [
+      { id: 'account' as Section, label: t('Account') },
+      ...(account.signedIn
+        ? [
+            { id: 'publish' as Section, label: t('Publish') },
+            { id: 'llm' as Section, label: t('LLM access') },
+          ]
+        : []),
+      { id: 'appearance' as Section, label: t('Appearance') },
+      { id: 'export' as Section, label: t('Export') },
+    ],
+  )
+
+  // Signing out while one of them is open would leave a pane with nothing in it.
+  $effect(() => {
+    if (!SECTIONS.some((one) => one.id === settings.section)) settings.section = 'account'
+  })
 
   let { view }: { view?: EditorView } = $props()
 
@@ -49,7 +65,9 @@
     checkTimer = setTimeout(() => settings.checkSubdomain(subdomain), 260)
   }
 
-  const isWindows = navigator.userAgent.includes('Windows')
+  /** The entry goes in Windows Explorer's own registry, so a browser cannot
+   *  offer it however Windows the machine running the browser happens to be. */
+  const isWindows = isDesktop && navigator.userAgent.includes('Windows')
 
   /** Page setup is only worth anything next to the buttons that use it. */
   const exportActions = () =>
@@ -640,10 +658,10 @@
     border-radius: 50%;
     background: var(--swatch);
     cursor: default;
-    box-shadow: 0 0 0 0 var(--swatch);
-    transition:
-      box-shadow var(--dur-fast) var(--ease-out),
-      transform var(--dur-base) var(--ease-spring);
+    /* Only the swatch under the pointer moves, and it moves plainly. The ring
+       marking the chosen one is a state rather than a movement, so it is left
+       out of the transition: it should appear, not grow. */
+    transition: transform var(--dur-fast) var(--ease-out);
   }
 
   .swatch:hover {
