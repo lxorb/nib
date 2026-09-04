@@ -1,0 +1,74 @@
+import { describe, expect, test } from 'vitest'
+import { type Inline, parseInline } from './inline'
+
+/** The shape as compact markup, so a failure reads like the cell it came from.
+ *  Lives here rather than in the renderer: the app builds elements, not text. */
+function html(source: string): string {
+  const show = (nodes: Inline[]): string =>
+    nodes
+      .map((node) => {
+        if ('text' in node) return node.text
+        const attribute = node.href ? ` href="${node.href}"` : ''
+        return `<${node.tag}${attribute}>${show(node.children)}</${node.tag}>`
+      })
+      .join('')
+
+  return show(parseInline(source))
+}
+
+describe('a table cell', () => {
+  test('renders bold, which is what a plain-text cell got wrong', () => {
+    expect(html('**Nib**')).toBe('<strong>Nib</strong>')
+  })
+
+  test('renders italic', () => {
+    expect(html('*maybe*')).toBe('<em>maybe</em>')
+  })
+
+  test('renders code without its backticks', () => {
+    expect(html('`pnpm dev`')).toBe('<code>pnpm dev</code>')
+  })
+
+  test('renders strikethrough', () => {
+    expect(html('~~gone~~')).toBe('<del>gone</del>')
+  })
+
+  test('keeps the text around a construct', () => {
+    expect(html('use **Nib** daily')).toBe('use <strong>Nib</strong> daily')
+  })
+
+  test('handles several in one cell', () => {
+    expect(html('**a** and *b*')).toBe('<strong>a</strong> and <em>b</em>')
+  })
+
+  test('nests them', () => {
+    expect(html('**bold *and* both**')).toBe('<strong>bold <em>and</em> both</strong>')
+  })
+
+  test('leaves ordinary text alone', () => {
+    expect(html('just words')).toBe('just words')
+  })
+
+  test('leaves an emoji alone', () => {
+    expect(html('✅')).toBe('✅')
+  })
+
+  test('is empty for an empty cell', () => {
+    expect(html('')).toBe('')
+  })
+
+  test('keeps text that only looks like markup as text', () => {
+    expect(parseInline('a < b & c')).toEqual([{ text: 'a < b & c' }])
+  })
+})
+
+describe('links in a cell', () => {
+  test('show their label and carry their address', () => {
+    expect(html('[Nib](https://nibeditor.com)')).toBe('<a href="https://nibeditor.com">Nib</a>')
+  })
+
+  test('refuse a scheme that could run something', () => {
+    // The label still shows; only the address is dropped.
+    expect(html('[tap](javascript:alert(1))')).toBe('<a>tap</a>')
+  })
+})

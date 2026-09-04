@@ -1,5 +1,6 @@
 import { EditorView, WidgetType } from '@codemirror/view'
 import { label } from '../labels'
+import { renderInline } from './inline'
 import {
   type TableModel,
   insertColumn,
@@ -154,9 +155,14 @@ export class TableWidget extends WidgetType {
       const element = document.createElement(tag)
       element.contentEditable = 'true'
       element.spellcheck = true
-      element.textContent = text
       element.dataset.row = String(row)
       element.dataset.column = String(column)
+
+      // The cell is its own little source editor, so its text has to be the
+      // markdown while the caret is in it. Everywhere else it shows the result,
+      // which is the same bargain the rest of the editor makes with syntax.
+      element.dataset.source = text
+      showRendered(element)
       if (model.align[column]) element.style.textAlign = model.align[column]!
 
       // CodeMirror cancels mousedown before it reaches us, taking the browser's
@@ -181,10 +187,18 @@ export class TableWidget extends WidgetType {
         }, IDLE_COMMIT)
       })
 
+      element.addEventListener('focus', () => showSource(element))
+
       element.addEventListener('blur', () => {
         // A rebuild blurs the old cell; its text is already in the document.
         if (!element.isConnected) return
         flush()
+
+        // An edit rebuilds the widget and this element is gone. An unchanged
+        // cell is still here, and still showing its markdown.
+        if (!element.isConnected) return
+        element.dataset.source = element.textContent ?? ''
+        showRendered(element)
       })
 
       element.addEventListener('keydown', (event) => {
@@ -292,6 +306,17 @@ export class TableWidget extends WidgetType {
 
     return wrap
   }
+}
+
+/** What the cell says when it is not being edited. */
+function showRendered(element: HTMLElement) {
+  element.replaceChildren(renderInline(element.dataset.source ?? ''))
+}
+
+/** What it says when it is. An empty text node rather than nothing, so there is
+ *  somewhere for the caret to sit in an empty cell. */
+function showSource(element: HTMLElement) {
+  element.replaceChildren(document.createTextNode(element.dataset.source ?? ''))
 }
 
 function caretOffset(element: HTMLElement): number {

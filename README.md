@@ -4,19 +4,24 @@ A markdown editor. Nothing but markdown.
 
 ## Out of all markdown editors, why should you use Nib?
 
-| | Free | Inline preview | Open source | Sync | MCP | Publish |
-| --- | :-: | :-: | :-: | :-: | :-: | :-: |
-| **Nib** | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| Typora | ❌ | ✅ | ❌ | ❌ | ❌ | ❌ |
-| MarkText | ✅ | ✅ | ✅ | ❌ | ❌ | ❌ |
-| Obsidian | ✅ | ✅ | ❌ | ❌ | ❌ | ❌ |
-| Zettlr | ✅ | ✅ | ✅ | ❌ | ❌ | ❌ |
-| Joplin | ✅ | ✅ | ✅ | ✅ | ❌ | ❌ |
-| Logseq | ✅ | ✅ | ✅ | ❌ | ❌ | ✅ |
-| iA Writer | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ |
-| Bear | ❌ | ✅ | ❌ | ❌ | ❌ | ❌ |
-| VS Code | ✅ | ❌ | ✅ | ❌ | ✅ | ❌ |
-| Sublime Text | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ |
+| | Free | Platform independent | Inline preview | Open source | Sync | MCP | Publish |
+| --- | :-: | :-: | :-: | :-: | :-: | :-: | :-: |
+| **Nib** | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Typora | ❌ | ✅ | ✅ | ❌ | ❌ | ❌ | ❌ |
+| MarkText | ✅ | ✅ | ✅ | ✅ | ❌ | ❌ | ❌ |
+| Obsidian | ✅ | ✅ | ✅ | ❌ | ❌ | ❌ | ❌ |
+| Zettlr | ✅ | ✅ | ✅ | ✅ | ❌ | ❌ | ❌ |
+| Joplin | ✅ | ✅ | ✅ | ✅ | ✅ | ❌ | ❌ |
+| Logseq | ✅ | ✅ | ✅ | ✅ | ❌ | ❌ | ✅ |
+| iA Writer | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ |
+| Bear | ❌ | ❌ | ✅ | ❌ | ❌ | ❌ | ❌ |
+| VS Code | ✅ | ✅ | ❌ | ✅ | ❌ | ✅ | ❌ |
+| Sublime Text | ❌ | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ |
+
+**Platform independent** - it runs in the browser, or it has a build for every
+desktop platform. Either way the machine in front of you does not decide whether
+you can open your notes. Nib does both: Windows and Linux builds, and the web
+app for everything else.
 
 **Inline preview** - you edit the markdown in the same place you see the result.
 No split pane, no toggling between a source view and a preview.

@@ -70,9 +70,9 @@
    dangling. */
 .nib-inline-code {
   background: var(--surface-2);
-  border: 1px solid var(--line);
+  border: 1px solid color-mix(in srgb, var(--line) 55%, transparent);
   border-radius: var(--radius-sm);
-  padding: 0.12em 0.34em;
+  padding: 0.08em 0.26em;
   -webkit-box-decoration-break: clone;
   box-decoration-break: clone;
 }
@@ -366,6 +366,36 @@
   vertical-align: top;
   outline: none;
   transition: background var(--dur-fast) var(--ease-out);
+}
+
+/* Cells render their markdown while the caret is elsewhere, so they hold real
+   elements rather than text. Bold and italic the browser already knows; these
+   are the ones that need the document's own treatment. */
+.nib-table code {
+  font-family: var(--font-mono);
+  font-size: 0.88em;
+  background: var(--surface-2);
+  border: 1px solid color-mix(in srgb, var(--line) 55%, transparent);
+  border-radius: var(--radius-sm);
+  padding: 0.05em 0.26em;
+}
+
+.nib-table a {
+  color: var(--accent);
+  text-decoration: none;
+  border-bottom: 1px solid var(--accent-line);
+}
+
+.nib-table del {
+  color: var(--muted);
+  text-decoration-color: var(--muted);
+}
+
+.nib-table mark {
+  background: var(--accent-soft);
+  color: var(--text-strong);
+  border-radius: 3px;
+  padding: 0.05em 0.2em;
 }
 
 .nib-table th {

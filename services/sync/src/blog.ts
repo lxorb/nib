@@ -79,7 +79,7 @@ h2{font-size:1.5em}h3{font-size:1.22em}
 p{margin:0 0 1.15em}
 a{color:var(--accent);text-decoration:none;border-bottom:1px solid color-mix(in srgb,var(--accent) 40%,transparent)}
 a:hover{border-bottom-color:var(--accent)}
-code{font-family:ui-monospace,monospace;font-size:.88em;background:var(--surface);border:1px solid var(--line);border-radius:5px;padding:.12em .34em}
+code{font-family:ui-monospace,monospace;font-size:.88em;background:var(--surface);border:1px solid color-mix(in srgb,var(--line) 55%,transparent);border-radius:5px;padding:.08em .26em}
 pre{background:var(--surface);border:1px solid var(--line);border-radius:9px;padding:1rem;overflow-x:auto}
 pre code{background:none;border:0;padding:0}
 blockquote{margin:1.5em 0;padding-left:1.15em;border-left:2px solid var(--line);color:var(--muted)}
