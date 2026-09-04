@@ -95,6 +95,10 @@ jobs:
       - uses: actions/download-artifact@v4
         with: { path: artifacts }
 
+      # Before the manifest, which builds its download URLs from the filenames.
+      - name: Name the downloads for humans
+        run: node scripts/name-assets.mjs artifacts "${{ github.ref_name }}"
+
       - name: Build latest.json
         run: node scripts/update-manifest.mjs "${{ github.ref_name }}" artifacts > latest.json
 
