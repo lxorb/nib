@@ -1,4 +1,5 @@
-import { EditorView, WidgetType } from '@codemirror/view'
+import { NibWidget } from '../live-preview/widget'
+import { EditorView } from '@codemirror/view'
 import { label } from '../labels'
 import { renderInline } from './inline'
 import {
@@ -86,7 +87,7 @@ const ALIGN_LABELS = {
   right: 'alignRight',
 } as const
 
-export class TableWidget extends WidgetType {
+export class TableWidget extends NibWidget {
   constructor(
     private readonly source: string,
     private readonly from: number,
@@ -108,6 +109,10 @@ export class TableWidget extends WidgetType {
     const model = parseTable(this.source)
     const wrap = document.createElement('div')
     wrap.className = 'nib-table-wrap'
+    // Outside the editor's editable region: the cells below opt back in one by
+    // one. Without this the whole table is part of what CodeMirror believes is
+    // document text, and the caret can be placed into DOM that maps to nothing.
+    wrap.contentEditable = 'false'
 
     if (!model) {
       wrap.textContent = this.source

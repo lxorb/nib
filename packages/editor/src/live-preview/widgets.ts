@@ -1,9 +1,10 @@
-import { EditorView, WidgetType } from '@codemirror/view'
+import { NibWidget } from './widget'
+import { EditorView } from '@codemirror/view'
 import { imageResolver } from '../images'
 // Aliased: `label` is already a local variable in more than one widget here.
 import { label as uiLabel } from '../labels'
 
-export class BulletWidget extends WidgetType {
+export class BulletWidget extends NibWidget {
   constructor(private readonly depth: number) {
     super()
   }
@@ -20,7 +21,7 @@ export class BulletWidget extends WidgetType {
   }
 }
 
-export class CheckboxWidget extends WidgetType {
+export class CheckboxWidget extends NibWidget {
   constructor(
     private readonly checked: boolean,
     private readonly from: number,
@@ -54,7 +55,7 @@ export class CheckboxWidget extends WidgetType {
   }
 }
 
-export class RuleWidget extends WidgetType {
+export class RuleWidget extends NibWidget {
   eq() {
     return true
   }
@@ -67,7 +68,7 @@ export class RuleWidget extends WidgetType {
 }
 
 /** GitHub-style alert headers. The kind is the one word worth showing. */
-export class CalloutWidget extends WidgetType {
+export class CalloutWidget extends NibWidget {
   constructor(private readonly kind: string) {
     super()
   }
@@ -86,7 +87,7 @@ export class CalloutWidget extends WidgetType {
 }
 
 /** Sits on a code fence's top line: what language it is, and a way to take it. */
-export class FenceHeaderWidget extends WidgetType {
+export class FenceHeaderWidget extends NibWidget {
   constructor(
     private readonly language: string,
     private readonly code: string,
@@ -210,7 +211,7 @@ export class FenceHeaderWidget extends WidgetType {
 }
 
 /** Where a printed page ends. Invisible in the file, obvious on screen. */
-export class PageBreakWidget extends WidgetType {
+export class PageBreakWidget extends NibWidget {
   eq() {
     return true
   }
@@ -224,7 +225,7 @@ export class PageBreakWidget extends WidgetType {
 }
 
 /** Shows `:smile:` as the character it names. */
-export class EmojiWidget extends WidgetType {
+export class EmojiWidget extends NibWidget {
   constructor(private readonly character: string) {
     super()
   }
@@ -251,7 +252,7 @@ export interface ImageSpec {
   to: number
 }
 
-export class ImageWidget extends WidgetType {
+export class ImageWidget extends NibWidget {
   constructor(private readonly spec: ImageSpec) {
     super()
   }

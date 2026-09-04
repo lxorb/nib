@@ -1,6 +1,7 @@
+import { NibWidget } from './widget'
 import { syntaxTree } from '@codemirror/language'
 import type { EditorState } from '@codemirror/state'
-import { EditorView, WidgetType } from '@codemirror/view'
+import { EditorView } from '@codemirror/view'
 
 export interface Heading {
   level: number
@@ -33,7 +34,7 @@ export function headings(state: EditorState): Heading[] {
 }
 
 /** Typora's `[toc]`: a live table of contents that follows the headings. */
-export class TocWidget extends WidgetType {
+export class TocWidget extends NibWidget {
   constructor(private readonly entries: Heading[]) {
     super()
   }

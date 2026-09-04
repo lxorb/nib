@@ -1,4 +1,4 @@
-import { WidgetType } from '@codemirror/view'
+import { NibWidget } from './widget'
 import katex from 'katex'
 // Chemical equations: `\ce{H2O}` and friends, as Typora supports.
 import 'katex/contrib/mhchem'
@@ -28,7 +28,7 @@ export function prepare(tex: string): string {
     })
 }
 
-export class MathWidget extends WidgetType {
+export class MathWidget extends NibWidget {
   constructor(
     private readonly tex: string,
     private readonly block: boolean,
@@ -75,7 +75,7 @@ export const DIAGRAM_LANGUAGES = new Set(['mermaid', 'flow', 'sequence'])
 
 let diagramSeq = 0
 
-export class DiagramWidget extends WidgetType {
+export class DiagramWidget extends NibWidget {
   constructor(
     private readonly code: string,
     private readonly language: string,
