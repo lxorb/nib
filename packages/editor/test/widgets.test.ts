@@ -2,7 +2,7 @@ import { readdirSync, readFileSync, statSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { join } from 'node:path'
 import { describe, expect, test } from 'vitest'
-import { NibWidget } from './widget'
+import { NibWidget } from '../src/live-preview/widget'
 
 /** A widget that extends `WidgetType` directly inherits an `ignoreMutation`
  *  that answers false, so CodeMirror reads changes to the widget's own DOM as
@@ -10,7 +10,7 @@ import { NibWidget } from './widget'
  *  bug this base class exists to prevent. It only works if every widget uses
  *  it, so that is checked rather than remembered. */
 
-const SOURCE = fileURLToPath(new URL('..', import.meta.url))
+const SOURCE = fileURLToPath(new URL('../src/', import.meta.url))
 
 function sourceFiles(dir: string): string[] {
   const out: string[] = []
