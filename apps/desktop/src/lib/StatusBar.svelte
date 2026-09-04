@@ -42,4 +42,12 @@
   footer:hover {
     opacity: 1;
   }
+
+  /* There is no hover on a phone, so this never appears - but it still sits in
+     the corner catching taps meant for the button that does. */
+  @media (max-width: 720px) {
+    footer {
+      display: none;
+    }
+  }
 </style>

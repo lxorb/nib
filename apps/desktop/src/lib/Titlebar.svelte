@@ -159,4 +159,28 @@
     stroke-width: 1.1;
     stroke-linecap: square;
   }
+
+  /* A phone has no window to drag and a thumb to hit this with. The bar grows
+     to a comfortable target, clears the status bar, and the drag strip goes:
+     there is nothing to drag. */
+  @media (max-width: 720px) {
+    header {
+      height: auto;
+      padding-top: env(safe-area-inset-top);
+    }
+
+    .toggle {
+      width: 52px;
+      height: 48px;
+    }
+
+    .toggle svg {
+      width: 19px;
+      height: 19px;
+    }
+
+    .drag {
+      display: none;
+    }
+  }
 </style>

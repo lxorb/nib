@@ -10,10 +10,16 @@
     type Transaction,
   } from '@nib/editor'
   import { t } from './i18n.svelte'
+  import { KEYBOARD_THRESHOLD, viewport } from './viewport.svelte'
 
   let { view }: { view?: EditorView } = $props()
 
   let at = $state<{ x: number; y: number } | null>(null)
+
+  /** Docked above the keyboard on a phone: there is no hovering over a
+   *  selection with a thumb, and the buttons are wanted before the selection
+   *  exists rather than after it. */
+  const docked = $derived(viewport.phone && viewport.keyboard > KEYBOARD_THRESHOLD)
 
   /** Follows the selection, and hides the moment there is nothing selected. */
   export function follow(current: EditorView) {
@@ -59,7 +65,23 @@
   ]
 </script>
 
-{#if at}
+{#if docked}
+  <div class="bar docked" style:bottom="{viewport.keyboard}px">
+    {#each ACTIONS as action (action.title)}
+      <button
+        title={action.title}
+        aria-label={action.title}
+        onpointerdown={(event) => {
+          // The editor must keep focus, or the keyboard closes under the bar.
+          event.preventDefault()
+          run(action.command)
+        }}
+      >
+        {action.label}
+      </button>
+    {/each}
+  </div>
+{:else if at}
   <div class="bar" style:left="{at.x}px" style:top="{at.y}px">
     {#each ACTIONS as action (action.title)}
       <button
@@ -90,6 +112,28 @@
     border-radius: var(--radius-md);
     box-shadow: var(--shadow-md);
     animation: bar-in var(--dur-fast) var(--ease-out);
+  }
+
+  /* A strip across the bottom, sitting on top of the keyboard. Full width so
+     every button is a thumb's width, and no transform: `bottom` is doing the
+     positioning here. */
+  .bar.docked {
+    left: 0;
+    right: 0;
+    transform: none;
+    justify-content: space-around;
+    gap: 0;
+    padding: 4px max(4px, env(safe-area-inset-left)) 4px max(4px, env(safe-area-inset-right));
+    border-radius: 0;
+    border-width: 1px 0 0;
+    animation: none;
+  }
+
+  .bar.docked button {
+    flex: 1;
+    min-width: 0;
+    height: 44px;
+    font-size: var(--text-base);
   }
 
   @keyframes bar-in {

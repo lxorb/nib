@@ -135,9 +135,21 @@ class Themes {
     // what it cares about.
     document.documentElement.dataset.theme = theme.path ? theme.scheme : theme.id
     this.paintAccent()
+    this.paintSystemBars()
 
     if (!theme.path) return this.inject('')
     void invoke<string>('read_theme', { path: theme.path }).then((css) => this.inject(css))
+  }
+
+  /** Android and iOS tint their own bars from this, which is the difference
+   *  between an installed app that ends at the page and one that does not. */
+  private paintSystemBars() {
+    const tag = document.querySelector('meta[name="theme-color"]')
+    if (!tag) return
+
+    // Read back rather than guessed: a theme file may have replaced --bg.
+    const background = getComputedStyle(document.documentElement).getPropertyValue('--bg').trim()
+    if (background) tag.setAttribute('content', background)
   }
 
   private inject(css: string) {

@@ -18,6 +18,13 @@ body {
   font-size: var(--text-base);
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
+  /* Phone habits an app does not have: enlarging text in ways a fixed layout
+     cannot absorb, a grey flash on every tap, and the page rubber-banding
+     behind the editor when a scroll runs out. */
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+  -webkit-tap-highlight-color: transparent;
+  overscroll-behavior: none;
 }
 
 ::selection {

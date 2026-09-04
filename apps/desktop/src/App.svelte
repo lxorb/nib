@@ -1,6 +1,7 @@
 <script lang="ts">
   import { untrack } from 'svelte'
   import { i18n, t } from './lib/i18n.svelte'
+  import { KEYBOARD_THRESHOLD, viewport } from './lib/viewport.svelte'
   import {
     clearFormatting,
     EditorView,
@@ -61,6 +62,7 @@
   })
 
   collectErrors()
+  viewport.start()
   i18n.restore()
   theme.init()
   modes.restore()
@@ -120,6 +122,23 @@
       current.scrollDOM.removeEventListener('scroll', remember)
       remember()
       placed = null
+    }
+  })
+
+  // On a phone the drawer is a screen of its own, so the back gesture should
+  // close it rather than leave the app. The entry is given back when the drawer
+  // closes some other way, unless going back is what closed it.
+  $effect(() => {
+    const panel = workspace.panel
+    if (!viewport.phone || !panel) return
+
+    history.pushState({ nibDrawer: true }, '')
+    const onPop = () => workspace.showPanel(panel)
+    window.addEventListener('popstate', onPop)
+
+    return () => {
+      window.removeEventListener('popstate', onPop)
+      if (history.state?.nibDrawer) history.back()
     }
   })
 
@@ -363,6 +382,15 @@
       </div>
 
       <StatusBar doc={workspace.active?.doc ?? ''} />
+
+      <!-- A thumb cannot reach the plus beside the tabs, and on a phone the
+           thing you came to do is write a note. Out of the way while the
+           keyboard is up, because then you are already writing one. -->
+      {#if viewport.phone && !workspace.panel && viewport.keyboard < KEYBOARD_THRESHOLD}
+        <button class="fab" aria-label={t('New note')} onclick={() => workspace.createNote()}>
+          <svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" /></svg>
+        </button>
+      {/if}
     </div>
   </div>
 </main>
@@ -414,6 +442,38 @@
     flex: 1;
     min-height: 0;
     display: flex;
+  }
+
+  /* Sits above the document, clear of the gesture bar. */
+  .fab {
+    position: absolute;
+    right: max(16px, env(safe-area-inset-right));
+    bottom: calc(16px + env(safe-area-inset-bottom));
+    z-index: 20;
+    width: 56px;
+    height: 56px;
+    display: grid;
+    place-items: center;
+    border: none;
+    border-radius: 18px;
+    background: var(--accent);
+    color: #fff;
+    box-shadow: var(--shadow-lg);
+    cursor: default;
+    transition: transform var(--dur-fast) var(--ease-spring);
+  }
+
+  .fab:active {
+    transform: scale(0.92);
+  }
+
+  .fab svg {
+    width: 24px;
+    height: 24px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+    stroke-linecap: round;
   }
 
   /* ── Phones and narrow windows ─────────────────────────────────── */

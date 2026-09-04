@@ -2,7 +2,22 @@
 <html lang="en" data-theme="dark">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- `viewport-fit=cover` is what makes env(safe-area-inset-*) mean anything:
+         without it a phone reports zero and the notch covers the header. -->
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+
+    <!-- Installed from a browser, Nib opens without browser chrome and gets its
+         own icon and task-switcher entry. `theme.svelte.ts` keeps the colour
+         below in step with the theme in use. -->
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <meta name="theme-color" content="#0e1013" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Nib" />
+    <link rel="icon" href="/icon-256.png" />
+    <link rel="apple-touch-icon" href="/icon-256.png" />
+
     <title>Nib</title>
   </head>
   <body>
