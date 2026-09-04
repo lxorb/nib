@@ -1,8 +1,9 @@
 <script lang="ts">
-  import { untrack } from 'svelte'
+  import { flushSync, untrack } from 'svelte'
   import { i18n, t } from './lib/i18n.svelte'
   import { KEYBOARD_THRESHOLD, viewport } from './lib/viewport.svelte'
   import { closeOnBack } from './lib/backstack.svelte'
+  import { CLAIM, claimsGesture, EDGE, settleOpen } from './lib/swipe'
   import {
     clearFormatting,
     EditorView,
@@ -131,6 +132,127 @@
   $effect(() => closeOnBack(!!workspace.panel, () => workspace.showPanel(workspace.panel!)))
   $effect(() => closeOnBack(palette, () => (palette = false)))
   $effect(() => closeOnBack(menu.open, () => menu.hide()))
+
+  /** How far the drawer is pulled out while a finger is on it, in pixels.
+   *  `null` hands it back to CSS, which is what animates the settle. */
+  let drag = $state<number | null>(null)
+  /** How far it can travel, measured when the gesture starts. */
+  let dragWidth = $state(0)
+  let middle = $state<HTMLElement>()
+
+  // The drawer follows the finger, the way a phone app's does. Attached by
+  // hand rather than with `ontouchmove`, because claiming the gesture means
+  // calling preventDefault, and that needs a listener that is not passive.
+  $effect(() => {
+    const host = middle
+    if (!host || !viewport.phone) return
+
+    let startX = 0
+    let startY = 0
+    let width = 0
+    let claimed = false
+    let openedByDrag = false
+    /** The drawer is only as wide as the rail until the sidebar inside it
+     *  mounts, so opening has to re-measure once it has. */
+    let measured = false
+    let lastX = 0
+    let lastAt = 0
+    let velocity = 0
+
+    const panels = () => host.querySelector<HTMLElement>('.panels')
+
+    const onStart = (event: TouchEvent) => {
+      if (event.touches.length !== 1) return
+
+      const touch = event.touches[0]
+      claimed = false
+      openedByDrag = false
+      measured = false
+
+      // Closed, the swipe has to start at the edge, or every horizontal drag
+      // across the text would drag the drawer out with it. Open, the drawer
+      // and its scrim are what the finger is on, so anywhere will do.
+      if (!workspace.panel && touch.clientX > EDGE) return
+
+      startX = touch.clientX
+      startY = touch.clientY
+      lastX = touch.clientX
+      lastAt = event.timeStamp
+      velocity = 0
+      // Zero means there is nothing to drag, and every later handler bails.
+      width = panels()?.getBoundingClientRect().width ?? 0
+      dragWidth = width
+    }
+
+    const onMove = (event: TouchEvent) => {
+      if (event.touches.length !== 1 || !width) return
+
+      const touch = event.touches[0]
+      const dx = touch.clientX - startX
+      const dy = touch.clientY - startY
+
+      if (!claimed) {
+        // Settled once: a scroll stays a scroll for the whole gesture, and a
+        // drag stays a drag. Going vertical first gives the drawer up.
+        if (Math.abs(dy) > CLAIM) {
+          width = 0
+          return
+        }
+        if (!claimsGesture(dx, dy)) return
+
+        claimed = true
+
+        if (!workspace.panel) {
+          workspace.showPanel('tree')
+          openedByDrag = true
+
+          // Closed, the drawer is only as wide as the rail, and dragging
+          // against that width would snap it open in a few pixels. `flushSync`
+          // puts the sidebar in the DOM now so the real width can be read -
+          // waiting a frame would be at the mercy of a throttled clock.
+          flushSync()
+          width = panels()?.getBoundingClientRect().width ?? width
+          dragWidth = width
+        }
+
+        measured = true
+      }
+
+      if (!measured) return
+
+      const elapsed = event.timeStamp - lastAt
+      if (elapsed > 0) velocity = (touch.clientX - lastX) / elapsed
+      lastX = touch.clientX
+      lastAt = event.timeStamp
+
+      // Opening counts from nothing; closing counts down from wide open.
+      const base = openedByDrag ? 0 : width
+      drag = Math.max(0, Math.min(width, base + dx))
+      event.preventDefault()
+    }
+
+    const onEnd = () => {
+      if (!claimed) return
+
+      const settled = settleOpen(drag ?? 0, width, velocity)
+      drag = null
+      claimed = false
+
+      if (settled !== !!workspace.panel) workspace.showPanel(workspace.panel ?? 'tree')
+    }
+
+    host.addEventListener('touchstart', onStart, { passive: true })
+    host.addEventListener('touchmove', onMove, { passive: false })
+    host.addEventListener('touchend', onEnd)
+    host.addEventListener('touchcancel', onEnd)
+
+    return () => {
+      host.removeEventListener('touchstart', onStart)
+      host.removeEventListener('touchmove', onMove)
+      host.removeEventListener('touchend', onEnd)
+      host.removeEventListener('touchcancel', onEnd)
+    }
+  })
 
   // Syncing only runs while there is an account behind it.
   $effect(() => {
@@ -333,10 +455,16 @@
 <!-- The rail and the sidebar run the full height, so the window's one header
      row sits beside them rather than above everything. -->
 <main class:focus={modes.focus}>
-  <div class="middle">
+  <div class="middle" bind:this={middle}>
     <!-- Side by side on a desktop; a drawer over the document on a phone,
-         where there is no room for three columns at once. -->
-    <div class="panels" class:open={!!workspace.panel}>
+         where there is no room for three columns at once. While a finger is on
+         it the transform comes from the drag instead, so it tracks the thumb. -->
+    <div
+      class="panels"
+      class:open={!!workspace.panel}
+      class:dragging={drag !== null}
+      style:transform={drag === null ? undefined : `translateX(${drag - dragWidth}px)`}
+    >
       <Rail />
 
       {#if workspace.panel}
@@ -346,7 +474,12 @@
 
     {#if workspace.panel}
       <!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_static_element_interactions -->
-      <div class="scrim" onclick={() => workspace.showPanel(workspace.panel!)}></div>
+      <div
+        class="scrim"
+        class:dragging={drag !== null}
+        style:opacity={drag === null || !dragWidth ? undefined : drag / dragWidth}
+        onclick={() => workspace.showPanel(workspace.panel!)}
+      ></div>
     {/if}
 
     <div class="document">
@@ -482,6 +615,14 @@
 
     .panels.open {
       transform: none;
+    }
+
+    /* The finger is the animation while it is down; CSS takes over on release
+       and eases the drawer the rest of the way. */
+    .panels.dragging,
+    .scrim.dragging {
+      transition: none;
+      animation: none;
     }
 
     .scrim {
