@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { closeOnBack } from './backstack.svelte'
   import { t } from './i18n.svelte'
   import { fade, fly, scale } from 'svelte/transition'
   import { cubicOut } from 'svelte/easing'
@@ -98,6 +99,9 @@
     account.step = 'email'
     account.error = null
   }
+
+  // Back closes this before it leaves the app.
+  $effect(() => closeOnBack(account.open, () => (account.open = false)))
 </script>
 
 {#if account.open}

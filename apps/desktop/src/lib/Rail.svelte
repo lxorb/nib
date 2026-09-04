@@ -378,8 +378,8 @@
   @media (max-width: 720px) {
     .space,
     .add {
-      width: 42px;
-      height: 42px;
+      width: 48px;
+      height: 48px;
     }
 
     nav {

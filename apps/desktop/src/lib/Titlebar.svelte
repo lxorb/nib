@@ -1,10 +1,34 @@
 <script lang="ts">
   import { t } from './i18n.svelte'
+  import { DIVIDER, menu } from './menu.svelte'
   import Tabs from './Tabs.svelte'
   import { currentWindow, isDesktop } from './tauri'
+  import { viewport } from './viewport.svelte'
   import { workspace } from './workspace.svelte'
 
+  let { onopennotes }: { onopennotes?: () => void } = $props()
+
   let maximized = $state(false)
+
+  const MARKDOWN = /\.(md|markdown|mdown|mkd)$/i
+
+  /** A phone shows one document, so the bar says which one. */
+  const title = $derived(
+    workspace.active
+      ? workspace.active.name.replace(MARKDOWN, '') + (workspace.active.dirty ? ' ·' : '')
+      : 'Nib',
+  )
+
+  /** What the tab strip and the rail offer on a desktop, where a phone has
+   *  room for neither. */
+  function overflow(event: MouseEvent) {
+    menu.show(event, [
+      { label: t('New note'), run: () => void workspace.createNote() },
+      { label: t('Open notes'), run: () => onopennotes?.() },
+      DIVIDER,
+      { label: t('Save'), disabled: !workspace.active?.dirty, run: () => void workspace.save() },
+    ])
+  }
 
   async function minimize() {
     if (isDesktop) (await currentWindow()).minimize()
@@ -39,10 +63,26 @@
     </svg>
   </button>
 
-  <Tabs />
+  {#if viewport.phone}
+    <!-- One document at a time, so its name goes here rather than a strip of
+         tabs too narrow to read. The rest is behind the overflow. -->
+    <h1 class="title">{title}</h1>
 
-  <!-- The empty stretch is what the window is dragged by. -->
-  <div class="drag" data-tauri-drag-region></div>
+    <button class="more" onclick={overflow} aria-label={t('More')}>
+      <svg viewBox="0 0 14 14"
+        ><circle cx="7" cy="2.5" r="1.2" /><circle cx="7" cy="7" r="1.2" /><circle
+          cx="7"
+          cy="11.5"
+          r="1.2"
+        /></svg
+      >
+    </button>
+  {:else}
+    <Tabs />
+
+    <!-- The empty stretch is what the window is dragged by. -->
+    <div class="drag" data-tauri-drag-region></div>
+  {/if}
 
   <!-- A page in a browser has no window of its own to minimise or close. -->
   <div class="controls" class:hidden={!isDesktop}>
@@ -160,9 +200,41 @@
     stroke-linecap: square;
   }
 
+  /* The document's name, taking whatever room the two buttons leave. */
+  .title {
+    flex: 1;
+    min-width: 0;
+    margin: 0;
+    align-self: center;
+    font-family: var(--font-ui);
+    font-size: var(--text-base);
+    font-weight: 600;
+    color: var(--text-strong);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .more {
+    width: 48px;
+    flex: none;
+    display: grid;
+    place-items: center;
+    border: none;
+    background: none;
+    color: var(--muted-strong);
+    cursor: default;
+  }
+
+  .more svg {
+    width: 18px;
+    height: 18px;
+    fill: currentColor;
+    stroke: none;
+  }
+
   /* A phone has no window to drag and a thumb to hit this with. The bar grows
-     to a comfortable target, clears the status bar, and the drag strip goes:
-     there is nothing to drag. */
+     to a comfortable target and clears the status bar. */
   @media (max-width: 720px) {
     header {
       height: auto;
@@ -179,8 +251,8 @@
       height: 19px;
     }
 
-    .drag {
-      display: none;
+    .more {
+      height: 48px;
     }
   }
 </style>

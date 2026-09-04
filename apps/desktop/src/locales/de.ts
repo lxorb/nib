@@ -148,6 +148,8 @@ export const de: Dictionary = {
   'Edit custom CSS': 'Eigenes CSS bearbeiten',
   'Edit snippets': 'Textbausteine bearbeiten',
   'Reload themes and custom CSS': 'Designs und eigenes CSS neu laden',
+  'More': 'Mehr',
+  'Open notes': 'Offene Notizen',
   'Save notes as I type': 'Notizen beim Tippen speichern',
   'Offer a markdown document in Explorer’s New menu':
     'Markdown-Dokument im „Neu“-Menü des Explorers anbieten',

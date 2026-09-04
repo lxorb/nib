@@ -2,6 +2,7 @@
   import { untrack } from 'svelte'
   import { i18n, t } from './lib/i18n.svelte'
   import { KEYBOARD_THRESHOLD, viewport } from './lib/viewport.svelte'
+  import { closeOnBack } from './lib/backstack.svelte'
   import {
     clearFormatting,
     EditorView,
@@ -125,22 +126,11 @@
     }
   })
 
-  // On a phone the drawer is a screen of its own, so the back gesture should
-  // close it rather than leave the app. The entry is given back when the drawer
-  // closes some other way, unless going back is what closed it.
-  $effect(() => {
-    const panel = workspace.panel
-    if (!viewport.phone || !panel) return
-
-    history.pushState({ nibDrawer: true }, '')
-    const onPop = () => workspace.showPanel(panel)
-    window.addEventListener('popstate', onPop)
-
-    return () => {
-      window.removeEventListener('popstate', onPop)
-      if (history.state?.nibDrawer) history.back()
-    }
-  })
+  // On a phone each of these is a screen of its own, so back closes it rather
+  // than leaving the app - newest first, the way Android expects.
+  $effect(() => closeOnBack(!!workspace.panel, () => workspace.showPanel(workspace.panel!)))
+  $effect(() => closeOnBack(palette, () => (palette = false)))
+  $effect(() => closeOnBack(menu.open, () => menu.hide()))
 
   // Syncing only runs while there is an account behind it.
   $effect(() => {
@@ -360,7 +350,7 @@
     {/if}
 
     <div class="document">
-      <Titlebar />
+      <Titlebar onopennotes={() => (palette = true)} />
 
       <!-- svelte-ignore a11y_no_static_element_interactions -->
       <div class="editor" oncontextmenu={(event) => menu.show(event, editorMenu())}>

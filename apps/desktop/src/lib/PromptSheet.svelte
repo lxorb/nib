@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { closeOnBack } from './backstack.svelte'
   import { fade, scale } from 'svelte/transition'
   import { cubicOut } from 'svelte/easing'
   import { t } from './i18n.svelte'
@@ -12,6 +13,9 @@
       setTimeout(() => field?.select(), 40)
     }
   })
+
+  // Back answers the question with nothing, the same as tapping away.
+  $effect(() => closeOnBack(prompt.open, () => prompt.dismiss()))
 </script>
 
 {#if prompt.open}

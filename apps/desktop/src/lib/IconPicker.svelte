@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { closeOnBack } from './backstack.svelte'
   import { fade, scale } from 'svelte/transition'
   import { cubicOut } from 'svelte/easing'
   import { t } from './i18n.svelte'
@@ -27,6 +28,8 @@
     if (spaceId) workspace.setIcon(spaceId, name)
     open = false
   }
+
+  $effect(() => closeOnBack(open, () => (open = false)))
 </script>
 
 {#if open}

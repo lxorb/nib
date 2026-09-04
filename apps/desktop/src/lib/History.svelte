@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { closeOnBack } from './backstack.svelte'
   import { t } from './i18n.svelte'
   import { fade, scale } from 'svelte/transition'
   import { cubicOut } from 'svelte/easing'
@@ -59,6 +60,8 @@
     workspace.active.dirty = true
     open = false
   }
+
+  $effect(() => closeOnBack(open, () => (open = false)))
 </script>
 
 {#if open}

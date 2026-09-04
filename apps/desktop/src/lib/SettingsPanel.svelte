@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { closeOnBack } from './backstack.svelte'
   import { fade, fly, scale, slide } from 'svelte/transition'
   import { cubicOut } from 'svelte/easing'
   import { CODE_PALETTES, type EditorView } from '@nib/editor'
@@ -86,6 +87,9 @@
     copied = true
     setTimeout(() => (copied = false), 1600)
   }
+
+  // Back closes this before it leaves the app.
+  $effect(() => closeOnBack(settings.open, () => (settings.open = false)))
 </script>
 
 {#if settings.open}

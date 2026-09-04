@@ -505,12 +505,15 @@
     }
 
     .switch button {
-      width: 40px;
-      height: 36px;
+      width: 48px;
+      height: 48px;
     }
 
+    /* Same floor as the tree rows beneath them: everything in the drawer is
+       something a thumb has to land on. */
     .row,
     .hit {
+      min-height: 48px;
       padding-top: 10px;
       padding-bottom: 10px;
     }

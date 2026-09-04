@@ -147,6 +147,8 @@ export const ja: Dictionary = {
   'Edit custom CSS': 'カスタム CSS を編集',
   'Edit snippets': 'スニペットを編集',
   'Reload themes and custom CSS': 'テーマとカスタム CSS を再読み込み',
+  'More': 'その他',
+  'Open notes': '開いているノート',
   'Save notes as I type': '入力しながらノートを保存',
   'Offer a markdown document in Explorer’s New menu':
     'エクスプローラーの「新規」メニューにマークダウン文書を追加',
