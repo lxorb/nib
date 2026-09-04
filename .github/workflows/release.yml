@@ -20,6 +20,12 @@ jobs:
           - platform: ubuntu-22.04
             target: x86_64-unknown-linux-gnu
             label: linux-x64
+          # One download that runs on every Mac, Intel or Apple silicon, which
+          # needs both architectures installed to lipo together.
+          - platform: macos-latest
+            target: universal-apple-darwin
+            label: macos-universal
+            rust: aarch64-apple-darwin,x86_64-apple-darwin
 
     runs-on: ${{ matrix.platform }}
     steps:
@@ -35,7 +41,9 @@ jobs:
 
       - uses: dtolnay/rust-toolchain@stable
         with:
-          targets: ${{ matrix.target }}
+          # Universal is a Tauri target, not a rustup one, so that row names the
+          # real targets itself. Everything else builds for what it runs on.
+          targets: ${{ matrix.rust || matrix.target }}
 
       - uses: Swatinem/rust-cache@v2
         with:
@@ -72,6 +80,9 @@ jobs:
             apps/desktop/src-tauri/target/${{ matrix.target }}/release/bundle/appimage/*.sig
             apps/desktop/src-tauri/target/${{ matrix.target }}/release/bundle/deb/*.deb
             apps/desktop/src-tauri/target/${{ matrix.target }}/release/bundle/rpm/*.rpm
+            apps/desktop/src-tauri/target/${{ matrix.target }}/release/bundle/dmg/*.dmg
+            apps/desktop/src-tauri/target/${{ matrix.target }}/release/bundle/macos/*.app.tar.gz
+            apps/desktop/src-tauri/target/${{ matrix.target }}/release/bundle/macos/*.app.tar.gz.sig
 
   # One manifest for every platform, which is what the app polls.
   publish:
@@ -93,5 +104,7 @@ jobs:
         run: |
           gh release create "${{ github.ref_name }}" --title "${{ github.ref_name }}" --generate-notes || true
           gh release upload "${{ github.ref_name }}" latest.json --clobber
-          find artifacts -type f \( -name '*.exe' -o -name '*.msi' -o -name '*.AppImage' -o -name '*.deb' -o -name '*.rpm' \) \
+          # The .app.tar.gz is what the updater downloads on a Mac, so it has to
+          # be a release asset even though nobody clicks it.
+          find artifacts -type f \( -name '*.exe' -o -name '*.msi' -o -name '*.AppImage' -o -name '*.deb' -o -name '*.rpm' -o -name '*.dmg' -o -name '*.app.tar.gz' \) \
             -exec gh release upload "${{ github.ref_name }}" {} --clobber \;

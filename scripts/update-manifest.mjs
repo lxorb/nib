@@ -18,6 +18,11 @@ const PLATFORMS = [
   { key: 'linux-x86_64', match: (path) => path.endsWith('.AppImage.sig') },
 ]
 
+/** The macOS bundle is universal, so every Mac is offered the same file. Tauri
+ *  looks itself up by architecture, and `darwin-universal` is only consulted by
+ *  newer clients, so all three keys point at it. */
+const MAC_KEYS = ['darwin-universal', 'darwin-aarch64', 'darwin-x86_64']
+
 const [, , tag, root] = process.argv
 if (!tag || !root) {
   console.error('usage: update-manifest.mjs <tag> <artifacts-dir>')
@@ -48,6 +53,17 @@ for (const { key, match } of PLATFORMS) {
     signature: readFileSync(signature, 'utf8').trim(),
     url: `https://github.com/${REPO}/releases/download/${tag}/${bundle.split('/').pop()}`,
   }
+}
+
+const mac = files.find((path) => path.endsWith('.app.tar.gz.sig'))
+if (mac) {
+  const bundle = mac.slice(0, -'.sig'.length)
+  const entry = {
+    signature: readFileSync(mac, 'utf8').trim(),
+    url: `https://github.com/${REPO}/releases/download/${tag}/${bundle.split('/').pop()}`,
+  }
+
+  for (const key of MAC_KEYS) platforms[key] = entry
 }
 
 if (!Object.keys(platforms).length) {
