@@ -7,7 +7,10 @@ on:
 
 concurrency:
   group: check-${{ github.ref }}
-  cancel-in-progress: true
+  # Superseding a branch run saves wasted minutes. Superseding a main run can
+  # cancel it between the migration and the Worker deploy, leaving the database
+  # ahead of the code that reads it - so main queues instead of cancelling.
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 
 jobs:
   test:
