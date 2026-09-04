@@ -1,7 +1,7 @@
 /** Typed client for the sync service. Every call carries the session token;
  *  nothing here touches cookies, so it works the same in the app and the web. */
 
-const BASE = import.meta.env.VITE_NIB_API ?? 'https://nibeditor.com'
+export const BASE = import.meta.env.VITE_NIB_API ?? 'https://nibeditor.com'
 
 export interface Account {
   id: string
@@ -101,6 +101,24 @@ export const api = {
 
   createSpace: (token: string, name: string) =>
     request<{ space: RemoteSpace }>('/v1/spaces', { token, body: { name } }),
+
+  usage: (token: string) => request<{ used: number; limit: number }>('/v1/usage', { token }),
+
+  /** Named by its own hash, so a repeat costs one request and no storage. */
+  putBlob: async (token: string, hash: string, type: string, bytes: ArrayBuffer) => {
+    const response = await fetch(`${BASE}/v1/blobs/${hash}`, {
+      method: 'PUT',
+      headers: { authorization: `Bearer ${token}`, 'content-type': type },
+      body: bytes,
+    })
+
+    if (!response.ok) {
+      const body = await response.json().catch(() => ({}) as { error?: string })
+      throw new ApiError(response.status, (body as { error?: string }).error ?? 'upload failed')
+    }
+
+    return response.json() as Promise<{ hash: string; stored: boolean }>
+  },
 
   reorderSpaces: (token: string, order: string[]) =>
     request<{ ok: true }>('/v1/spaces/order', { method: 'PUT', token, body: { order } }),

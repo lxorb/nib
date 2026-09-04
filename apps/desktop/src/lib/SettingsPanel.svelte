@@ -13,6 +13,7 @@
   import { sync } from './sync.svelte'
   import { isDesktop } from './tauri'
   import { theme } from './theme.svelte'
+  import { readableSize, usage } from './usage.svelte'
   import { workspace } from './workspace.svelte'
 
   /** Publishing and the LLM connector are both things an account owns, and
@@ -139,6 +140,27 @@
                 })}
               {/if}
             </p>
+
+            <!-- Notes and images together, which is what the limit counts. -->
+            <div class="field">
+              <span class="label">{t('Storage')}</span>
+              <div
+                class="meter"
+                class:full={usage.nearlyFull}
+                role="progressbar"
+                aria-valuemin={0}
+                aria-valuemax={usage.limit}
+                aria-valuenow={usage.used}
+              >
+                <div class="fill" style:width="{Math.min(100, usage.fraction * 100)}%"></div>
+              </div>
+              <p class="hint">
+                {t('{used} of {limit} used.', {
+                  used: readableSize(usage.used),
+                  limit: readableSize(usage.limit),
+                })}
+              </p>
+            </div>
 
             <button class="quiet" onclick={() => account.signOut()}>{t('Sign out')}</button>
           {:else}
@@ -673,6 +695,24 @@
     box-shadow:
       0 0 0 2px var(--surface),
       0 0 0 4px var(--swatch);
+  }
+
+  .meter {
+    height: 8px;
+    border-radius: 99px;
+    background: var(--surface-3);
+    overflow: hidden;
+  }
+
+  .fill {
+    height: 100%;
+    border-radius: 99px;
+    background: var(--accent);
+    transition: width var(--dur-base) var(--ease-out);
+  }
+
+  .meter.full .fill {
+    background: var(--danger);
   }
 
   .field select {

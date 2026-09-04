@@ -39,15 +39,23 @@ function d1(database: DatabaseSync) {
 }
 
 function bucket() {
-  const store = new Map<string, string>()
+  // Notes go in as text and images as bytes, so both are kept as given and
+  // handed back the way the Worker asks for them.
+  const store = new Map<string, { value: unknown; httpMetadata?: { contentType?: string } }>()
 
   return {
-    async put(key: string, value: string) {
-      store.set(key, String(value))
+    async put(key: string, value: unknown, options?: { httpMetadata?: { contentType?: string } }) {
+      store.set(key, { value, httpMetadata: options?.httpMetadata })
     },
     async get(key: string) {
-      const value = store.get(key)
-      return value === undefined ? null : { text: async () => value }
+      const held = store.get(key)
+      if (!held) return null
+
+      return {
+        text: async () => String(held.value),
+        body: held.value,
+        httpMetadata: held.httpMetadata,
+      }
     },
     async delete(key: string) {
       store.delete(key)
@@ -56,6 +64,9 @@ function bucket() {
 }
 
 export interface TestEnv extends Env {
+  /** The database underneath, for setting up a state no endpoint can reach -
+   *  an account already at its quota, for instance. */
+  db: DatabaseSync
   close(): void
 }
 
@@ -69,6 +80,7 @@ export function testEnv(overrides: Partial<Env> = {}): TestEnv {
     BLOG_ROOT: 'nibeditor.com',
     APP_ORIGIN: 'https://nibeditor.com',
     ...overrides,
+    db: database,
     close: () => database.close(),
   }
 }
@@ -76,6 +88,9 @@ export function testEnv(overrides: Partial<Env> = {}): TestEnv {
 interface CallOptions {
   method?: string
   body?: unknown
+  /** Sent as-is instead of JSON, for uploads that are not JSON. */
+  raw?: BodyInit
+  headers?: Record<string, string>
   token?: string
   host?: string
 }
@@ -87,12 +102,17 @@ export async function call(env: Env, path: string, options: CallOptions = {}) {
 
   if (options.body !== undefined) headers['content-type'] = 'application/json'
   if (options.token) headers.authorization = `Bearer ${options.token}`
+  Object.assign(headers, options.headers ?? {})
+
+  const method =
+    options.method ?? (options.body === undefined && options.raw === undefined ? 'GET' : 'POST')
 
   const response = await app.fetch(
     new Request(`https://${host}${path}`, {
-      method: options.method ?? (options.body === undefined ? 'GET' : 'POST'),
+      method,
       headers,
-      body: options.body === undefined ? undefined : JSON.stringify(options.body),
+      body:
+        options.raw ?? (options.body === undefined ? undefined : JSON.stringify(options.body)),
     }),
     env,
   )

@@ -143,26 +143,13 @@ pub fn save_asset(note_path: String, name: String, bytes: Vec<u8>) -> Result<Str
         })
         .collect();
 
-    // Never clobber an existing asset: add a counter until the name is free.
-    let stem = safe
-        .rsplit_once('.')
-        .map(|(s, _)| s)
-        .unwrap_or(&safe)
-        .to_string();
-    let extension = safe
-        .rsplit_once('.')
-        .map(|(_, e)| e)
-        .unwrap_or("png")
-        .to_string();
-
-    let mut candidate = dir.join(&safe);
-    let mut counter = 1;
-    while candidate.exists() {
-        candidate = dir.join(format!("{stem}-{counter}.{extension}"));
-        counter += 1;
+    // The caller names the file after a hash of its contents, so a name that is
+    // already taken holds the very same image. Reuse it rather than writing a
+    // second copy: pasting the same picture twice should cost nothing.
+    let candidate = dir.join(&safe);
+    if !candidate.exists() {
+        fs::write(&candidate, bytes).map_err(|e| e.to_string())?;
     }
-
-    fs::write(&candidate, bytes).map_err(|e| e.to_string())?;
 
     let file = candidate
         .file_name()

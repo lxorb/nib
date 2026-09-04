@@ -1,6 +1,6 @@
 <script lang="ts">
   import { flushSync, untrack } from 'svelte'
-  import { i18n, t } from './lib/i18n.svelte'
+  import { i18n, key, message, t } from './lib/i18n.svelte'
   import { KEYBOARD_THRESHOLD, viewport } from './lib/viewport.svelte'
   import { closeOnBack } from './lib/backstack.svelte'
   import { CLAIM, claimsGesture, EDGE, settleOpen } from './lib/swipe'
@@ -30,6 +30,7 @@
   import Sidebar from './lib/Sidebar.svelte'
   import SettingsPanel from './lib/SettingsPanel.svelte'
   import SignIn from './lib/SignIn.svelte'
+  import StorageWarning from './lib/StorageWarning.svelte'
   import UpdateNotice from './lib/UpdateNotice.svelte'
   import { account } from './lib/account.svelte'
   import { settings } from './lib/settings.svelte'
@@ -38,6 +39,8 @@
   import Titlebar from './lib/Titlebar.svelte'
   import { modes } from './lib/modes.svelte'
   import { imageUrl } from './lib/images'
+  import { storeImage } from './lib/assets'
+  import { usage } from './lib/usage.svelte'
   import { collectErrors } from './lib/log'
   import { prompt } from './lib/prompt.svelte'
   import { newSpace } from './lib/space-actions'
@@ -261,8 +264,12 @@
 
   // Syncing only runs while there is an account behind it.
   $effect(() => {
-    if (account.signedIn) sync.start()
-    else sync.stop()
+    if (account.signedIn) {
+      sync.start()
+      void usage.refresh()
+    } else {
+      sync.stop()
+    }
   })
 
   // `window.nib` is the editor view; this is the surrounding app state.
@@ -388,14 +395,19 @@
   }
 
   /** Pasted and dropped images are copied next to the note, keeping it portable. */
+  /** A pasted or dropped image, stored once however often it is pasted. */
   async function saveImage(file: File): Promise<string | null> {
-    const path = workspace.active?.path
-    if (!path) return null
-
-    const bytes = [...new Uint8Array(await file.arrayBuffer())]
-    const name = file.name || `pasted-${Date.now()}.${(file.type.split('/')[1] || 'png').replace('+xml', '')}`
-
-    return invoke<string>('save_asset', { notePath: path, name, bytes }).catch(() => null)
+    try {
+      const src = await storeImage(file, workspace.active?.path ?? null)
+      void usage.refresh()
+      return src
+    } catch (error) {
+      // The one failure worth interrupting for: nothing else the editor does
+      // will work either until something is deleted.
+      void usage.refresh()
+      settings.error = message(error, key('That image does not fit in your storage.'))
+      return null
+    }
   }
 
   function resolveImage(src: string): string {
@@ -522,6 +534,8 @@
     </div>
   </div>
 </main>
+
+<StorageWarning />
 
 {#if updateReady}
   <UpdateNotice version={updateReady} ondismiss={() => (updateReady = null)} />

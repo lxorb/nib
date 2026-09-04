@@ -1,4 +1,5 @@
 import { Hono } from 'hono'
+import { fits } from './storage'
 import { newId, now, sha256 } from './crypto'
 import { ownedSpace } from './spaces'
 import type { Env, Note, Variables } from './types'
@@ -87,6 +88,11 @@ notes.post('/spaces/:spaceId/notes', async (context) => {
     .first<Note>()
 
   if (existing) return context.json({ error: 'a note already lives there', note: present(existing) }, 409)
+
+  // A limit nobody enforces is a number on a settings page.
+  if (!(await fits(context.env, user.id, content.length))) {
+    return context.json({ error: 'out of space' }, 507)
+  }
 
   const note: Note = {
     id: newId(),
@@ -180,6 +186,12 @@ notes.put('/notes/:id', async (context) => {
 
   const hash = await sha256(content)
   if (hash === note.hash && path === note.path) return context.json({ note: present(note) })
+
+  // The note's current bytes come back as it is replaced, so editing a large
+  // note that stays the same size is never refused.
+  if (!(await fits(context.env, context.get('user').id, content.length, note.size))) {
+    return context.json({ error: 'out of space' }, 507)
+  }
 
   const updated: Note = {
     ...note,

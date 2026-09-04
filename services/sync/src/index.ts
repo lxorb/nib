@@ -1,10 +1,12 @@
 import { Hono } from 'hono'
 import { cors } from 'hono/cors'
 import { auth, requireUser } from './auth'
+import { blobs, publicBlobs } from './blobs'
 import { serveBlog, spaceForHost } from './blog'
 import { mcp, mcpAdmin } from './mcp'
 import { notes } from './notes'
 import { spaces } from './spaces'
+import { QUOTA, usedBytes } from './storage'
 import type { Env, Variables } from './types'
 
 const app = new Hono<{ Bindings: Env; Variables: Variables }>()
@@ -28,6 +30,11 @@ app.use(
 
 app.route('/v1/auth', auth)
 
+// Images are served by hash, with no session: a note is read wherever it was
+// shared, and a published blog has no reader to authenticate. Registered ahead
+// of the guard below for that reason.
+app.route('/i', publicBlobs)
+
 // The connector carries its own token, so it sits outside the session guard.
 app.use('/mcp', cors({ origin: '*', allowHeaders: ['authorization', 'content-type'] }))
 app.route('/mcp', mcp)
@@ -46,6 +53,12 @@ app.get('/v1/me', (context) => {
   return context.json({ user: { id: user.id, email: user.email } })
 })
 
+app.get('/v1/usage', async (context) => {
+  const user = context.get('user')
+  return context.json({ used: await usedBytes(context.env, user.id), limit: QUOTA })
+})
+
+app.route('/v1/blobs', blobs)
 app.route('/v1/spaces', spaces)
 app.route('/v1/mcp/token', mcpAdmin)
 app.route('/v1', notes)
