@@ -394,7 +394,6 @@
     ]
   }
 
-  /** Pasted and dropped images are copied next to the note, keeping it portable. */
   /** A pasted or dropped image, stored once however often it is pasted. */
   async function saveImage(file: File): Promise<string | null> {
     try {
@@ -482,7 +481,11 @@
       class:dragging={drag !== null}
       style:transform={drag === null ? undefined : `translateX(${drag - dragWidth}px)`}
     >
-      <Rail />
+      <Rail
+        {view}
+        onpalette={() => (palette = true)}
+        onhistory={() => (settings.historyOpen = true)}
+      />
 
       {#if workspace.panel}
         <Sidebar ongoto={goto} />

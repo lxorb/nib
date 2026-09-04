@@ -7,11 +7,14 @@ export {
   insertMathBlock,
   insertPageBreak,
   insertTable,
+  openFind,
+  redoEdit,
   setHeading,
   toggleBulletList,
   toggleOrderedList,
   toggleQuote,
   toggleWrap,
+  undoEdit,
 } from './commands'
 export { reformat, reformatDocument } from './reformat'
 export { CODE_PALETTES, type CodePalette, setCodeTheme } from './code-theme'

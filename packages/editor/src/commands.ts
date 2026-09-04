@@ -229,3 +229,8 @@ export const insertImage: StateCommand = ({ state, dispatch }) => {
   dispatch(state.update(update, { scrollIntoView: true, userEvent: 'input' }))
   return true
 }
+
+// Re-exported through here so the app can offer them in a menu without taking
+// a direct dependency on CodeMirror's own packages.
+export { redo as redoEdit, undo as undoEdit } from '@codemirror/commands'
+export { openSearchPanel as openFind } from '@codemirror/search'

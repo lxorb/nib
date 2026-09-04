@@ -1,5 +1,7 @@
 <script lang="ts">
   import { account } from './account.svelte'
+  import AppMenu from './AppMenu.svelte'
+  import type { EditorView } from '@nib/editor'
   import IconPicker from './IconPicker.svelte'
   import { type IconNode, loadIcons } from './icons'
   import { t } from './i18n.svelte'
@@ -8,6 +10,12 @@
   import { settings } from './settings.svelte'
   import { type Space, workspace } from './workspace.svelte'
   import { theme } from './theme.svelte'
+
+  let {
+    view,
+    onpalette,
+    onhistory,
+  }: { view?: EditorView; onpalette: () => void; onhistory: () => void } = $props()
 
   let picker = $state<IconPicker>()
   /** Filled once any space has an icon, so the rail can draw them. */
@@ -111,6 +119,12 @@
 </script>
 
 <nav>
+  <!-- Above the spaces and set apart from them: this is the whole application,
+       not one more place to keep notes. -->
+  <div class="top">
+    <AppMenu {view} {onpalette} {onhistory} />
+  </div>
+
   <div class="spaces">
     {#each workspace.spaces as space, index (space.id)}
       <button
@@ -171,10 +185,12 @@
          Ctrl+, still opens settings for anyone who wants them sooner. -->
     {#if account.signedIn}
       <button class="add" title={t('Settings')} aria-label={t('Settings')} onclick={() => settings.show()}>
-        <svg viewBox="0 0 14 14">
-          <path d="M1 3.5h3M7 3.5h6M1 10.5h6M10 10.5h3" />
-          <circle cx="5.5" cy="3.5" r="1.6" />
-          <circle cx="8.5" cy="10.5" r="1.6" />
+        <!-- An actual gear: eight teeth around a hub. -->
+        <svg viewBox="0 0 24 24">
+          <circle cx="12" cy="12" r="3.2" />
+          <path
+            d="M19.4 15a1.7 1.7 0 0 0 .34 1.87l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.7 1.7 0 0 0-1.87-.34 1.7 1.7 0 0 0-1.03 1.56V21a2 2 0 1 1-4 0v-.09A1.7 1.7 0 0 0 8.9 19.3a1.7 1.7 0 0 0-1.87.34l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.7 1.7 0 0 0 4.6 15a1.7 1.7 0 0 0-1.56-1.03H3a2 2 0 1 1 0-4h.09A1.7 1.7 0 0 0 4.7 8.9a1.7 1.7 0 0 0-.34-1.87l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.7 1.7 0 0 0 9 4.6a1.7 1.7 0 0 0 1.03-1.56V3a2 2 0 1 1 4 0v.09A1.7 1.7 0 0 0 15.1 4.7a1.7 1.7 0 0 0 1.87-.34l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.7 1.7 0 0 0 19.4 9a1.7 1.7 0 0 0 1.56 1.03H21a2 2 0 1 1 0 4h-.09a1.7 1.7 0 0 0-1.51 1z"
+          />
         </svg>
       </button>
     {/if}
@@ -220,12 +236,20 @@
     flex: none;
     display: flex;
     flex-direction: column;
-    justify-content: space-between;
     align-items: center;
     padding: var(--space-2) 0 var(--space-3);
     gap: var(--space-2);
     border-right: 1px solid var(--line);
     background: var(--surface);
+  }
+
+  /* Its own row with a rule under it, so the menu reads as belonging to the
+     app rather than being the first space in the list. */
+  .top {
+    flex: none;
+    padding-bottom: var(--space-2);
+    margin-bottom: var(--space-1);
+    border-bottom: 1px solid var(--line);
   }
 
   .spaces {
@@ -383,6 +407,8 @@
   }
 
   .foot {
+    /* Pushed to the bottom now that the menu holds the top. */
+    margin-top: auto;
     display: flex;
     flex-direction: column;
     align-items: center;
