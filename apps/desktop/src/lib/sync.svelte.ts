@@ -1,11 +1,11 @@
 import { api, ApiError } from './api'
+import { NUDGE_DELAY, pollDelay, RECONCILE_INTERVAL } from './backoff'
 import { account } from './account.svelte'
 import { t } from './i18n.svelte'
 import { invoke } from './tauri'
 import { type Entry, workspace } from './workspace.svelte'
 
 const STORAGE_KEY = 'nib:mirrors'
-const POLL_INTERVAL = 20_000
 
 /** What the last sync left on disk, so local edits can be told apart from
  *  remote ones without diffing whole documents. */
@@ -52,35 +52,90 @@ class Sync {
   lastSyncedAt = $state<number | null>(null)
 
   private mirrors: Record<string, Mirror> = {}
-  private timer: ReturnType<typeof setInterval> | null = null
+  private timer: ReturnType<typeof setTimeout> | null = null
   private running = false
+  /** Passes in a row that found nothing. Each one waits longer than the last. */
+  private quiet = 0
+  private reconciledAt = 0
 
   start() {
     this.mirrors = this.load()
-    if (this.timer) clearInterval(this.timer)
-    this.timer = setInterval(() => void this.tick(), POLL_INTERVAL)
-    void this.tick()
+    this.quiet = 0
+    this.reconciledAt = 0
+
+    document.addEventListener('visibilitychange', this.onVisibility)
+    window.addEventListener('focus', this.onReturn)
+
+    this.schedule(0)
   }
 
   stop() {
-    if (this.timer) clearInterval(this.timer)
+    if (this.timer) clearTimeout(this.timer)
     this.timer = null
+
+    document.removeEventListener('visibilitychange', this.onVisibility)
+    window.removeEventListener('focus', this.onReturn)
+
     this.status = 'off'
   }
 
-  /** Pairs every local space with a remote one, then syncs. Run before each
-   *  pass so a space made since the last one is picked up on its own. */
+  /** Something changed here, so the next pass should not wait out whatever slow
+   *  interval the loop had settled into. */
+  nudge() {
+    if (!this.timer) return
+
+    this.quiet = 0
+    this.schedule(NUDGE_DELAY)
+  }
+
+  /** Hiding the window re-plans the pending pass at the longer interval;
+   *  showing it again syncs at once, so what you look at is never stale. */
+  private readonly onVisibility = () => {
+    if (document.hidden) this.schedule()
+    else this.onReturn()
+  }
+
+  private readonly onReturn = () => {
+    if (!this.timer) return
+
+    this.quiet = 0
+    this.schedule(0)
+  }
+
+  private schedule(delay = this.delay()) {
+    if (this.timer) clearTimeout(this.timer)
+    this.timer = setTimeout(() => void this.tick(), delay)
+  }
+
+  private delay(): number {
+    return pollDelay(this.quiet, document.hidden)
+  }
+
+  /** Pairs every local space with a remote one, then syncs. */
   private async tick() {
     await this.reconcile()
-    await this.run()
+    const moved = await this.run()
+
+    // Eight doublings is far past either cap; stopping there keeps the shift
+    // from overflowing on a client left open for days.
+    this.quiet = moved ? 0 : Math.min(this.quiet + 1, 8)
+    this.schedule()
   }
 
   private async reconcile() {
     const token = account.token
     if (!token) return
 
+    // The space list changes when someone makes or deletes one, which is rare.
+    // A local space with no mirror yet is the case that cannot wait.
+    const missing = workspace.spaces.some((space) => !this.mirrors[space.root])
+    const due = Date.now() - this.reconciledAt >= RECONCILE_INTERVAL
+
+    if (!missing && !due) return
+
     try {
       await account.loadSpaces()
+      this.reconciledAt = Date.now()
     } catch {
       return
     }
@@ -138,17 +193,20 @@ class Sync {
   }
 
   /** One full pass: take what the server has, then offer what we have. */
-  async run() {
-    if (this.running || !account.token) return
+  /** One full pass: take what the server has, then offer what we have.
+   *  Answers whether anything actually moved, which is what paces the loop. */
+  async run(): Promise<boolean> {
+    if (this.running || !account.token) return false
 
     this.running = true
     this.status = 'syncing'
     this.lastError = null
+    let moved = false
 
     try {
       for (const mirror of Object.values(this.mirrors)) {
-        await this.pull(mirror)
-        await this.push(mirror)
+        if (await this.pull(mirror)) moved = true
+        if (await this.push(mirror)) moved = true
       }
 
       this.save()
@@ -160,14 +218,19 @@ class Sync {
     } finally {
       this.running = false
     }
+
+    return moved
   }
 
-  private async pull(mirror: Mirror) {
+  private async pull(mirror: Mirror): Promise<boolean> {
     const token = account.token
-    if (!token) return
+    if (!token) return false
+
+    let moved = false
 
     for (;;) {
       const page = await api.changes(token, mirror.spaceId, mirror.cursor)
+      if (page.notes.length) moved = true
 
       for (const remote of page.notes) {
         const target = join(mirror.root, remote.path)
@@ -205,16 +268,19 @@ class Sync {
       mirror.cursor = page.cursor
       if (!page.more) break
     }
+
+    return moved
   }
 
-  private async push(mirror: Mirror) {
+  private async push(mirror: Mirror): Promise<boolean> {
     const token = account.token
-    if (!token) return
+    if (!token) return false
 
     const tree = await invoke<Entry>('read_tree', { root: mirror.root }).catch(() => null)
-    if (!tree) return
+    if (!tree) return false
 
     const seen = new Set<string>()
+    let moved = false
 
     for (const file of flatten(tree)) {
       const path = relative(mirror.root, file.path)
@@ -227,10 +293,12 @@ class Sync {
       if (!tracked) {
         const { note } = await api.createNote(token, mirror.spaceId, path, content)
         mirror.notes[path] = { id: note.id, version: note.version, hash: note.hash }
+        moved = true
         continue
       }
 
       if (tracked.hash === hash) continue
+      moved = true
 
       try {
         const { note } = await api.writeNote(token, tracked.id, path, content, tracked.version)
@@ -247,7 +315,10 @@ class Sync {
 
       await api.deleteNote(token, tracked.id).catch(() => undefined)
       delete mirror.notes[path]
+      moved = true
     }
+
+    return moved
   }
 
   /** Never silently drop an edit: the other device's copy lands beside ours. */

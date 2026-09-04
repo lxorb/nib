@@ -738,6 +738,11 @@ class Workspace {
 
     await this.loadTree()
     this.persist()
+
+    // Imported here rather than at the top: syncing reads the workspace, and
+    // the two would import each other.
+    const { sync } = await import('./sync.svelte')
+    sync.nudge()
   }
 
   /** Most-recent-first, newest at the front, no duplicates. */

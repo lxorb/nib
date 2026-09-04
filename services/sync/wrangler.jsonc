@@ -18,12 +18,15 @@
   "r2_buckets": [{ "binding": "NOTES", "bucket_name": "nib-notes" }],
 
   // The built web app. The Worker runs first so a published blog's hostname
-  // still wins over the editor.
+  // still wins over the editor - but not for the bundle itself. Hashed assets
+  // are the same bytes for everyone and no blog ever asks for them, so they
+  // are served straight from the edge instead of billing a Worker invocation
+  // each. That is most of the requests a page load makes.
   "assets": {
     "directory": "../../apps/desktop/dist",
     "binding": "ASSETS",
     "not_found_handling": "single-page-application",
-    "run_worker_first": true
+    "run_worker_first": ["/*", "!/assets/*"]
   },
 
   // Cloudflare Email Sending. `nibeditor.com` is enabled as a sending
