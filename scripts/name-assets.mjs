@@ -8,24 +8,17 @@
  *    node scripts/name-assets.mjs artifacts v0.1.0
  *
  *  Each artifact directory is named `nib-<platform>-<arch>` by the build
- *  matrix, which is exactly the label the file should carry. Signatures are
- *  renamed with the bundle they belong to, so the update manifest still pairs
- *  them up afterwards.
+ *  matrix, which is exactly the label the file should carry. Underneath it the
+ *  uploader keeps Tauri's own `nsis/`, `msi/`, `dmg/` folders, so the search
+ *  goes all the way down rather than one level. Signatures are renamed with
+ *  the bundle they belong to, so the update manifest still pairs them up.
  */
 
 import { readdirSync, renameSync, statSync } from 'node:fs'
 import { join } from 'node:path'
 
 /** Longest first: `.app.tar.gz` has to win over `.gz`. */
-const KINDS = [
-  { ext: '.app.tar.gz', name: (label) => `${label}.app.tar.gz` },
-  { ext: '-setup.exe', name: (label) => `${label}-setup.exe` },
-  { ext: '.AppImage', name: (label) => `${label}.AppImage` },
-  { ext: '.msi', name: (label) => `${label}.msi` },
-  { ext: '.dmg', name: (label) => `${label}.dmg` },
-  { ext: '.deb', name: (label) => `${label}.deb` },
-  { ext: '.rpm', name: (label) => `${label}.rpm` },
-]
+const KINDS = ['.app.tar.gz', '-setup.exe', '.AppImage', '.msi', '.dmg', '.deb', '.rpm']
 
 const [, , root, tag] = process.argv
 if (!root || !tag) {
@@ -36,27 +29,48 @@ if (!root || !tag) {
 // The tag carries a `v`; the filenames should not say `Nib-v0.1.0`.
 const version = tag.replace(/^v/, '')
 
-/** `nib-windows-x64` is the artifact directory the matrix produced. */
-function labelOf(dir) {
-  return dir.replace(/^nib-/, '')
+/** Every file under `dir`, however deep Tauri's own folders go. */
+function filesIn(dir) {
+  const out = []
+
+  for (const name of readdirSync(dir)) {
+    const path = join(dir, name)
+    if (statSync(path).isDirectory()) out.push(...filesIn(path))
+    else out.push(path)
+  }
+
+  return out
 }
+
+let renamed = 0
 
 for (const dir of readdirSync(root)) {
   const full = join(root, dir)
   if (!statSync(full).isDirectory()) continue
 
-  const label = `Nib-${version}-${labelOf(dir)}`
+  // `nib-windows-x64` is the artifact directory the matrix produced.
+  const label = `Nib-${version}-${dir.replace(/^nib-/, '')}`
 
-  for (const file of readdirSync(full)) {
+  for (const path of filesIn(full)) {
+    const name = path.split(/[\\/]/).pop()
+
     // A signature follows whatever it signs, and is renamed with it.
-    const bare = file.endsWith('.sig') ? file.slice(0, -'.sig'.length) : file
-    const kind = KINDS.find((one) => bare.endsWith(one.ext))
+    const bare = name.endsWith('.sig') ? name.slice(0, -'.sig'.length) : name
+    const kind = KINDS.find((one) => bare.endsWith(one))
     if (!kind) continue
 
-    const renamed = kind.name(label) + (file === bare ? '' : '.sig')
-    if (renamed === file) continue
+    const wanted = label + kind + (name === bare ? '' : '.sig')
+    if (wanted === name) continue
 
-    renameSync(join(full, file), join(full, renamed))
-    console.error(`${file} -> ${renamed}`)
+    renameSync(path, join(path.slice(0, -name.length), wanted))
+    console.error(`${name} -> ${wanted}`)
+    renamed++
   }
+}
+
+// Silence here used to mean the layout had changed underneath and every file
+// kept its old name, which is not something to discover on a release page.
+if (!renamed) {
+  console.error(`no bundles found under ${root} - has the artifact layout changed?`)
+  process.exit(1)
 }
