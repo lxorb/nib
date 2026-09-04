@@ -343,8 +343,11 @@
 /* Rendered, editable table. */
 .nib-table-wrap {
   position: relative;
-  margin: 1.6em 0;
-  padding: 20px 0 0 26px;
+  /* The padding above is not spacing, it is room for the column controls that
+     hang over the header, so the margin can be small without the table
+     crowding the text around it. */
+  margin: 0.15em 0;
+  padding: 18px 0 0 26px;
   overflow-x: auto;
   animation: settle-in var(--dur-base) var(--ease-out);
 }

@@ -30,6 +30,7 @@
   import Sidebar from './lib/Sidebar.svelte'
   import SettingsPanel from './lib/SettingsPanel.svelte'
   import SignIn from './lib/SignIn.svelte'
+  import UpdateNotice from './lib/UpdateNotice.svelte'
   import { account } from './lib/account.svelte'
   import { settings } from './lib/settings.svelte'
   import { sync } from './lib/sync.svelte'
@@ -71,8 +72,12 @@
   settings.restore()
   void workspace.restore().then(openLaunchFiles)
   void guardClose()
-  // Fetched quietly at startup; it takes effect the next time Nib opens.
-  void stageUpdate()
+  /** The version waiting to be installed, once one has been downloaded. */
+  let updateReady = $state<string | null>(null)
+
+  // Fetched quietly at startup. It would take effect on the next launch by
+  // itself; the notice just offers to get there sooner.
+  void stageUpdate().then((version) => (updateReady = version))
   void account.restore()
 
   // A new view starts with no modes applied, so re-apply on every swap.
@@ -517,6 +522,10 @@
     </div>
   </div>
 </main>
+
+{#if updateReady}
+  <UpdateNotice version={updateReady} ondismiss={() => (updateReady = null)} />
+{/if}
 
 <Palette bind:open={palette} {view} />
 <SignIn />

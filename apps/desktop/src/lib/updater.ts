@@ -28,6 +28,23 @@ export async function stageUpdate(): Promise<string | null> {
   }
 }
 
+/** Puts the update in place and starts the new version straight away, for
+ *  someone who would rather not wait until the next launch.
+ *
+ *  On Windows the installer takes the app down itself, so the relaunch below is
+ *  only reached on the platforms where it does not. */
+export async function restartToUpdate() {
+  await installStaged()
+
+  try {
+    const { relaunch } = await import('@tauri-apps/plugin-process')
+    await relaunch()
+  } catch {
+    // Nothing sensible to do: the update is installed either way, and the next
+    // launch picks it up.
+  }
+}
+
 /** Runs the staged installer. Called as the app closes, so nothing is
  *  interrupted; the update is in place for the next launch. */
 export async function installStaged() {

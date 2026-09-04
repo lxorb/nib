@@ -70,6 +70,20 @@
     dropTarget = path
   }
 
+  /** `dragleave` also fires when the pointer moves onto a child - the label
+   *  inside a row, the icon inside a space - and the `dragover` that follows
+   *  sets it straight back. That off-on-off is the flicker. Geometry settles
+   *  it: still inside the box means still over the thing. */
+  function stillInside(event: DragEvent): boolean {
+    const box = (event.currentTarget as HTMLElement).getBoundingClientRect()
+    return (
+      event.clientX >= box.left &&
+      event.clientX <= box.right &&
+      event.clientY >= box.top &&
+      event.clientY <= box.bottom
+    )
+  }
+
   function drop(event: DragEvent, folder: string) {
     event.preventDefault()
     dropTarget = null
@@ -94,6 +108,10 @@
   {#each entries as entry (entry.path)}
     <li>
       {#if workspace.renaming === entry.path}
+        <!-- The name arrives selected, the way every file manager does it:
+             renaming usually replaces the name rather than adding to it. The
+             value already leaves the extension off, so this selects the name
+             and nothing else. -->
         <!-- svelte-ignore a11y_autofocus -->
         <input
           class="rename"
@@ -101,6 +119,7 @@
           value={entry.is_dir ? entry.name : stripped(entry.name)}
           autofocus
           spellcheck="false"
+          onfocus={(event) => event.currentTarget.select()}
           onblur={(event) => commit(entry.path, fullName(entry, event.currentTarget.value))}
           onkeydown={(event) => {
             if (event.key === 'Enter') event.currentTarget.blur()
@@ -120,7 +139,7 @@
           oncontextmenu={(event) => menu.show(event, folderMenu(entry))}
           ondragstart={(event) => startDrag(event, entry.path)}
           ondragover={(event) => overFolder(event, entry.path)}
-          ondragleave={() => (dropTarget = null)}
+          ondragleave={(event) => stillInside(event) || (dropTarget = null)}
           ondrop={(event) => drop(event, entry.path)}
         >
           <svg class="chevron" class:open={open[entry.path]} viewBox="0 0 8 8">
@@ -146,7 +165,7 @@
           oncontextmenu={(event) => menu.show(event, noteMenu(entry))}
           ondragstart={(event) => startDrag(event, entry.path)}
           ondragover={(event) => overFolder(event, entry.path)}
-          ondragleave={() => (dropTarget = null)}
+          ondragleave={(event) => stillInside(event) || (dropTarget = null)}
           ondrop={(event) => dropBeside(event, entry.path)}
         >
           <span class="label">{stripped(entry.name)}</span>
@@ -188,6 +207,7 @@
     cursor: default;
     transition:
       background var(--dur-fast) var(--ease-out),
+      box-shadow var(--dur-fast) var(--ease-out),
       color var(--dur-fast) var(--ease-out);
   }
 

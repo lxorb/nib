@@ -19,6 +19,20 @@
   let gap = $state<string | null | undefined>(undefined)
   /** The space a note from the explorer is being held over. */
   let receiving = $state<string | null>(null)
+  /** The name to show beside the rail, and how far down to put it. Rendered
+   *  outside the scrolling column on purpose: a label sticking out of a box
+   *  that scrolls makes the box scrollable sideways, and a drag near the edge
+   *  would then slide every space out of sight. */
+  let label = $state<{ name: string; y: number } | null>(null)
+
+  function showLabel(event: MouseEvent, name: string) {
+    const button = event.currentTarget as HTMLElement
+    const bar = button.closest('nav')
+    if (!bar) return
+
+    const box = button.getBoundingClientRect()
+    label = { name, y: box.top - bar.getBoundingClientRect().top + box.height / 2 }
+  }
 
   function start(event: DragEvent, id: string) {
     dragging = id
@@ -46,6 +60,20 @@
 
     const box = (event.currentTarget as HTMLElement).getBoundingClientRect()
     gap = event.clientY < box.top + box.height / 2 ? id : next
+  }
+
+  /** `dragleave` also fires when the pointer moves onto a child - the label
+   *  inside a row, the icon inside a space - and the `dragover` that follows
+   *  sets it straight back. That off-on-off is the flicker. Geometry settles
+   *  it: still inside the box means still over the thing. */
+  function stillInside(event: DragEvent): boolean {
+    const box = (event.currentTarget as HTMLElement).getBoundingClientRect()
+    return (
+      event.clientX >= box.left &&
+      event.clientX <= box.right &&
+      event.clientY >= box.top &&
+      event.clientY <= box.bottom
+    )
   }
 
   function drop(event: DragEvent, space: Space) {
@@ -98,10 +126,12 @@
         draggable="true"
         ondragstart={(event) => start(event, space.id)}
         ondragover={(event) => over(event, space.id, workspace.spaces[index + 1]?.id ?? null)}
-        ondragleave={() => (receiving = null)}
+        ondragleave={(event) => stillInside(event) || (receiving = null)}
         ondrop={(event) => drop(event, space)}
         ondragend={stop}
         onclick={() => workspace.selectSpace(space.id)}
+        onmouseenter={(event) => showLabel(event, space.name)}
+        onmouseleave={() => (label = null)}
         oncontextmenu={(event) =>
           menu.show(event, [
             { label: t('New note'), run: () => workspace.createNote(space.root) },
@@ -121,7 +151,6 @@
         {:else}
           {initial(space.name)}
         {/if}
-        <span class="name">{space.name}</span>
       </button>
     {/each}
 
@@ -131,6 +160,10 @@
       <svg viewBox="0 0 12 12"><path d="M6 1v10M1 6h10" /></svg>
     </button>
   </div>
+
+  {#if label}
+    <span class="name" style:top="{label.y}px">{label.name}</span>
+  {/if}
 
   <div class="foot">
     <!-- Sliders, not a cog: the cog reads as the sun in the theme button.
@@ -182,6 +215,7 @@
 
 <style>
   nav {
+    position: relative;
     width: var(--rail-width);
     flex: none;
     display: flex;
@@ -201,6 +235,11 @@
     gap: 5px;
     min-height: 0;
     overflow-y: auto;
+    /* Nothing in here may stick out sideways. Setting one axis to `auto` makes
+       the other scrollable too, and a drag near the edge would then auto-scroll
+       the spaces out of sight. `overflow-x: clip` does not help - next to
+       `auto` it is coerced to `hidden`, which still scrolls programmatically.
+       So the hover label lives beside this column instead of inside it. */
     scrollbar-width: none;
   }
 
@@ -230,6 +269,7 @@
     background: var(--surface-2);
     transition:
       background var(--dur-fast) var(--ease-out),
+      box-shadow var(--dur-fast) var(--ease-out),
       color var(--dur-fast) var(--ease-out),
       transform var(--dur-base) var(--ease-spring);
   }
@@ -299,9 +339,12 @@
   }
 
   /* The label is text on demand: it exists only while pointed at. */
+  /* Beside the rail rather than inside the scrolling column, and placed from
+     the hovered button's own position. */
   .name {
     position: absolute;
     left: calc(100% + 10px);
+    transform: translateY(-50%);
     padding: 4px 8px;
     border-radius: var(--radius-sm);
     background: var(--surface-3);
@@ -311,18 +354,16 @@
     font-weight: 450;
     white-space: nowrap;
     box-shadow: var(--shadow-md);
-    opacity: 0;
-    transform: translateX(-4px);
     pointer-events: none;
-    transition:
-      opacity var(--dur-fast) var(--ease-out),
-      transform var(--dur-base) var(--ease-out);
+    animation: name-in var(--dur-fast) var(--ease-out);
     z-index: 5;
   }
 
-  .space:hover .name {
-    opacity: 1;
-    transform: none;
+  @keyframes name-in {
+    from {
+      opacity: 0;
+      transform: translateY(-50%) translateX(-4px);
+    }
   }
 
   .add {
