@@ -1,0 +1,112 @@
+name: ci-check-csp
+
+# Throwaway, and not for main. It exists to answer two questions about the
+# content policy in `apps/desktop/src/csp.ts` before it ships, neither of which a
+# unit test can: whether Tauri accepts it, and whether the app satisfies it.
+#
+# The branch and this file go once the answers are in; `check.yml` already runs
+# the types, the lints and every test on the pull request itself.
+on:
+  push:
+    branches: [ci-check-csp]
+  workflow_dispatch:
+
+concurrency:
+  group: ci-check-csp
+  cancel-in-progress: true
+
+jobs:
+  # WebView2 is Chromium, so what Chrome does with the policy is what the
+  # installed app does with it. The drive builds the web app, serves it with the
+  # policy as a header - read out of the built page, not repeated here - opens a
+  # note with a framed page, a block of its own HTML and a ` ```js ` fence in it,
+  # and fails on any violation the browser reports.
+  policy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: A browser to drive
+        run: |
+          pip install playwright
+          python -m playwright install --with-deps chrome
+
+      - name: The app under its own policy
+        run: python apps/desktop/test/e2e/frames.py
+
+      # What the drive saw, whether it passed or not: a card, a frame, and a
+      # fence that still ran.
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: frames-shots
+          path: apps/desktop/test/e2e/shots/frames/
+          if-no-files-found: warn
+
+  # And the desktop build, because the policy is a string in tauri.conf.json that
+  # the crate's build script parses: one Tauri will not have is a crate that does
+  # not compile. `--no-bundle` because what is under test is the config and the
+  # binary, not the installer around it.
+  windows:
+    runs-on: windows-latest
+    permissions:
+      contents: read
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: |
+            apps/desktop/src-tauri
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: Build the app
+        run: pnpm --filter @nib/desktop exec tauri build --no-bundle
+
+      # And that the page the built app is served carries the same policy the
+      # config sets, so a build cannot ship one string in one and another in the
+      # other. The test suite holds both to `src/csp.ts`; this reads what the
+      # build actually wrote.
+      - name: The policy the built page declares
+        run: |
+          node - <<'EOF'
+          const { readFileSync } = require('node:fs')
+          const flat = (said) => said.replace(/\s+/g, ' ').trim()
+          const conf = JSON.parse(readFileSync('apps/desktop/src-tauri/tauri.conf.json', 'utf8'))
+          const html = readFileSync('apps/desktop/dist/index.html', 'utf8')
+          const from = html.indexOf('Content-Security-Policy')
+          const said = /content="([^"]*)"/.exec(html.slice(from))
+          if (from < 0 || !said) throw new Error('the built page declares no policy')
+          if (flat(said[1]) !== flat(conf.app.security.csp)) {
+            throw new Error(`the page says ${flat(said[1])}`)
+          }
+          console.log('the built page carries the policy the config sets')
+          EOF
