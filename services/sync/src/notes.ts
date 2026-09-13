@@ -44,8 +44,13 @@ export const PATH_LIMIT = 400
  *  text that is edited on more than one device, so it wants the first: the
  *  version, the hash and the conflict rule are exactly what a file two people
  *  draw on needs. See apps/desktop/src/lib/sync/mirror.ts, which sends every file
- *  that is not a PDF through here. */
-const NOTE_PATH = /\.(md|markdown|mdown|mkd|canvas)$/i
+ *  that is not a PDF through here.
+ *
+ *  A website is here for the same reason and is smaller still: a shortcut file is
+ *  three lines of text with an address in one of them, and it is a document of the
+ *  space like any other - it goes up, comes back down, keeps its versions and can be
+ *  put in the trash and taken out again. It is never in a room; see rooms/kind.ts. */
+const NOTE_PATH = /\.(md|markdown|mdown|mkd|canvas|url|webloc)$/i
 
 /** Paths are relative, forward-slashed and named like a note. Nothing escapes
  *  the space.

@@ -9,7 +9,8 @@ use tauri::AppHandle;
 
 use crate::clock;
 use crate::paths::{
-    cannot, in_spaces, inside, is_canvas, is_markdown, is_pdf, space_root, spaces_root, Seen,
+    cannot, in_spaces, inside, is_canvas, is_markdown, is_pdf, is_shortcut, space_root,
+    spaces_root, Seen,
     MAX_DEPTH,
 };
 
@@ -132,12 +133,16 @@ fn walk(
                     } else {
                         folder(&child, name)
                     });
-                } else if is_markdown(&child) || is_pdf(&child) || is_canvas(&child) {
-                    // The notes, the PDFs beside them and the canvases: the
-                    // three things a tab can hold. Everything else in a space
-                    // belongs to a note rather than standing on its own - a
-                    // picture, a PDF's own highlights - and a file list nobody
-                    // can act on is noise.
+                } else if is_markdown(&child)
+                    || is_pdf(&child)
+                    || is_canvas(&child)
+                    || is_shortcut(&child)
+                {
+                    // The notes, the PDFs beside them, the canvases and the
+                    // websites: the four things a tab can hold. Everything else
+                    // in a space belongs to a note rather than standing on its
+                    // own - a picture, a PDF's own highlights - and a file list
+                    // nobody can act on is noise.
                     room(left)?;
                     children.push(listed(&child, name, false, entry.metadata().ok()));
                 }

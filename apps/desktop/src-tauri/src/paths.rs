@@ -91,6 +91,22 @@ pub fn is_canvas(path: &Path) -> bool {
         .is_some_and(|extension| extension.eq_ignore_ascii_case("canvas"))
 }
 
+/// Whether a path names a website: a shortcut file rather than words.
+///
+/// `.url` is the Windows Internet Shortcut - an INI file with an address in it,
+/// which Explorer and every browser write - and it is the one the app writes.
+/// `.webloc` is the same idea on macOS, a plist, which Safari writes and the app
+/// only reads. Both are small text files, so `read_note` and `write_note` already
+/// carry them the way they carry a canvas, and all the crate has to agree on is
+/// that they are files the window lists and opens. See web-tab/shortcut.ts.
+pub fn is_shortcut(path: &Path) -> bool {
+    path.extension()
+        .and_then(OsStr::to_str)
+        .is_some_and(|extension| {
+            extension.eq_ignore_ascii_case("url") || extension.eq_ignore_ascii_case("webloc")
+        })
+}
+
 /// Where a PDF's highlights live: the PDF's own name with the suffix after it,
 /// so the two sit together in a folder and no note can ever collide with one.
 pub fn highlights_of(pdf: &Path) -> PathBuf {

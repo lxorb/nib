@@ -3,7 +3,7 @@
 
 import { SIDECAR } from '../pdf/highlights'
 import { staleSnapshots } from '../recovery'
-import { scanCanvas, scanNote, type SpaceLinks } from '../scan-note'
+import { scanCanvas, scanNote, scanShortcut, type SpaceLinks } from '../scan-note'
 import { isNumber, isRecord, isString, parsed } from '../stored'
 import { tagsIn } from '../search/tags'
 import {
@@ -18,6 +18,7 @@ import {
   spaceOf,
   within,
 } from './paths'
+import { isWebTarget } from '@nib/markdown/links'
 import { assetType } from './asset-route'
 import { assets, files, KEEP, meta, snapshots, stats } from './store'
 import { markSeeded, wasSeeded } from '../seeded'
@@ -46,11 +47,11 @@ const now = () => Date.now()
  *  that the yields are not most of the work. */
 const SCANNED_AT_ONCE = 128
 
-/** Whether a file is one the tree shows: a note, a PDF beside one, or a canvas.
- *  The same three kinds the desktop's `read_tree` lists, and for the same
- *  reason - they are the three things a tab can hold. */
+/** Whether a file is one the tree shows: a note, a PDF beside one, a canvas, or a
+ *  website. The same four kinds the desktop's `read_tree` lists, and for the same
+ *  reason - they are the four things a tab can hold. */
 function listed(path: string): boolean {
-  return isMarkdown(path) || isPdf(path) || isCanvas(path)
+  return isMarkdown(path) || isPdf(path) || isCanvas(path) || isWebTarget(path)
 }
 
 /** Where a PDF's highlights are kept. The desktop's command derives this on the
@@ -393,6 +394,11 @@ async function scanLinks(root: string): Promise<SpaceLinks> {
         notes.push(scanNote(relative(row.path), row.content))
         continue
       }
+
+      // A website is both: a file beside the notes, so `[[Svelte docs.url]]`
+      // resolves, and a row in the index, so `[[Svelte docs]]` does and the graph
+      // has a node for it. Nothing in the file is read; see scanShortcut.
+      if (isWebTarget(row.path)) notes.push(scanShortcut(relative(row.path)))
 
       // A `.keep` is scaffolding rather than a file somebody put in the space, and
       // a PDF's highlights are part of the PDF.
