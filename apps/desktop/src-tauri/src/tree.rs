@@ -10,8 +10,7 @@ use tauri::AppHandle;
 use crate::clock;
 use crate::paths::{
     cannot, in_spaces, inside, is_canvas, is_markdown, is_pdf, is_shortcut, space_root,
-    spaces_root, Seen,
-    MAX_DEPTH,
+    spaces_root, Seen, MAX_DEPTH,
 };
 
 /// How many notes and folders one read may put in the tree.
